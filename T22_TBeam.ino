@@ -18,7 +18,7 @@ uint64_t dispMap = 0;
 String dispInfo;
 char buff[512];
 uint64_t gpsSec = 0;
-
+bool pmu_irq = false;
 #define BUTTONS_MAP {38}
 
 Button2 *pBtns = nullptr;
@@ -59,17 +59,18 @@ void button_init()
 /************************************
  *      SCREEN
  * *********************************/
+String baChStatus = "No charging";
 void msOverlay(OLEDDisplay *display, OLEDDisplayUiState *state)
 {
     static char volbuffer[128];
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_10);
 
-    display->drawString(0, 0, axp.isChargeing() ? "Charging" : "No charging");
+    display->drawString(0, 0, baChStatus);
 
     if (axp.isBatteryConnect()) {
-        snprintf(volbuffer, sizeof(volbuffer), "BAT:%.2fV", axp.getBattVoltage() / 1000.0);
-        display->drawString(67, 0, volbuffer);
+        snprintf(volbuffer, sizeof(volbuffer), "%.2fV/%.2fmA", axp.getBattVoltage() / 1000.0, axp.isChargeing() ? axp.getBattChargeCurrent() : axp.getBattDischargeCurrent());
+        display->drawString(62, 0, volbuffer);
     }
 }
 
@@ -163,14 +164,18 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int1
 #endif
 }
 
+//PMU
 void drawFrame4(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
+    static uint8_t n = 0;
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     if (!axp192_found) {
         display->drawString(64 + x, 22 + y, "PMU Begin FAIL");
         return;
     }
+    //TODO::
+    display->drawString(64 + x, 22 + y, "Empty");
 }
 
 
@@ -180,15 +185,14 @@ OverlayCallback overlays[] = { msOverlay };
 void ssd1306_init()
 {
 #ifdef ENABLE_SSD1306
-    // if (!ssd1306_found) {
-    //     Serial.println("SSD1306 not found");
-    //     return;
-    // }
+    if (!ssd1306_found) {
+        Serial.println("SSD1306 not found");
+        return;
+    }
     if (oled.init()) {
         oled.flipScreenVertically();
         oled.setFont(ArialMT_Plain_16);
         oled.setTextAlignment(TEXT_ALIGN_CENTER);
-        // display_to_screen("TTGO T-Beam");
     } else {
         Serial.println("SSD1306 Begin FAIL");
     }
@@ -216,6 +220,7 @@ void setup()
     scanI2Cdevice();
     pinMode(2, OUTPUT);
     digitalWrite(2, 0);
+
     if (axp192_found) {
         if (!axp.begin(Wire, AXP192_SLAVE_ADDRESS)) {
             Serial.println("AXP192 Begin PASS");
@@ -223,24 +228,22 @@ void setup()
             Serial.println("AXP192 Begin FAIL");
         }
 
-        Serial.printf("isLDO2Enable :%d\n", axp.isLDO2Enable());
-        Serial.printf("isLDO3Enable :%d\n", axp.isLDO3Enable());
+        axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
+        axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
 
-        axp.setPowerOutPut(AXP202_LDO2, 1);
-        axp.setPowerOutPut(AXP202_LDO4, 1); //LDO3
-
-        Serial.printf("isLDO2Enable :%d\n", axp.isLDO2Enable());
-        Serial.printf("isLDO3Enable :%d\n", axp.isLDO3Enable());
-
-
-        attachInterrupt(35, [] {
-            // axp.readIRQ();
-            Serial.println("IRQ ");
-            digitalWrite(2, !digitalRead(2));
-            axp.clearIRQ();
+        pinMode(PMU_IRQ, INPUT_PULLUP);
+        attachInterrupt(PMU_IRQ, [] {
+            pmu_irq = true;
         }, FALLING);
 
+        axp.adc1Enable(AXP202_BATT_CUR_ADC1, 1);
 
+        axp.enableIRQ(AXP202_VBUS_REMOVED_IRQ | AXP202_VBUS_CONNECT_IRQ | AXP202_BATT_REMOVED_IRQ | AXP202_BATT_CONNECT_IRQ, 1);
+        axp.clearIRQ();
+
+        if (axp.isChargeing()) {
+            baChStatus = "Charging";
+        }
     } else {
         Serial.println("AXP192 not found");
     }
@@ -275,6 +278,21 @@ void lora_init()
 
 void loop()
 {
+    if (pmu_irq) {
+        pmu_irq = false;
+        axp.readIRQ();
+        if (axp.isChargingIRQ()) {
+            baChStatus = "Charging";
+        } else {
+            baChStatus = "No Charging";
+        }
+        if (axp.isVbusRemoveIRQ()) {
+            baChStatus = "No Charging";
+        }
+        digitalWrite(2, !digitalRead(2));
+        axp.clearIRQ();
+    }
+
 #ifdef ENABLE_SSD1306
     if (ui.update()) {
 #endif
@@ -283,7 +301,6 @@ void loop()
     }
 #endif
 }
-
 
 void scanI2Cdevice(void)
 {
