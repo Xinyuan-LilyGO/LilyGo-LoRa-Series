@@ -9,14 +9,6 @@
 #define ENABLE_LOAR
 
 
-#ifdef ENABLE_BUTTON
-#define BUTTON_1    36
-#define BUTTON_2    0
-#define BUTTON_3    0
-#define BUTTON_4    36
-#define BUTTON_5    0
-#endif
-
 //ssd1306 oled显示屏
 #define SSD1306_ADDRESS 0x3c
 #ifdef ENABLE_SSD1306
