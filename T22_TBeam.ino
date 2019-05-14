@@ -9,14 +9,16 @@ SSD1306_OBJECT();
 UBLOX_GPS_OBJECT();
 
 AXP20X_Class axp;
-
+static String recv = "";
+uint8_t program = 0;
 bool ssd1306_found = false;
 bool axp192_found = false;
 bool loraBeginOK = false;
 
 uint64_t dispMap = 0;
 String dispInfo;
-char buff[512];
+char buff[5][256];
+
 uint64_t gpsSec = 0;
 bool pmu_irq = false;
 #define BUTTONS_MAP {38}
@@ -33,7 +35,10 @@ void button_callback(Button2 &b)
 {
     for (int i = 0; i < ARRARY_SIZE(g_btns); ++i) {
         if (pBtns[i] == b) {
-            ui.nextFrame();
+            if (ssd1306_found) {
+                ui.nextFrame();
+            }
+            program = program + 1 > 2 ? 0 : program + 1;
         }
     }
 }
@@ -74,94 +79,44 @@ void msOverlay(OLEDDisplay *display, OLEDDisplayUiState *state)
     }
 }
 
+
+
+
+
+
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
-    static uint64_t gpsMap = 0;
 
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
 
-#ifdef ENABLE_GPS
-    while (Serial1.available())
-        gps.encode(Serial1.read());
-
-    if (millis() > 5000 && gps.charsProcessed() < 10) {
-        display->drawString(64 + x, 11 + y, "T-Beam GPS");
-        display->drawString(64 + x, 22 + y, "No GPS detected");
-        return;
-    }
 
     if (!gps.location.isValid()) {
-        if (millis() - gpsMap > 1000) {
-            snprintf(buff, sizeof(buff), "Positioning(%llu)", gpsSec++);
-            gpsMap = millis();
-        }
-        display->drawString(64 + x, 11 + y, "T-Beam GPS");
-        display->drawString(64 + x, 22 + y, buff);
+        display->drawString(64 + x, 11 + y, buff[0]);
+        display->drawString(64 + x, 22 + y, buff[1]);
     } else {
-        snprintf(buff, sizeof(buff), "UTC:%d:%d:%d", gps.time.hour(), gps.time.minute(), gps.time.second());
-        display->drawString(64 + x, 11 + y, buff);
-        snprintf(buff, sizeof(buff), "LNG:%.4f", gps.location.lng());
-        display->drawString(64 + x, 22 + y, buff);
-        snprintf(buff, sizeof(buff), "LAT:%.4f", gps.location.lat());
-        display->drawString(64 + x, 33 + y, buff);
-        snprintf(buff, sizeof(buff), "satellites:%lu", gps.satellites.value());
-        display->drawString(64 + x, 44 + y, buff);
+        display->drawString(64 + x, 11 + y, buff[0]);
+        display->drawString(64 + x, 22 + y, buff[1]);
+        display->drawString(64 + x, 33 + y, buff[2]);
+        display->drawString(64 + x, 44 + y, buff[3]);
     }
-#endif
 }
 
 void drawFrame2(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
-    static uint32_t sendCount = 0;
-    static uint64_t loraMap = 0;
-
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->drawString(64 + x, 11 + y, "T-Beam Lora Sender");
-
-    if (!loraBeginOK) {
-        display->drawString(64 + x, 22 + y, "Lora Begin FAIL");
-        return;
-    }
-
-    if (millis() - loraMap > 3000) {
-        LoRa.beginPacket();
-        LoRa.print("lora: ");
-        LoRa.print(sendCount);
-        LoRa.endPacket();
-        ++sendCount;
-        Serial.printf("Send %lu\n", sendCount);
-        loraMap = millis();
-    }
-    display->drawString(64 + x, 22 + y, "Send " + String(sendCount));
+    display->drawString(64 + x, 11 + y, buff[0]);
+    display->drawString(64 + x, 22 + y, buff[1]);
 }
 
 void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
-    static String recv = "";
-
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
-
-    if (!loraBeginOK) {
-        display->drawString(64 + x, 22 + y, "Lora Begin FAIL");
-        return;
-    }
-
-#ifdef ENABLE_LOAR
-    if (LoRa.parsePacket()) {
-        recv = "";
-        while (LoRa.available()) {
-            recv += (char)LoRa.read();
-        }
-        Serial.println(recv);
-    }
-
-    display->drawString(64 + x, 9 + y, "T-Beam Lora Received");
+    display->drawString(64 + x, 9 + y, buff[0]);
     display->drawString(64 + x, 22 + y, recv == "" ? "No message" : recv);
-    display->drawString(64 + x, 35 + y, "rssi :" + String(LoRa.packetRssi()));
-#endif
+    display->drawString(64 + x, 35 + y, buff[1]);
 }
 
 //PMU
@@ -179,7 +134,7 @@ void drawFrame4(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int1
 }
 
 
-FrameCallback frames[] = {drawFrame1, drawFrame2, drawFrame3, drawFrame4};
+FrameCallback frames[] = {drawFrame1, drawFrame2, drawFrame3, /*drawFrame4*/};
 OverlayCallback overlays[] = { msOverlay };
 
 void ssd1306_init()
@@ -278,7 +233,11 @@ void lora_init()
 
 void loop()
 {
-    if (pmu_irq) {
+    static uint32_t sendCount = 0;
+    static uint64_t loraMap = 0;
+    static uint64_t gpsMap = 0;
+
+    if (axp192_found && pmu_irq) {
         pmu_irq = false;
         axp.readIRQ();
         if (axp.isChargingIRQ()) {
@@ -292,14 +251,99 @@ void loop()
         digitalWrite(2, !digitalRead(2));
         axp.clearIRQ();
     }
+    switch (program) {
+    case 0:
+        while (Serial1.available())
+            gps.encode(Serial1.read());
 
-#ifdef ENABLE_SSD1306
-    if (ui.update()) {
-#endif
-        button_loop();
-#ifdef ENABLE_SSD1306
+        if (millis() > 5000 && gps.charsProcessed() < 10) {
+            snprintf(buff[0], sizeof(buff[0]), "T-Beam GPS");
+            snprintf(buff[1], sizeof(buff[1]), "No GPS detected");
+            if (!ssd1306_found) {
+                Serial.println(buff[1]);
+            }
+            return;
+        }
+        if (!gps.location.isValid()) {
+            if (millis() - gpsMap > 1000) {
+                snprintf(buff[1], sizeof(buff[1]), "Positioning(%llu)", gpsSec++);
+                if (!ssd1306_found) {
+                    Serial.println(buff[1]);
+                }
+                gpsMap = millis();
+            }
+        } else {
+            if (millis() - gpsMap > 1000) {
+                snprintf(buff[0], sizeof(buff[0]), "UTC:%d:%d:%d", gps.time.hour(), gps.time.minute(), gps.time.second());
+                snprintf(buff[1], sizeof(buff[1]), "LNG:%.4f", gps.location.lng());
+                snprintf(buff[2], sizeof(buff[2]), "LAT:%.4f", gps.location.lat());
+                snprintf(buff[3], sizeof(buff[3]), "satellites:%lu", gps.satellites.value());
+                if (!ssd1306_found) {
+                    Serial.println(buff[0]);
+                    Serial.println(buff[1]);
+                    Serial.println(buff[2]);
+                    Serial.println(buff[3]);
+                }
+                gpsMap = millis();
+            }
+        }
+        break;
+    case 1:
+        snprintf(buff[0], sizeof(buff[0]), "T-Beam Lora Sender");
+        if (!loraBeginOK) {
+            snprintf(buff[1], sizeof(buff[1]), "Lora Begin FAIL");
+            if (!ssd1306_found) {
+                Serial.println(buff[1]);
+            }
+            return;
+        }
+
+        if (millis() - loraMap > 3000) {
+            LoRa.beginPacket();
+            LoRa.print("lora: ");
+            LoRa.print(sendCount);
+            LoRa.endPacket();
+            ++sendCount;
+            snprintf(buff[1], sizeof(buff[1]), "Send %lu", sendCount);
+            loraMap = millis();
+            if (!ssd1306_found) {
+                Serial.println(buff[1]);
+            }
+        }
+        break;
+    case 2:
+        if (!loraBeginOK) {
+            recv =  "Lora Begin FAIL";
+            if (!ssd1306_found) {
+                Serial.println(recv);
+            }
+            return;
+        }
+        snprintf(buff[0], sizeof(buff[0]), "T-Beam Lora Received");
+        if (LoRa.parsePacket()) {
+            recv = "";
+            while (LoRa.available()) {
+                recv += (char)LoRa.read();
+            }
+            if (!ssd1306_found) {
+                Serial.printf("Lora Received:%s - rssi:%d\n", recv, LoRa.packetRssi());
+            }
+        } else {
+            if (!ssd1306_found) {
+                Serial.println("Wait for received message");
+                delay(500);
+            }
+        }
+        snprintf(buff[1], sizeof(buff[1]), "rssi:%d", LoRa.packetRssi());
+        break;
     }
-#endif
+    if (ssd1306_found) {
+        if (ui.update()) {
+            button_loop();
+        }
+    } else {
+        button_loop();
+    }
 }
 
 void scanI2Cdevice(void)
