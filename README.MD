@@ -5,7 +5,6 @@ TTGO T22 T-Beam
 ![](images/1.png)
 
 
-
 ## PinOut
 | Pins        | T_BEAM_V10 | T_BEAM_V07 |
 | ----------- | ---------- | ---------- |

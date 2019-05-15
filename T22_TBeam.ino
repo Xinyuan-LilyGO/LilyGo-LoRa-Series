@@ -50,7 +50,6 @@ void button_loop()
     }
 }
 
-
 void button_init()
 {
     uint8_t args = ARRARY_SIZE(g_btns);
@@ -59,6 +58,17 @@ void button_init()
         pBtns[i] = Button2(g_btns[i]);
         pBtns[i].setPressedHandler(button_callback);
     }
+    pBtns[0].setLongClickHandler([](Button2 & b) {
+        if (ssd1306_found) {
+            oled.displayOff();
+        }
+        Serial.println("Go to Sleep");
+        axp.setChgLEDMode(LED_OFF);
+        axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
+        axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
+        esp_sleep_enable_ext1_wakeup(GPIO_SEL_38, ESP_EXT1_WAKEUP_ALL_LOW);
+        esp_deep_sleep_start();
+    });
 }
 
 /************************************
@@ -182,6 +192,7 @@ void setup()
         } else {
             Serial.println("AXP192 Begin FAIL");
         }
+        axp.setChgLEDMode(LED_BLINK_4HZ);
 
         axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
         axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
