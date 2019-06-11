@@ -66,6 +66,12 @@ void button_init()
         axp.setChgLEDMode(LED_OFF);
         axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
         axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
+        axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
+        // axp.setPowerOutPut(AXP192_DCDC3, AXP202_OFF);
+        axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+        axp.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
+
+        delay(20);
         esp_sleep_enable_ext1_wakeup(GPIO_SEL_38, ESP_EXT1_WAKEUP_ALL_LOW);
         esp_deep_sleep_start();
     });
@@ -183,19 +189,40 @@ void setup()
     Wire.begin(I2C_SDA, I2C_SCL);
 
     scanI2Cdevice();
-    pinMode(2, OUTPUT);
-    digitalWrite(2, 0);
 
+    axp192_found = 1;
     if (axp192_found) {
         if (!axp.begin(Wire, AXP192_SLAVE_ADDRESS)) {
             Serial.println("AXP192 Begin PASS");
         } else {
             Serial.println("AXP192 Begin FAIL");
         }
-        axp.setChgLEDMode(LED_BLINK_4HZ);
+        
+        // axp.setChgLEDMode(LED_BLINK_4HZ);
+
+        Serial.printf("DCDC1: %s\n", axp.isDCDC1Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("DCDC2: %s\n", axp.isDCDC2Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("LDO2: %s\n", axp.isLDO2Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("LDO3: %s\n", axp.isLDO3Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("DCDC3: %s\n", axp.isDCDC3Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("Exten: %s\n", axp.isExtenEnable() ? "ENABLE" : "DISABLE");
+
+        Serial.println("----------------------------------------");
 
         axp.setPowerOutPut(AXP192_LDO2, AXP202_ON);
         axp.setPowerOutPut(AXP192_LDO3, AXP202_ON);
+        axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON);
+        axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
+        axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
+        axp.setDCDC1Voltage(3300);
+
+        Serial.printf("DCDC1: %s\n", axp.isDCDC1Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("DCDC2: %s\n", axp.isDCDC2Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("LDO2: %s\n", axp.isLDO2Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("LDO3: %s\n", axp.isLDO3Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("DCDC3: %s\n", axp.isDCDC3Enable() ? "ENABLE" : "DISABLE");
+        Serial.printf("Exten: %s\n", axp.isExtenEnable() ? "ENABLE" : "DISABLE");
+
 
         pinMode(PMU_IRQ, INPUT_PULLUP);
         attachInterrupt(PMU_IRQ, [] {
@@ -203,7 +230,6 @@ void setup()
         }, FALLING);
 
         axp.adc1Enable(AXP202_BATT_CUR_ADC1, 1);
-
         axp.enableIRQ(AXP202_VBUS_REMOVED_IRQ | AXP202_VBUS_CONNECT_IRQ | AXP202_BATT_REMOVED_IRQ | AXP202_BATT_CONNECT_IRQ, 1);
         axp.clearIRQ();
 
@@ -213,6 +239,7 @@ void setup()
     } else {
         Serial.println("AXP192 not found");
     }
+
     button_init();
 
     ssd1306_init();
@@ -392,3 +419,4 @@ void scanI2Cdevice(void)
     else
         Serial.println("done\n");
 }
+
