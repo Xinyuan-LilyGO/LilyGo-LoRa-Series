@@ -3,6 +3,7 @@
 #include <Wire.h>
 #include "axp20x.h"
 #include <Button2.h>
+#include <Ticker.h>
 
 #define AXP192_SLAVE_ADDRESS    0x34
 SSD1306_OBJECT();
@@ -27,6 +28,7 @@ Button2 *pBtns = nullptr;
 uint8_t g_btns[] =  BUTTONS_MAP;
 #define ARRARY_SIZE(a)   (sizeof(a) / sizeof(a[0]))
 
+Ticker btnTick;
 
 /************************************
  *      BUTTON
@@ -197,7 +199,7 @@ void setup()
         } else {
             Serial.println("AXP192 Begin FAIL");
         }
-        
+
         // axp.setChgLEDMode(LED_BLINK_4HZ);
 
         Serial.printf("DCDC1: %s\n", axp.isDCDC1Enable() ? "ENABLE" : "DISABLE");
@@ -251,6 +253,8 @@ void setup()
 #ifdef ENABLE_LOAR
     lora_init();
 #endif
+
+    btnTick.attach_ms(20, button_loop);
 }
 
 
@@ -364,23 +368,29 @@ void loop()
                 recv += (char)LoRa.read();
             }
             if (!ssd1306_found) {
-                Serial.printf("Lora Received:%s - rssi:%d\n", recv, LoRa.packetRssi());
+                Serial.printf("Lora Received:%s - rssi:%d\n", recv.c_str(), LoRa.packetRssi());
             }
         } else {
-            if (!ssd1306_found) {
-                Serial.println("Wait for received message");
-                delay(500);
-            }
+            // if (!ssd1306_found) {
+            //     Serial.println("Wait for received message");
+            //     delay(500);
+            // }
         }
         snprintf(buff[1], sizeof(buff[1]), "rssi:%d", LoRa.packetRssi());
         break;
     }
+    /*
     if (ssd1306_found) {
         if (ui.update()) {
             button_loop();
         }
     } else {
         button_loop();
+    }
+     */
+    if (ssd1306_found) {
+        if (ui.update()) {
+        }
     }
 }
 
