@@ -32,7 +32,7 @@ TTGO T22 T-Beam
 ## How to use
 - The repository depends on other library files, please recursively clone the repository
     ```
-    git clone --recursive https://github.com/Xinyuan-LilyGO/TTGO-T-Beam
+    git clone --recursive https://github.com/lewisxhe/TTGO-T-Beam
     ```
 
 - Then move the library files in the `libraries` directory to
