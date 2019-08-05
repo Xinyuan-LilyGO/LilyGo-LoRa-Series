@@ -65,7 +65,7 @@ void button_init()
             oled.displayOff();
         }
         Serial.println("Go to Sleep");
-        axp.setChgLEDMode(LED_OFF);
+        axp.setChgLEDMode(AXP20X_LED_OFF);
         axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
         axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
         axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
@@ -182,6 +182,16 @@ void ssd1306_init()
 #endif
 }
 
+
+void playSound()
+{
+#ifdef ENABLE_BUZZER
+    ledcWriteTone(0, 1000);
+    delay(200);
+    ledcWriteTone(0, 0);
+#endif
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -191,6 +201,14 @@ void setup()
     Wire.begin(I2C_SDA, I2C_SCL);
 
     scanI2Cdevice();
+
+#ifdef ENABLE_BUZZER
+    ledcSetup(0, 1000, 8);
+    ledcAttachPin(BUZZER_PIN, 0);
+#endif
+
+    playSound();
+    playSound();
 
     axp192_found = 1;
     if (axp192_found) {
@@ -316,6 +334,7 @@ void loop()
             }
         } else {
             if (millis() - gpsMap > 1000) {
+                playSound();
                 snprintf(buff[0], sizeof(buff[0]), "UTC:%d:%d:%d", gps.time.hour(), gps.time.minute(), gps.time.second());
                 snprintf(buff[1], sizeof(buff[1]), "LNG:%.4f", gps.location.lng());
                 snprintf(buff[2], sizeof(buff[2]), "LAT:%.4f", gps.location.lat());

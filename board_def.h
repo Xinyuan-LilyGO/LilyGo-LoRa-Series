@@ -74,5 +74,7 @@ UBLOX_GPS_OBJECT()
 #define GPS_POWER_CTRL_CH   3
 #define LORA_POWER_CTRL_CH  2
 
+#define ENABLE_BUZZER
+#define BUZZER_PIN          4
 
 #endif /*BOARD_DEF_H*/
