@@ -234,7 +234,9 @@ void setup()
         axp.setPowerOutPut(AXP192_DCDC2, AXP202_ON);
         axp.setPowerOutPut(AXP192_EXTEN, AXP202_ON);
         axp.setPowerOutPut(AXP192_DCDC1, AXP202_ON);
-        axp.setDCDC1Voltage(3300);
+        axp.setDCDC1Voltage(3300);  //esp32 core VDD    3v3
+        axp.setLDO2Voltage(3300);   //LORA VDD set 3v3
+        axp.setLDO3Voltage(3300);   //GPS VDD      3v3
 
         Serial.printf("DCDC1: %s\n", axp.isDCDC1Enable() ? "ENABLE" : "DISABLE");
         Serial.printf("DCDC2: %s\n", axp.isDCDC2Enable() ? "ENABLE" : "DISABLE");
