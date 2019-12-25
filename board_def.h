@@ -1,8 +1,8 @@
 #ifndef BOARD_DEF_H
 #define BOARD_DEF_H
 
-// #define T_BEAM_V07
-#define T_BEAM_V10
+#define T_BEAM_V07
+// #define T_BEAM_V10
 
 #define ENABLE_SSD1306
 #define ENABLE_GPS
@@ -46,9 +46,11 @@
 #if defined(T_BEAM_V07)
 #define GPS_RX_PIN 12
 #define GPS_TX_PIN 15
+#define BUTTON_PIN 39
 #elif defined(T_BEAM_V10)
 #define GPS_RX_PIN 34
 #define GPS_TX_PIN 12
+#define BUTTON_PIN 38
 #endif
 #else
 UBLOX_GPS_OBJECT()

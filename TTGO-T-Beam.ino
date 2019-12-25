@@ -5,7 +5,10 @@
 #include <Button2.h>
 #include <Ticker.h>
 
+#ifndef AXP192_SLAVE_ADDRESS
 #define AXP192_SLAVE_ADDRESS    0x34
+#endif
+
 SSD1306_OBJECT();
 UBLOX_GPS_OBJECT();
 
@@ -22,7 +25,7 @@ char buff[5][256];
 
 uint64_t gpsSec = 0;
 bool pmu_irq = false;
-#define BUTTONS_MAP {38}
+#define BUTTONS_MAP {BUTTON_PIN}
 
 Button2 *pBtns = nullptr;
 uint8_t g_btns[] =  BUTTONS_MAP;
@@ -65,13 +68,15 @@ void button_init()
             oled.displayOff();
         }
         Serial.println("Go to Sleep");
-        axp.setChgLEDMode(AXP20X_LED_OFF);
-        axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
-        axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
-        axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
-        // axp.setPowerOutPut(AXP192_DCDC3, AXP202_OFF);
-        axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
-        axp.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
+        if (axp192_found) {
+            axp.setChgLEDMode(AXP20X_LED_OFF);
+            axp.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
+            axp.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
+            axp.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
+            // axp.setPowerOutPut(AXP192_DCDC3, AXP202_OFF);
+            axp.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+            axp.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
+        }
 
         delay(20);
         esp_sleep_enable_ext1_wakeup(GPIO_SEL_38, ESP_EXT1_WAKEUP_ALL_LOW);
@@ -140,7 +145,6 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int1
 //PMU
 void drawFrame4(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
-    static uint8_t n = 0;
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     if (!axp192_found) {
@@ -210,7 +214,6 @@ void setup()
     playSound();
     playSound();
 
-    axp192_found = 1;
     if (axp192_found) {
         if (!axp.begin(Wire, AXP192_SLAVE_ADDRESS)) {
             Serial.println("AXP192 Begin PASS");
@@ -340,7 +343,7 @@ void loop()
                 snprintf(buff[0], sizeof(buff[0]), "UTC:%d:%d:%d", gps.time.hour(), gps.time.minute(), gps.time.second());
                 snprintf(buff[1], sizeof(buff[1]), "LNG:%.4f", gps.location.lng());
                 snprintf(buff[2], sizeof(buff[2]), "LAT:%.4f", gps.location.lat());
-                snprintf(buff[3], sizeof(buff[3]), "satellites:%lu", gps.satellites.value());
+                snprintf(buff[3], sizeof(buff[3]), "satellites:%u", gps.satellites.value());
                 if (!ssd1306_found) {
                     Serial.println(buff[0]);
                     Serial.println(buff[1]);
@@ -367,7 +370,7 @@ void loop()
             LoRa.print(sendCount);
             LoRa.endPacket();
             ++sendCount;
-            snprintf(buff[1], sizeof(buff[1]), "Send %lu", sendCount);
+            snprintf(buff[1], sizeof(buff[1]), "Send %u", sendCount);
             loraMap = millis();
             if (!ssd1306_found) {
                 Serial.println(buff[1]);
