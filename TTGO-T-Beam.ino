@@ -79,7 +79,7 @@ void button_init()
         }
 
         delay(20);
-        esp_sleep_enable_ext1_wakeup(GPIO_SEL_38, ESP_EXT1_WAKEUP_ALL_LOW);
+        esp_sleep_enable_ext1_wakeup(BUTTON_PIN_MASK, ESP_EXT1_WAKEUP_ALL_LOW);
         esp_deep_sleep_start();
     });
 }

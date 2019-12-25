@@ -47,10 +47,12 @@
 #define GPS_RX_PIN 12
 #define GPS_TX_PIN 15
 #define BUTTON_PIN 39
+#define BUTTON_PIN_MASK GPIO_SEL_39
 #elif defined(T_BEAM_V10)
 #define GPS_RX_PIN 34
 #define GPS_TX_PIN 12
 #define BUTTON_PIN 38
+#define BUTTON_PIN_MASK GPIO_SEL_38
 #endif
 #else
 UBLOX_GPS_OBJECT()
