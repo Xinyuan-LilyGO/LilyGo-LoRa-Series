@@ -1,15 +1,14 @@
 #ifndef BOARD_DEF_H
 #define BOARD_DEF_H
 
-#define T_BEAM_V07
-// #define T_BEAM_V10
+// #define T_BEAM_V07
+#define T_BEAM_V10
 
 #define ENABLE_SSD1306
 #define ENABLE_GPS
 #define ENABLE_LOAR
 
 
-//ssd1306 oled显示屏
 #define SSD1306_ADDRESS 0x3c
 #ifdef ENABLE_SSD1306
 #include "SSD1306.h"
@@ -20,7 +19,6 @@
 #define SSD1306_OBJECT()
 #endif
 
-//lora模块
 #ifdef ENABLE_LOAR
 #include <LoRa.h>
 
@@ -33,8 +31,6 @@
 #define LORA_DI0     26
 #define LORA_RST     23
 
-//设置为1则设定为lora 发送， 0 则为接收
-#define LORA_SENDER     1
 #endif
 
 //GPS模块

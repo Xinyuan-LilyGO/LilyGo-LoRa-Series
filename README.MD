@@ -2,7 +2,7 @@ TTGO-T-Beam
 =====================
 
 
-![](images/1.png)
+![](image/product.jpg)
 
 
 ## PinOut
@@ -43,13 +43,11 @@ TTGO-T-Beam
 - The boot will scan the I2C device. If the OLED is found, all log information will be displayed in the OLED. If not, it will be printed on the serial port.
 
 ## How to use
-- The repository depends on other library files, please recursively clone the repository
-    ```
-    git clone --recursive https://github.com/Xinyuan-LilyGO/TTGO-T-Beam.git
-    ```
+- For dependencies on other files please see `platformio.ini`
+- Regarding the board, you can modify the board version and lora frequency in `board_def.h`
+- If you use the Arduino IDE for compilation, please store `board_def.h` and `LilyGO-T-Beam.ino` in the same directory, and the directory folder name must be the same as ino
 
-- Then move the library files in the `libraries` directory to
-    ```
-    C:\Users\<UserName>\Documents\Arduino\libraries
-    ```
-- In the Arduino board select `T-Beam`
+## Deepsleep
+- Regarding deep sleep, except for DCDC3, power off all channels of AXP192, the current consumption is about 0.9mA
+
+![](image/deepsleep.jpg)

@@ -13,7 +13,6 @@ SSD1306_OBJECT();
 UBLOX_GPS_OBJECT();
 
 AXP20X_Class axp;
-static String recv = "";
 uint8_t program = 0;
 bool ssd1306_found = false;
 bool axp192_found = false;
@@ -32,6 +31,9 @@ uint8_t g_btns[] =  BUTTONS_MAP;
 #define ARRARY_SIZE(a)   (sizeof(a) / sizeof(a[0]))
 
 Ticker btnTick;
+
+String baChStatus = "No charging";
+String recv = "";
 
 /************************************
  *      BUTTON
@@ -84,10 +86,6 @@ void button_init()
     });
 }
 
-/************************************
- *      SCREEN
- * *********************************/
-String baChStatus = "No charging";
 void msOverlay(OLEDDisplay *display, OLEDDisplayUiState *state)
 {
     static char volbuffer[128];
@@ -99,20 +97,19 @@ void msOverlay(OLEDDisplay *display, OLEDDisplayUiState *state)
     if (axp.isBatteryConnect()) {
         snprintf(volbuffer, sizeof(volbuffer), "%.2fV/%.2fmA", axp.getBattVoltage() / 1000.0, axp.isChargeing() ? axp.getBattChargeCurrent() : axp.getBattDischargeCurrent());
         display->drawString(62, 0, volbuffer);
+    } else {
+        multi_heap_info_t info;
+        heap_caps_get_info(&info, MALLOC_CAP_INTERNAL);
+        snprintf(volbuffer, sizeof(volbuffer), "%u/%uKB",  info.total_allocated_bytes / 1024, info.total_free_bytes / 1024);
+        display->drawString(75, 0, volbuffer);
     }
 }
-
-
-
-
-
 
 void drawFrame1(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
 
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
-
 
     if (!gps.location.isValid()) {
         display->drawString(64 + x, 11 + y, buff[0]);
@@ -187,12 +184,67 @@ void ssd1306_init()
 }
 
 
+
+void scanI2Cdevice(void)
+{
+    byte err, addr;
+    int nDevices = 0;
+    for (addr = 1; addr < 127; addr++) {
+        Wire.beginTransmission(addr);
+        err = Wire.endTransmission();
+        if (err == 0) {
+            Serial.print("I2C device found at address 0x");
+            if (addr < 16)
+                Serial.print("0");
+            Serial.print(addr, HEX);
+            Serial.println(" !");
+            nDevices++;
+
+            if (addr == SSD1306_ADDRESS) {
+                ssd1306_found = true;
+                Serial.println("ssd1306 display found");
+            }
+            if (addr == AXP192_SLAVE_ADDRESS) {
+                axp192_found = true;
+                Serial.println("axp192 PMU found");
+            }
+        } else if (err == 4) {
+            Serial.print("Unknow error at address 0x");
+            if (addr < 16)
+                Serial.print("0");
+            Serial.println(addr, HEX);
+        }
+    }
+    if (nDevices == 0)
+        Serial.println("No I2C devices found\n");
+    else
+        Serial.println("done\n");
+}
+
+
+
 void playSound()
 {
 #ifdef ENABLE_BUZZER
     ledcWriteTone(0, 1000);
     delay(200);
     ledcWriteTone(0, 0);
+#endif
+}
+
+
+
+void lora_init()
+{
+#ifdef ENABLE_LOAR
+    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
+    LoRa.setPins(LORA_SS, LORA_RST, LORA_DI0);
+    if (!LoRa.begin(BAND))
+        Serial.println("LORA Begin FAIL");
+    else {
+        loraBeginOK = true;
+        Serial.println("LORA Begin PASS");
+    }
 #endif
 }
 
@@ -281,25 +333,10 @@ void setup()
 }
 
 
-void lora_init()
-{
-#ifdef ENABLE_LOAR
-    SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
-    LoRa.setPins(LORA_SS, LORA_RST, LORA_DI0);
-    if (!LoRa.begin(BAND))
-        Serial.println("LORA Begin FAIL");
-    else {
-        loraBeginOK = true;
-        Serial.println("LORA Begin PASS");
-    }
-#endif
-}
-
 
 void loop()
 {
-    static uint32_t sendCount = 0;
-    static uint64_t loraMap = 0;
+    static uint32_t loraMap = 0;
     static uint64_t gpsMap = 0;
 
     if (axp192_found && pmu_irq) {
@@ -331,6 +368,7 @@ void loop()
         }
         if (!gps.location.isValid()) {
             if (millis() - gpsMap > 1000) {
+                snprintf(buff[0], sizeof(buff[0]), "T-Beam GPS");
                 snprintf(buff[1], sizeof(buff[1]), "Positioning(%llu)", gpsSec++);
                 if (!ssd1306_found) {
                     Serial.println(buff[1]);
@@ -367,10 +405,9 @@ void loop()
         if (millis() - loraMap > 3000) {
             LoRa.beginPacket();
             LoRa.print("lora: ");
-            LoRa.print(sendCount);
+            LoRa.print(loraMap);
             LoRa.endPacket();
-            ++sendCount;
-            snprintf(buff[1], sizeof(buff[1]), "Send %u", sendCount);
+            snprintf(buff[1], sizeof(buff[1]), "Send %u", loraMap);
             loraMap = millis();
             if (!ssd1306_found) {
                 Serial.println(buff[1]);
@@ -417,40 +454,3 @@ void loop()
         }
     }
 }
-
-void scanI2Cdevice(void)
-{
-    byte err, addr;
-    int nDevices = 0;
-    for (addr = 1; addr < 127; addr++) {
-        Wire.beginTransmission(addr);
-        err = Wire.endTransmission();
-        if (err == 0) {
-            Serial.print("I2C device found at address 0x");
-            if (addr < 16)
-                Serial.print("0");
-            Serial.print(addr, HEX);
-            Serial.println(" !");
-            nDevices++;
-
-            if (addr == SSD1306_ADDRESS) {
-                ssd1306_found = true;
-                Serial.println("ssd1306 display found");
-            }
-            if (addr == AXP192_SLAVE_ADDRESS) {
-                axp192_found = true;
-                Serial.println("axp192 PMU found");
-            }
-        } else if (err == 4) {
-            Serial.print("Unknow error at address 0x");
-            if (addr < 16)
-                Serial.print("0");
-            Serial.println(addr, HEX);
-        }
-    }
-    if (nDevices == 0)
-        Serial.println("No I2C devices found\n");
-    else
-        Serial.println("done\n");
-}
-
