@@ -22,11 +22,11 @@ TTGO-T-Beam
 | USER BUTTON | 36             | N/A        |
 
 ## Power Control Channel
-| Modules | T_BEAM_V10 | T_BEAM_V07 |
-| ------- | ---------- | ---------- |
-| GPS     | LDO3       | No supoort |
-| LORA    | LDO2       | No supoort |
-| OLED    | DCDC1      | No supoort |
+| Modules | T_BEAM_V10/V1.1 | T_BEAM_V07 |
+| ------- | --------------- | ---------- |
+| GPS     | LDO3            | No supoort |
+| LORA    | LDO2            | No supoort |
+| OLED    | DCDC1           | No supoort |
 
 
 ### Button Map
