@@ -1,7 +1,6 @@
 TTGO-T-Beam
 =====================
 
-
 ![](image/product.jpg)
 
 
@@ -12,7 +11,9 @@ TTGO-T-Beam
 | LORA_MISO   | 19             | 19         |
 | LORA_MOSI   | 27             | 27         |
 | LORA_SS     | 18             | 18         |
-| LORA_DI0    | 26             | 26         |
+| LORA_DIO0   | 26             | 26         |
+| LORA_DIO1   | 33             | 33         |
+| LORA_DIO2   | 32             | 32         |
 | LORA_RST    | 23             | 23         |
 | GPS_RX_PIN  | 34             | 12         |
 | GPS_TX_PIN  | 12             | 15         |
@@ -37,7 +38,7 @@ TTGO-T-Beam
 
 
 ##  Button Function:
-- Click button 2 will cycle the motherboard function, the default start to enable GPS positioning, the second click will be set to lora send, the third click will be set to lora receive, long press for two seconds and then release, will enter deep sleep
+- Click button 2 will cycle the user function, the default start to enable GPS positioning, the second click will be set to lora send, the third click will be set to lora receive, long press for two seconds and then release, will enter deep sleep
 
 ## About OLED:
 - The boot will scan the I2C device. If the OLED is found, all log information will be displayed in the OLED. If not, it will be printed on the serial port.

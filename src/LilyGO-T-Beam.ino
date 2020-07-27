@@ -1,9 +1,13 @@
+/*
+*   This factory is just to test LilyGo T-Beam series hardware
+*   Created by Lewis he
+* */
+
 #include "board_def.h"
 #include <WiFi.h>
 #include <Wire.h>
 #include "axp20x.h"
 #include <Button2.h>
-#include <Ticker.h>
 
 #ifndef AXP192_SLAVE_ADDRESS
 #define AXP192_SLAVE_ADDRESS    0x34
@@ -18,8 +22,6 @@ bool ssd1306_found = false;
 bool axp192_found = false;
 bool loraBeginOK = false;
 
-uint64_t dispMap = 0;
-String dispInfo;
 char buff[5][256];
 
 uint64_t gpsSec = 0;
@@ -30,10 +32,18 @@ Button2 *pBtns = nullptr;
 uint8_t g_btns[] =  BUTTONS_MAP;
 #define ARRARY_SIZE(a)   (sizeof(a) / sizeof(a[0]))
 
-Ticker btnTick;
 
 String baChStatus = "No charging";
 String recv = "";
+
+// flag to indicate that a packet was received
+bool receivedFlag = false;
+
+// disable interrupt when it's not needed
+bool enableInterrupt = true;
+
+RADIO_TYPE radio = new Module(LORA_SS, LORA_DIO1, LORA_RST, LORA_BUSY);
+
 
 /************************************
  *      BUTTON
@@ -46,6 +56,17 @@ void button_callback(Button2 &b)
                 ui.nextFrame();
             }
             program = program + 1 > 2 ? 0 : program + 1;
+            if (program == 2) {
+                Serial.print(F("[RADIO] Starting to listen ... "));
+                int state = radio.startReceive();
+                if (state == ERR_NONE) {
+                    Serial.println(F("success!"));
+                } else {
+                    Serial.print(F("failed, code "));
+                    Serial.println(state);
+                    while (true);
+                }
+            }
         }
     }
 }
@@ -139,21 +160,8 @@ void drawFrame3(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int1
     display->drawString(64 + x, 35 + y, buff[1]);
 }
 
-//PMU
-void drawFrame4(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
-{
-    display->setFont(ArialMT_Plain_10);
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
-    if (!axp192_found) {
-        display->drawString(64 + x, 22 + y, "PMU Begin FAIL");
-        return;
-    }
-    //TODO::
-    display->drawString(64 + x, 22 + y, "Empty");
-}
 
-
-FrameCallback frames[] = {drawFrame1, drawFrame2, drawFrame3, /*drawFrame4*/};
+FrameCallback frames[] = {drawFrame1, drawFrame2, drawFrame3};
 OverlayCallback overlays[] = { msOverlay };
 
 void ssd1306_init()
@@ -221,8 +229,6 @@ void scanI2Cdevice(void)
         Serial.println("done\n");
 }
 
-
-
 void playSound()
 {
 #ifdef ENABLE_BUZZER
@@ -232,20 +238,38 @@ void playSound()
 #endif
 }
 
-
+// this function is called when a complete packet
+// is received by the module
+// IMPORTANT: this function MUST be 'void' type
+//            and MUST NOT have any arguments!
+void setFlag(void)
+{
+    // check if the interrupt is enabled
+    if (!enableInterrupt) {
+        return;
+    }
+    // we got a packet, set the flag
+    receivedFlag = true;
+}
 
 void lora_init()
 {
-#ifdef ENABLE_LOAR
     SPI.begin(LORA_SCK, LORA_MISO, LORA_MOSI, LORA_SS);
-    LoRa.setPins(LORA_SS, LORA_RST, LORA_DI0);
-    if (!LoRa.begin(BAND))
-        Serial.println("LORA Begin FAIL");
-    else {
+    Serial.print(F("[Radio] Initializing ... "));
+    int state = radio.begin(BAND);
+    if (state == ERR_NONE) {
         loraBeginOK = true;
-        Serial.println("LORA Begin PASS");
+        Serial.println(F("success!"));
+    } else {
+        Serial.print(F("failed, code "));
+        Serial.println(state);
+        while (true);
     }
-#endif
+
+    // set the function that will be called
+    // when new packet is received
+    radio.setDio1Action(setFlag);
+
 }
 
 void setup()
@@ -329,13 +353,14 @@ void setup()
     lora_init();
 #endif
 
-    btnTick.attach_ms(20, button_loop);
 }
 
 
 
 void loop()
 {
+    button_loop();
+
     static uint32_t loraMap = 0;
     static uint64_t gpsMap = 0;
 
@@ -403,10 +428,47 @@ void loop()
         }
 
         if (millis() - loraMap > 3000) {
-            LoRa.beginPacket();
-            LoRa.print("lora: ");
-            LoRa.print(loraMap);
-            LoRa.endPacket();
+            int transmissionState = ERR_NONE;
+            transmissionState = radio.startTransmit(String(loraMap).c_str());
+            // check if the previous transmission finished
+            if (receivedFlag) {
+                // disable the interrupt service routine while
+                // processing the data
+                enableInterrupt = false;
+                // reset flag
+                receivedFlag = false;
+                if (transmissionState == ERR_NONE) {
+                    // packet was successfully sent
+                    Serial.println(F("transmission finished!"));
+                    // NOTE: when using interrupt-driven transmit method,
+                    //       it is not possible to automatically measure
+                    //       transmission data rate using getDataRate()
+
+                } else {
+                    Serial.print(F("failed, code "));
+                    Serial.println(transmissionState);
+                }
+                // wait a second before transmitting again
+                // delay(1000);
+
+                // send another one
+                Serial.print(F("[RADIO] Sending another packet ... "));
+
+                // you can transmit C-string or Arduino string up to
+                // 256 characters long
+                transmissionState = radio.startTransmit(String(loraMap).c_str());
+
+                // you can also transmit byte array up to 256 bytes long
+                /*
+                  byte byteArr[] = {0x01, 0x23, 0x45, 0x67,
+                                    0x89, 0xAB, 0xCD, 0xEF};
+                  int state = radio.startTransmit(byteArr, 8);
+                */
+
+                // we're ready to send more packets,
+                // enable interrupt service routine
+                enableInterrupt = true;
+            }
             snprintf(buff[1], sizeof(buff[1]), "Send %u", loraMap);
             loraMap = millis();
             if (!ssd1306_found) {
@@ -423,34 +485,65 @@ void loop()
             return;
         }
         snprintf(buff[0], sizeof(buff[0]), "T-Beam Lora Received");
-        if (LoRa.parsePacket()) {
-            recv = "";
-            while (LoRa.available()) {
-                recv += (char)LoRa.read();
+
+        // check if the flag is set
+        if (receivedFlag) {
+            // disable the interrupt service routine while
+            // processing the data
+            enableInterrupt = false;
+
+            // reset flag
+            receivedFlag = false;
+
+            // you can read received data as an Arduino String
+            int state = radio.readData(recv);
+
+            // you can also read received data as byte array
+            /*
+              byte byteArr[8];
+              int state = radio.readData(byteArr, 8);
+            */
+
+            if (state == ERR_NONE) {
+                // packet was successfully received
+                Serial.println(F("[RADIO] Received packet!"));
+
+                // print data of the packet
+                Serial.print(F("[RADIO] Data:\t\t"));
+                Serial.println(recv);
+
+                // print RSSI (Received Signal Strength Indicator)
+                Serial.print(F("[RADIO] RSSI:\t\t"));
+                Serial.print(radio.getRSSI());
+                Serial.println(F(" dBm"));
+                snprintf(buff[1], sizeof(buff[1]), "rssi:%.2f dBm", radio.getRSSI());
+
+                // print SNR (Signal-to-Noise Ratio)
+                Serial.print(F("[RADIO] SNR:\t\t"));
+                Serial.print(radio.getSNR());
+                Serial.println(F(" dB"));
+
+            } else if (state == ERR_CRC_MISMATCH) {
+                // packet was received, but is malformed
+                Serial.println(F("CRC error!"));
+
+            } else {
+                // some other error occurred
+                Serial.print(F("failed, code "));
+                Serial.println(state);
+
             }
-            if (!ssd1306_found) {
-                Serial.printf("Lora Received:%s - rssi:%d\n", recv.c_str(), LoRa.packetRssi());
-            }
-        } else {
-            // if (!ssd1306_found) {
-            //     Serial.println("Wait for received message");
-            //     delay(500);
-            // }
+
+            // put module back to listen mode
+            radio.startReceive();
+
+            // we're ready to receive more packets,
+            // enable interrupt service routine
+            enableInterrupt = true;
         }
-        snprintf(buff[1], sizeof(buff[1]), "rssi:%d", LoRa.packetRssi());
         break;
     }
-    /*
     if (ssd1306_found) {
-        if (ui.update()) {
-            button_loop();
-        }
-    } else {
-        button_loop();
-    }
-     */
-    if (ssd1306_found) {
-        if (ui.update()) {
-        }
+        ui.update();
     }
 }

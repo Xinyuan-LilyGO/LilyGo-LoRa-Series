@@ -7,3 +7,4 @@
 test
 .gitignore
 .travis.yml
+lib
