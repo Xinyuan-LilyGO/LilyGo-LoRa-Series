@@ -49,6 +49,6 @@ TTGO-T-Beam
 - If you use the Arduino IDE for compilation, please store `board_def.h` and `LilyGO-T-Beam.ino` in the same directory, and the directory folder name must be the same as ino
 
 ## Deepsleep
-- Regarding deep sleep, except for DCDC3, power off all channels of AXP192, the current consumption is about 0.9mA
+- Regarding deep sleep, except for DCDC3, power off all channels of AXP192, the current consumption is about 580μA
 
 ![](image/deepsleep.jpg)
