@@ -1,8 +1,0 @@
-目标文件:D:\TTGO-Series\TTGO-T-Beam\bin\915\TBeam_915.bin   大小:0x000515F0
-各部分大小如下:
-
-索引                        文件名                                            大小              偏移量            强制插入
- 1      D:\TTGO-Series\TTGO-T-Beam\bin\boot_app0.bin                        0x00002000        0x0000E000             是
- 2      D:\TTGO-Series\TTGO-T-Beam\bin\bootloader_dio_80m.bin               0x00003D30        0x00001000             是
- 3      D:\TTGO-Series\TTGO-T-Beam\bin\915\TTGO-T-Beam.ino.bin              0x000415F0        0x00010000             是
- 4      D:\TTGO-Series\TTGO-T-Beam\bin\915\TTGO-T-Beam.ino.partitions.bin        0x00000C00        0x00008000             是

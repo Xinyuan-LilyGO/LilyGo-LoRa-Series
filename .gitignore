@@ -8,3 +8,4 @@ test
 .gitignore
 .travis.yml
 lib
+src

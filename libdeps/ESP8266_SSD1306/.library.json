@@ -1,0 +1,37 @@
+{
+    "name": "ESP8266_SSD1306", 
+    "repository": {
+        "url": "https://github.com/ThingPulse/esp8266-oled-ssd1306", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "espressif32", 
+        "espressif8266"
+    ], 
+    "frameworks": [
+        "arduino"
+    ], 
+    "version": "4.1.0", 
+    "authors": [
+        {
+            "maintainer": false, 
+            "name": "Daniel Eichhorn, ThingPulse", 
+            "url": "https://thingpulse.com", 
+            "email": "squix78@gmail.com"
+        }, 
+        {
+            "url": null, 
+            "maintainer": false, 
+            "email": "fabrice@weinberg.me", 
+            "name": "Fabrice Weinberg"
+        }
+    ], 
+    "keywords": [
+        "oled", 
+        "i2c", 
+        "display", 
+        "ssd1306"
+    ], 
+    "id": 562, 
+    "description": "I2C display driver for SSD1306 OLED displays connected to ESP8266, ESP32, Mbed-OS"
+}
