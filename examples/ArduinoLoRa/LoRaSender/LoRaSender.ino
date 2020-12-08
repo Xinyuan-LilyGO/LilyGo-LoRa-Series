@@ -1,5 +1,5 @@
 #include <LoRa.h>
-#include "utilities.h"
+#include "boards.h"
 
 int counter = 0;
 
@@ -11,7 +11,7 @@ void setup()
 
     Serial.println("LoRa Sender");
     LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DI0_PIN);
-    if (!LoRa.begin(868E6)) {
+    if (!LoRa.begin(LoRa_frequency)) {
         Serial.println("Starting LoRa failed!");
         while (1);
     }
@@ -28,7 +28,16 @@ void loop()
     LoRa.print(counter);
     LoRa.endPacket();
 
+#ifdef HAS_DISPLAY
+    if (u8g2) {
+        char buf[256];
+        u8g2->clearBuffer();
+        u8g2->drawStr(0, 12, "Transmitting: OK!");
+        snprintf(buf, sizeof(buf), "Sending: %d", counter);
+        u8g2->drawStr(0, 30, buf);
+        u8g2->sendBuffer();
+    }
+#endif
     counter++;
-
     delay(5000);
 }

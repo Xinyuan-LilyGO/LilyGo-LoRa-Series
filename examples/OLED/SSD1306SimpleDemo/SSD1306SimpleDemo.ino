@@ -35,7 +35,7 @@
 #include "SSD1306Wire.h"        // legacy: #include "SSD1306.h"
 // Optionally include custom images
 #include "images.h"
-#include "utilities.h"
+#include "boards.h"
 
 
 SSD1306Wire display(0x3c, I2C_SDA, I2C_SCL);

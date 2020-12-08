@@ -34,7 +34,7 @@
 #include <Wire.h>               // Only needed for Arduino 1.6.5 and earlier
 #include "SSD1306Wire.h"        // legacy: #include "SSD1306.h"
 #include "images.h"
-#include "utilities.h"
+#include "boards.h"
 #include "OLEDDisplayUi.h"
 
 SSD1306Wire display(0x3c, I2C_SDA, I2C_SCL);
@@ -127,8 +127,8 @@ void setup()
     ui.setTargetFPS(60);
 
     // Customize the active and inactive symbol
-    ui.setActiveSymbol(activeSymbol);
-    ui.setInactiveSymbol(inactiveSymbol);
+    // ui.setActiveSymbol(activeSymbol);
+    // ui.setInactiveSymbol(inactiveSymbol);
 
     // You can change this to
     // TOP, LEFT, BOTTOM, RIGHT

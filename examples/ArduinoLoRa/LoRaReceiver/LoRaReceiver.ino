@@ -1,6 +1,6 @@
 
 #include <LoRa.h>
-#include "utilities.h"
+#include "boards.h"
 
 void setup()
 {
@@ -11,7 +11,7 @@ void setup()
     Serial.println("LoRa Receiver");
 
     LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DI0_PIN);
-    if (!LoRa.begin(868E6)) {
+    if (!LoRa.begin(LoRa_frequency)) {
         Serial.println("Starting LoRa failed!");
         while (1);
     }
@@ -25,13 +25,27 @@ void loop()
         // received a packet
         Serial.print("Received packet '");
 
+        String recv = "";
         // read packet
         while (LoRa.available()) {
-            Serial.print((char)LoRa.read());
+            recv += (char)LoRa.read();
         }
+
+        Serial.println(recv);
 
         // print RSSI of packet
         Serial.print("' with RSSI ");
         Serial.println(LoRa.packetRssi());
+#ifdef HAS_DISPLAY
+        if (u8g2) {
+            u8g2->clearBuffer();
+            char buf[256];
+            u8g2->drawStr(0, 12, "Received OK!");
+            u8g2->drawStr(0, 26, recv.c_str());
+            snprintf(buf, sizeof(buf), "RSSI:%.2f", LoRa.packetRssi());
+            u8g2->drawStr(0, 40, buf);
+            u8g2->sendBuffer();
+        }
+#endif
     }
 }

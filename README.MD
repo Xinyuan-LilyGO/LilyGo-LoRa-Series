@@ -7,20 +7,59 @@
 
 1. Copy all folders in the `libdeps` directory to the `~/Arduino/libraries` directory, and put them in `"Documents/Arduino/libraries"` for Windons users
 2. Open the corresponding example
-3. Choose `TTGO T-Beam` for the board
+3. `T-Beam` users can choose `TTGO T-Beam`, `lora32(T3)` users can choose `ESP32 Dev Module`
 4. Select the port of the board in the port
-5. The default version is 1.0/1.1. If the purchased version is v0.7, please comment out `T_BEAM_V10` in the example `utilities.h`, and uncomment `T_BEAM_V07`, if you don’t know the version, please ask customer service, or Check the silkscreen on the board
+5. For other examples except the `GPS` directory, please **uncomment** in the upper part of `utilities.h` according to your board model, otherwise the compilation will report an error
 6. Upload
-
 
 <h3 align = "left">Product 📷:</h3>
 
-|          Product          |                           Product  Link                           |
-| :-----------------------: | :---------------------------------------------------------------: |
-| [T-Beam SX1278/SX1276 ]() |  [Product link](https://pt.aliexpress.com/item/32967228739.html)  |
-|     [T-Beam SX1262]()     | [Product link](https://pt.aliexpress.com/item/4001287221970.html) |
+|           Product           |                           Product  Link                           |                                                                   Schematic                                                                    |
+| :-------------------------: | :---------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------: |
+|    [T-Beam SX1278/76 ]()    |  [Product link](https://pt.aliexpress.com/item/32967228739.html)  | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) |
+|      [T-Beam SX1262]()      | [Product link](https://pt.aliexpress.com/item/4001287221970.html) | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) |
+|   [LoRa32 V1.0 SX1276]()    |  [Product link](https://pt.aliexpress.com/item/32842155838.html)  |                                                                       ❌                                                                        |
+|   [LoRa32 V1.0 SX1278]()    |  [Product link](https://pt.aliexpress.com/item/32842155838.html)  |                                                                       ❌                                                                        |
+|   [LoRa32 V1.3 SX1276]()    | [Product link](https://pt.aliexpress.com/item/4000628100802.html) |                                                      [LoRa32 V1.3](schematic/T3_V1.3.pdf)                                                      |
+|       [LoRa32 V2.0]()       |  [Product link](https://pt.aliexpress.com/item/32847443952.html)  |                                                      [LoRa32 V2.0](schematic/T3_V2.0.pdf)                                                      |
+| [LoRa32 V2.1_1.6 Version]() |  [Product link](https://pt.aliexpress.com/item/32872078587.html)  |                                                    [LoRa32 V2.1_1.6](schematic/T3_V1.6.pdf)                                                    |
 
 
+
+## Example description
+
+```
+examples
+├── ArduinoLoRa                                 # Just only support SX1276/SX1278 radio module
+│   ├── LoRaReceiver                            
+│   └── LoRaSender
+├── GPS                                         # T-Beam GPS demo examples
+│   ├── Example1_BasicNMEARead
+│   ├── Example2_NMEAParsing
+│   ├── Example3_FactoryDefaultsviaSerial
+│   ├── TinyGPS_Example
+│   └── TinyGPS_KitchenSink
+├── OLED                                        # OLED demo examples    
+│   ├── SSD1306SimpleDemo
+│   └── SSD1306UiDemo   
+└── RadioLibExamples                            # RadioLib examples,Support SX1276/78/62
+    ├── SX1262
+    │   ├── SX1262_Receive_Interrupt
+    │   └── SX1262_Transmit_Interrupt
+    ├── SX1276
+    │   ├── SX1276_Receive_Interrupt
+    │   └── SX1276_Transmit_Interrupt
+    ├── SX1278
+    │   ├── SX1278_Receive
+    │   ├── SX1278_Receive_Interrupt
+    │   ├── SX1278_Transmit
+    │   └── SX1278_Transmit_Interrupt
+    └── TBeamAllFunction                        # T-Beam all function example
+```
+
+<h3 align = "left">PinOut :</h3>
+
+- See [utilities.h](examples/ArduinoLoRa/LoRaReceiver/utilities.h)
 
 <h3 align = "left">Application :</h3>
 
@@ -31,48 +70,10 @@
 <h3 align = "left">Datasheet :</h3>
 
 - [AXP192](http://www.x-powers.com/en.php/Info/product_detail/article_id/29)
-- [SX1262 LoRa](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
-- [SX1278 LoRa](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
-- [SX1276 LoRa](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
+- [SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
+- [SX1278](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
+- [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
 - [GSP NEO-6/NEO-8](https://www.u-blox.com/en/product/neo-6-series)
 - [GPS Air530]()
-
-<h3 align = "left">Schematic :</h3>
-
-- [TBeam_V0.7 Schematic](schematic/LilyGo_TBeam_V0.7.pdf)
-- [TBeam_V1.0 Schematic](schematic/LilyGo_TBeam_V1.0.pdf)
-- [TBeam_V1.1 Schematic](schematic/LilyGo_TBeam_V1.1.pdf)
-  
-
-<h3 align = "left">PinOut :</h3>
-
-
-| Pins        | T_BEAM(AXP192) | T_BEAM_V07 |
-| ----------- | -------------- | ---------- |
-| LORA_SCK    | 5              | 5          |
-| LORA_MISO   | 19             | 19         |
-| LORA_MOSI   | 27             | 27         |
-| LORA_SS     | 18             | 18         |
-| LORA_DIO0   | 26             | 26         |
-| LORA_DIO1   | 33             | 33         |
-| LORA_DIO2   | 32             | 32         |
-| LORA_RST    | 23             | 23         |
-| GPS_RX_PIN  | 34             | 12         |
-| GPS_TX_PIN  | 12             | 15         |
-| I2C_SDA     | 21             | 21         |
-| I2C_SCL     | 22             | 22         |
-| PMU_IRQ     | 35             | N/A        |
-| USER BUTTON | 36             | N/A        |
-
-
-<h3 align = "left">Power Control Channel :</h3>
-
-| Modules | T_BEAM_V10/V1.1 | T_BEAM_V07 |
-| ------- | --------------- | ---------- |
-| GPS     | LDO3            | No supoort |
-| LORA    | LDO2            | No supoort |
-| OLED    | DCDC1           | No supoort |
-
-
 
 
