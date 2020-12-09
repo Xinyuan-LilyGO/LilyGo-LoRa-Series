@@ -7,7 +7,9 @@
 // #define LILYGO_T3_V1_0
 // #define LILYGO_T3_V1_6
 // #define LILYGO_T3_V2_0
+// #define LILYGO_T_MOTION_S76G
 
+// #define LILYGO_T_MOTION_S78G         //Not support
 /*
 * The default LMIC_Arduino uses the 868MHz configuration,
 * you need to change the frequency,
@@ -137,6 +139,34 @@
 
 #define HAS_DISPLAY
 #define HAS_SDCARD
+
+#elif defined(LILYGO_T_MOTION_S76G)
+#define RADIO_SCLK_PIN                                  PB13
+#define RADIO_MISO_PIN                                  PB14
+#define RADIO_MOSI_PIN                                  PB15
+#define RADIO_CS_PIN                                    PB12
+#define RADIO_RST_PIN                                   PB10
+
+#define RADIO_DIO0_PIN                                  PB11
+#define RADIO_DIO1_PIN                                  PC13
+#define RADIO_DIO2_PIN                                  PB9
+#define RADIO_DIO3_PIN                                  PB4
+#define RADIO_DIO4_PIN                                  PB3
+#define RADIO_DIO5_PIN                                  PA15
+
+#define RADIO_SWITCH_PIN                                PA1 //1:Rx, 0:Tx
+
+#define GPS_RST_PIN                                     PB2
+#define GPS_RX_PIN                                      PC11
+#define GPS_TX_PIN                                      PC10
+#define GPS_ENABLE_PIN                                  PC6
+#define GPS_BAUD_RATE                                   115200
+#define GPS_1PPS_PIN                                    PB5
+
+#define UART_RX_PIN                                     PA10
+#define UART_TX_PIN                                     PA9
+
+#define HAS_GPS
 
 #else
 #error "Please select the version you purchased in utilities.h"

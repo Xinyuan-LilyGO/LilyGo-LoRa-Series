@@ -1,7 +1,10 @@
 
 #include "boards.h"
 
+#ifdef HAS_SDCARD
 SPIClass SDSPI(HSPI);
+#endif
+
 
 #ifdef HAS_DISPLAY
 #include <U8g2lib.h>
@@ -82,16 +85,47 @@ void disablePeripherals()
 }
 #endif
 
+#ifdef STM32L073xx
+HardwareSerial  Serial1(GPS_RX_PIN, GPS_TX_PIN);
+#ifndef USBCON
+HardwareSerial DebugSerial(UART_RX_PIN, UART_TX_PIN);
+#define Serial DebugSerial
+#endif
+#endif
 
 void initBoard()
 {
     Serial.begin(115200);
     Serial.println("initBoard");
-    SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
-    Wire.begin(I2C_SDA, I2C_SCL);
+
+#ifdef STM32L073xx
+    SPI.setMISO(RADIO_MISO_PIN);
+    SPI.setMOSI(RADIO_MOSI_PIN);
+    SPI.setSCLK(RADIO_SCLK_PIN);
+    SPI.begin();
+
+#if defined (I2C_SCL) && defined (I2C_SDA)
+    Wire.setSCL(I2C_SCL);
+    Wire.setSDA(I2C_SDA);
+    Wire.begin();
+#endif
+
+    pinMode(RADIO_SWITCH_PIN, OUTPUT);
+    pinMode(GPS_ENABLE_PIN, OUTPUT);
+
+    digitalWrite(RADIO_SWITCH_PIN, HIGH);
+    digitalWrite(GPS_ENABLE_PIN, HIGH);
 
 #ifdef HAS_GPS
+    Serial1.begin(GPS_BAUD_RATE);
+#endif
+
+#else
+    Wire.begin(I2C_SDA, I2C_SCL);
+    SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
+#ifdef HAS_GPS
     Serial1.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+#endif
 #endif
 
 #if OLED_RST

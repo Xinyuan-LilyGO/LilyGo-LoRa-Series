@@ -15,12 +15,22 @@ static const u1_t PROGMEM APPKEY[16] = {
 };
 
 // Pin mapping
+#ifdef STM32L073xx
 const lmic_pinmap lmic_pins = {
-    .nss = RADIO_CS_PIN,
+    .nss =  RADIO_CS_PIN,
+    .rxtx = RADIO_SWITCH_PIN,
+    .rst =  RADIO_RST_PIN,
+    .dio = {RADIO_DIO0_PIN, RADIO_DIO1_PIN, RADIO_DIO2_PIN},
+    .rx_level = HIGH
+};
+#else
+const lmic_pinmap lmic_pins = {
+    .nss =  RADIO_CS_PIN,
     .rxtx = LMIC_UNUSED_PIN,
-    .rst = RADIO_RST_PIN,
+    .rst =  RADIO_RST_PIN,
     .dio = {RADIO_DI0_PIN, RADIO_DIO1_PIN, RADIO_BUSY_PIN}
 };
+#endif
 
 static osjob_t sendjob;
 static int spreadFactor = DR_SF7;
