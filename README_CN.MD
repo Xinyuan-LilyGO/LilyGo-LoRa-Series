@@ -6,7 +6,7 @@
 
 1. 将 `libdeps` 目录中所有文件夹复制到`~/Arduino/libraries`目录内,Windons用户放在 `"我的文档/Arduino/libraries"`
 2. 打开对应的示例
-3. `T-Beam`用户可以选择`TTGO T-Beam`,`lora32(T3)`用户可以选择`ESP32 Dev Module`
+3. `T-Beam`用户可以选择`TTGO T-Beam`,`lora32(T3)`用户可以选择`ESP32 Dev Module`,`T-Motion` 用户选择 `Nucleo_l073RZ`
 4. 在端口中选择板子的端口
 5. 除了GPS 目录外的其他示例，请在`utilities.h` 中上方根据你的板子型号取消注释,否则编译将报错误
 6. 上传
@@ -15,16 +15,16 @@
 <h3 align = "left">Product 📷:</h3>
 
 
-|           Product           |                           Product  Link                           |                                                                   Schematic                                                                    |
-| :-------------------------: | :---------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------: |
-|    [T-Beam SX1278/76 ]()    |  [Product link](https://pt.aliexpress.com/item/32967228739.html)  | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) |
-|      [T-Beam SX1262]()      | [Product link](https://pt.aliexpress.com/item/4001287221970.html) | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) |
-|   [LoRa32 V1.0 SX1276]()    |  [Product link](https://pt.aliexpress.com/item/32842155838.html)  |                                                                       ❌                                                                        |
-|   [LoRa32 V1.0 SX1278]()    |  [Product link](https://pt.aliexpress.com/item/32842155838.html)  |                                                                       ❌                                                                        |
-|   [LoRa32 V1.3 SX1276]()    | [Product link](https://pt.aliexpress.com/item/4000628100802.html) |                                                      [LoRa32 V1.3](schematic/T3_V1.3.pdf)                                                      |
-|       [LoRa32 V2.0]()       |  [Product link](https://pt.aliexpress.com/item/32847443952.html)  |                                                      [LoRa32 V2.0](schematic/T3_V2.0.pdf)                                                      |
-| [LoRa32 V2.1_1.6 Version]() |  [Product link](https://pt.aliexpress.com/item/32872078587.html)  |                                                    [LoRa32 V2.1_1.6](schematic/T3_V1.6.pdf)                                                    |
-
+|           Product           |                           Product  Link                            |                                                                   Schematic                                                                    |
+| :-------------------------: | :----------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------: |
+|    [T-Beam SX1278/76 ]()    |  [Product link](https://pt.aliexpress.com/item/32967228739.html)   | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) |
+|      [T-Beam SX1262]()      | [Product link](https://pt.aliexpress.com/item/4001287221970.html)  | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) |
+|   [LoRa32 V1.0 SX1276]()    |  [Product link](https://pt.aliexpress.com/item/32842155838.html)   |                                                                       ❌                                                                        |
+|   [LoRa32 V1.0 SX1278]()    |  [Product link](https://pt.aliexpress.com/item/32842155838.html)   |                                                                       ❌                                                                        |
+|   [LoRa32 V1.3 SX1276]()    | [Product link](https://pt.aliexpress.com/item/4000628100802.html)  |                                                      [LoRa32 V1.3](schematic/T3_V1.3.pdf)                                                      |
+|       [LoRa32 V2.0]()       |  [Product link](https://pt.aliexpress.com/item/32847443952.html)   |                                                      [LoRa32 V2.0](schematic/T3_V2.0.pdf)                                                      |
+| [LoRa32 V2.1_1.6 Version]() |  [Product link](https://pt.aliexpress.com/item/32872078587.html)   |                                                    [LoRa32 V2.1_1.6](schematic/T3_V1.6.pdf)                                                    |
+|      [T-Motion S76G]()      | [Product link](https://www.aliexpress.com/item/4000571051141.html) |                                                       [T-Motion](schematic/T-Motion.pdf)                                                       |
 
 
 ## 示例描述
