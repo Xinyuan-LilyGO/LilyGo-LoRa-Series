@@ -53,7 +53,22 @@ void setup()
 
     // initialize SX1262 with default settings
     Serial.print(F("[SX1262] Initializing ... "));
-    int state = radio.begin();
+#ifndef LoRa_frequency
+    int state = radio.begin(868.0);
+#else
+    int state = radio.begin(LoRa_frequency);
+#endif
+
+#ifdef HAS_DISPLAY
+    if (u8g2) {
+        if (state != ERR_NONE) {
+            u8g2->clearBuffer();
+            u8g2->drawStr(0, 12, "Initializing: FAIL!");
+            u8g2->sendBuffer();
+        }
+    }
+#endif
+
     if (state == ERR_NONE) {
         Serial.println(F("success!"));
     } else {
@@ -127,7 +142,19 @@ void loop()
             Serial.print(F("[SX1262] SNR:\t\t"));
             Serial.print(radio.getSNR());
             Serial.println(F(" dB"));
-
+#ifdef HAS_DISPLAY
+            if (u8g2) {
+                u8g2->clearBuffer();
+                char buf[256];
+                u8g2->drawStr(0, 12, "Received OK!");
+                u8g2->drawStr(5, 26, str.c_str());
+                snprintf(buf, sizeof(buf), "RSSI:%.2f", radio.getRSSI());
+                u8g2->drawStr(0, 40, buf);
+                snprintf(buf, sizeof(buf), "SNR:%.2f", radio.getSNR());
+                u8g2->drawStr(0, 54, buf);
+                u8g2->sendBuffer();
+            }
+#endif
         } else if (state == ERR_CRC_MISMATCH) {
             // packet was received, but is malformed
             Serial.println(F("CRC error!"));

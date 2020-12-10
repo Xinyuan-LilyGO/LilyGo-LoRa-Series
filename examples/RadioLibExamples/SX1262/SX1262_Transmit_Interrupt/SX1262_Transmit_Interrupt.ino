@@ -58,7 +58,20 @@ void setup()
 
     // initialize SX1262 with default settings
     Serial.print(F("[SX1262] Initializing ... "));
-    int state = radio.begin();
+#ifndef LoRa_frequency
+    int state = radio.begin(868.0);
+#else
+    int state = radio.begin(LoRa_frequency);
+#endif
+#ifdef HAS_DISPLAY
+    if (u8g2) {
+        if (state != ERR_NONE) {
+            u8g2->clearBuffer();
+            u8g2->drawStr(0, 12, "Initializing: FAIL!");
+            u8g2->sendBuffer();
+        }
+    }
+#endif
     if (state == ERR_NONE) {
         Serial.println(F("success!"));
     } else {
@@ -105,7 +118,16 @@ void loop()
             // NOTE: when using interrupt-driven transmit method,
             //       it is not possible to automatically measure
             //       transmission data rate using getDataRate()
-
+#ifdef HAS_DISPLAY
+            if (u8g2) {
+                char buf[256];
+                u8g2->clearBuffer();
+                u8g2->drawStr(0, 12, "Transmitting: OK!");
+                snprintf(buf, sizeof(buf), "millis()=%u", millis());
+                u8g2->drawStr(0, 30, buf);
+                u8g2->sendBuffer();
+            }
+#endif
         } else {
             Serial.print(F("failed, code "));
             Serial.println(transmissionState);

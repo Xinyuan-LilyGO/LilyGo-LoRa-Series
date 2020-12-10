@@ -9,12 +9,12 @@
 // #define LILYGO_T3_V2_0
 
 /*
-* The default program uses 433MHz,
+* The default program uses 868MHz,
 * if you need to change it,
 * please open this note and change to the frequency you need to test
 * */
 
-// #define LoRa_frequency      433.0
+// #define LoRa_frequency      915.0
 
 
 #define UNUSE_PIN                   (0)
