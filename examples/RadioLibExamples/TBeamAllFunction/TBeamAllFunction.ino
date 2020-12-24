@@ -22,6 +22,10 @@ RADIO_TYPE option:
 */
 #define RADIO_TYPE      SX1276
 
+//If you want to use SX1262, cancel this comment
+// #define RADIO_USING_SX1262
+
+
 SSD1306         *oled = nullptr;
 OLEDDisplayUi   *ui = nullptr;
 AceButton       btn(BUTTON_PIN);
@@ -115,7 +119,11 @@ void setup()
 
     // set the function that will be called
     // when new packet is received
+#ifdef RADIO_USING_SX1262
+    radio.setDio1Action(setFlag);
+#else
     radio.setDio0Action(setFlag);
+#endif
 }
 
 void loop()
