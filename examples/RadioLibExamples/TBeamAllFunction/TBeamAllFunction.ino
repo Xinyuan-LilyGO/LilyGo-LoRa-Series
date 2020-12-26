@@ -43,7 +43,11 @@ uint32_t        loraLoopMillis = 0;
 uint32_t        positioningMillis = 0;
 uint8_t         funcSelectIndex = 0;
 
+#ifdef RADIO_USING_SX1262
+RADIO_TYPE      radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+#else
 RADIO_TYPE      radio = new Module(RADIO_CS_PIN, RADIO_DI0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+#endif
 
 void ButtonHandleEvent(AceButton *, uint8_t eventType, uint8_t buttonState);
 void MsOverlay(OLEDDisplay *display, OLEDDisplayUiState *state);
