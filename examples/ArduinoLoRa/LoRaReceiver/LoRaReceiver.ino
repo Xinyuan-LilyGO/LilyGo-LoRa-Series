@@ -42,8 +42,10 @@ void loop()
             char buf[256];
             u8g2->drawStr(0, 12, "Received OK!");
             u8g2->drawStr(0, 26, recv.c_str());
-            snprintf(buf, sizeof(buf), "RSSI:%.2f", LoRa.packetRssi());
+            snprintf(buf, sizeof(buf), "RSSI:%i", LoRa.packetRssi());
             u8g2->drawStr(0, 40, buf);
+            snprintf(buf, sizeof(buf), "SNR:%.1f", LoRa.packetSnr());
+            u8g2->drawStr(0, 56, buf);
             u8g2->sendBuffer();
         }
 #endif
