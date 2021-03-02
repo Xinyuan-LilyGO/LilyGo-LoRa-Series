@@ -12,18 +12,6 @@
 #include "boards.h"
 
 using namespace ace_button;
-/*
-Replace the model according to the actual situation
-
-RADIO_TYPE option:
-            - SX1278
-            - SX1276
-            - SX1262
-*/
-#define RADIO_TYPE      SX1276
-
-//If you want to use SX1262, cancel this comment
-// #define RADIO_USING_SX1262
 
 
 SSD1306         *oled = nullptr;
@@ -54,14 +42,20 @@ void MsOverlay(OLEDDisplay *display, OLEDDisplayUiState *state);
 void DrawFrame1(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void DrawFrame2(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void DrawFrame3(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
+#ifndef LILYGO_TBeam_V0_7
 void DrawFrame4(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
+#endif
 void SenderLoop(void);
 void GpsLoop(void);
 void ReceiveLoop(void);
 
 typedef void (*funcCallBackTypedef)(void);
 funcCallBackTypedef LilyGoCallBack[] = {GpsLoop, SenderLoop, ReceiveLoop, NULL};
-FrameCallback frames[] = {DrawFrame1, DrawFrame2, DrawFrame3, DrawFrame4};
+FrameCallback frames[] = {DrawFrame1, DrawFrame2, DrawFrame3,
+#ifndef LILYGO_TBeam_V0_7
+                          DrawFrame4
+#endif
+                         };
 OverlayCallback overlays[] = { MsOverlay };
 
 // this function is called when a complete packet
@@ -384,6 +378,7 @@ void DrawFrame3(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int1
     display->drawString(64 + x, 35 + y, buff[1]);
 }
 
+#ifndef LILYGO_TBeam_V0_7
 void DrawFrame4(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
     bool batteryConnect = PMU.isBatteryConnect();
@@ -401,4 +396,4 @@ void DrawFrame4(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int1
     display->drawString(64 + x, 24 + y, buff[1]);
     display->drawString(64 + x, 37 + y, buff[2]);
 }
-
+#endif

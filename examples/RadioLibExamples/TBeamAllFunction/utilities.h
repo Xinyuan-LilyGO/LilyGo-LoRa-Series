@@ -17,6 +17,25 @@
 
 // #define LoRa_frequency      433.0
 
+/*
+Replace the model according to the actual situation
+
+RADIO_TYPE option:
+            - SX1278
+            - SX1276
+            - SX1262
+*/
+#define RADIO_TYPE      SX1276
+
+//If you want to use SX1262, cancel this comment
+// #define RADIO_USING_SX1262
+
+
+
+
+
+
+
 
 #define UNUSE_PIN                   (0)
 
