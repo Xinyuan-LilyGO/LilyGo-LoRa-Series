@@ -10,6 +10,7 @@
 // #define LILYGO_T3_V1_0
 // #define LILYGO_T3_V1_6
 // #define LILYGO_T3_V2_0
+// #define LILYGO_T95_V1_0
 
 /*
 * if you need to change it,
@@ -17,7 +18,7 @@
 * Option: 433E6,470E6,868E6,915E6
 * */
 
-#define LoRa_frequency      868E6
+#define LoRa_frequency      433E6
 
 
 #define UNUSE_PIN                   (0)
@@ -141,6 +142,25 @@
 
 #define HAS_DISPLAY
 #define HAS_SDCARD
+
+#elif defined(LILYGO_T95_V1_0)
+
+#define I2C_SDA                     21
+#define I2C_SCL                     22
+#define OLED_RST                    UNUSE_PIN
+
+#define RADIO_SCLK_PIN              18
+#define RADIO_MISO_PIN              19
+#define RADIO_MOSI_PIN              23
+#define RADIO_CS_PIN                5
+#define RADIO_DI0_PIN               26
+#define RADIO_RST_PIN               4
+#define RADIO_DIO1_PIN              33
+#define RADIO_DIO2_PIN              32
+#define RADIO_BUSY_PIN              UNUSE_PIN
+
+#define ADC_PIN                     35
+#define HAS_DISPLAY
 
 #else
 #error "Please select the version you purchased in utilities.h"
