@@ -71,6 +71,10 @@ examples
 - [T-Beam Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter)
 - [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
 
+### TTN
+
+To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_Start](./docs/en/LilyGo_LoRa_Series_Quick_Start_On_TTN.md)
+
 <h3 align = "left">Datasheet :</h3>
 
 - [AXP192](http://www.x-powers.com/en.php/Info/product_detail/article_id/29)
