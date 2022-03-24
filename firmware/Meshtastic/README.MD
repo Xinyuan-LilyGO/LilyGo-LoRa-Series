@@ -2,4 +2,7 @@
 
 2. Set according to the picture 
 
-    ![](./SETTING.jpg)
+    ![](./SETTING.png)
+
+
+3. Serial monitor baud rate is 921600. Viewing Print Logs
