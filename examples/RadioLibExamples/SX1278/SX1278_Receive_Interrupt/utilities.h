@@ -1,12 +1,15 @@
 
 #pragma once
 
+
 // #define LILYGO_TBeam_V0_7
 // #define LILYGO_TBeam_V1_0
 // #define LILYGO_TBeam_V1_1
 // #define LILYGO_T3_V1_0
+// #define LILYGO_T3_V1_3
 // #define LILYGO_T3_V1_6
 // #define LILYGO_T3_V2_0
+
 
 /*
 * The default program uses 433MHz,
@@ -36,10 +39,6 @@
 #define RADIO_DIO1_PIN              33
 #define RADIO_BUSY_PIN              32
 
-#define BOARD_LED                   14
-#define LED_ON                      HIGH
-#define LED_OFF                     LOW
-
 #define GPS_BAUD_RATE               9600
 #define HAS_GPS
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
@@ -63,10 +62,6 @@
 #define RADIO_DIO1_PIN              33
 #define RADIO_BUSY_PIN              32
 
-#define BOARD_LED                   4
-#define LED_ON                      LOW
-#define LED_OFF                     HIGH
-
 #define GPS_BAUD_RATE               9600
 #define HAS_GPS
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
@@ -87,6 +82,24 @@
 
 #define HAS_DISPLAY
 
+#elif defined(LILYGO_T3_V1_3)
+
+#define I2C_SDA                     21
+#define I2C_SCL                     22
+#define OLED_RST                    UNUSE_PIN
+
+#define RADIO_SCLK_PIN              5
+#define RADIO_MISO_PIN              19
+#define RADIO_MOSI_PIN              27
+#define RADIO_CS_PIN                18
+#define RADIO_DI0_PIN               26
+#define RADIO_RST_PIN               14
+#define RADIO_DIO1_PIN              33
+#define RADIO_BUSY_PIN              32
+
+#define ADC_PIN                     35
+
+#define HAS_DISPLAY
 #elif defined(LILYGO_T3_V1_6)
 #define I2C_SDA                     21
 #define I2C_SCL                     22
