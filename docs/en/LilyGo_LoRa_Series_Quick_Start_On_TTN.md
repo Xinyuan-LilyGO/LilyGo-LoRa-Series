@@ -29,6 +29,8 @@
 >
 > LoRaWAN Gateway: Raspberrypi Model 3B + T-SX1302
 >
+> raspios: [raspios_lite_arm64-2022-01-28](https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2022-01-28/2022-01-28-raspios-bullseye-arm64-lite.zip)
+>
 > TTN Version: v3.15.1
 
 ## Create a gateway on TTN

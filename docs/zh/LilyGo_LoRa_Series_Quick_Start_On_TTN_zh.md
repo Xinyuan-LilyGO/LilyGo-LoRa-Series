@@ -29,6 +29,8 @@
 >
 > LoRaWAN Gateway: Raspberrypi Model 3B + T-SX1302
 >
+> raspios: [raspios_lite_arm64-2022-01-28](https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2022-01-28/2022-01-28-raspios-bullseye-arm64-lite.zip)
+>
 > TTN Version: v3.15.1
 
 ## 在TTN上创建网关
@@ -67,7 +69,11 @@
 
 ### 使能树莓派的SPI接口
 
-![spi](../static/spi.gif)
+Open the `/boot/config.txt` file and write the following at the end of the file:
+
+```
+dtoverlay=spi0-1cs
+```
 
 ### 下载sx1302_hal源码并编译
 
