@@ -113,17 +113,6 @@ void initBoard()
 
     initPMU();
 
-#ifdef HAS_SDCARD
-    SDSPI.begin(SDCARD_SCLK, SDCARD_MISO, SDCARD_MOSI, SDCARD_CS);
-    if (!SD.begin(SDCARD_CS, SDSPI)) {
-        Serial.println("setupSDCard FAIL");
-    } else {
-        uint32_t cardSize = SD.cardSize() / (1024 * 1024);
-        Serial.print("setupSDCard PASS . SIZE = ");
-        Serial.print(cardSize);
-        Serial.println(" MB");
-    }
-#endif
 
 #ifdef BOARD_LED
     /*
@@ -162,9 +151,61 @@ void initBoard()
         } while ( u8g2->nextPage() );
         u8g2->sendBuffer();
         u8g2->setFont(u8g2_font_fur11_tf);
-        delay(5000);
+        delay(3000);
     }
 #endif
+
+
+#ifdef HAS_SDCARD
+    if (u8g2) {
+        u8g2->setFont(u8g2_font_ncenB08_tr);
+    }
+
+    pinMode(SDCARD_MISO, INPUT_PULLUP);
+    SDSPI.begin(SDCARD_SCLK, SDCARD_MISO, SDCARD_MOSI, SDCARD_CS);
+    if (u8g2) {
+        u8g2->clearBuffer();
+    }
+
+    if (!SD.begin(SDCARD_CS, SDSPI)) {
+
+        Serial.println("setupSDCard FAIL");
+        if (u8g2) {
+            do {
+                u8g2->setCursor(0, 16);
+                u8g2->println( "SDCard FAILED");;
+            } while ( u8g2->nextPage() );
+        }
+
+    } else {
+        uint32_t cardSize = SD.cardSize() / (1024 * 1024);
+        if (u8g2) {
+            do {
+                u8g2->setCursor(0, 16);
+                u8g2->print( "SDCard:");;
+                u8g2->print(cardSize / 1024.0);;
+                u8g2->println(" GB");;
+            } while ( u8g2->nextPage() );
+        }
+
+        Serial.print("setupSDCard PASS . SIZE = ");
+        Serial.print(cardSize / 1024.0);
+        Serial.println(" GB");
+    }
+    if (u8g2) {
+        u8g2->sendBuffer();
+    }
+    delay(3000);
+#endif
+
+    if (u8g2) {
+        u8g2->clearBuffer();
+        do {
+            u8g2->setCursor(0, 16);
+            u8g2->println( "Waiting to receive data");;
+        } while ( u8g2->nextPage() );
+    }
+
 
 }
 
