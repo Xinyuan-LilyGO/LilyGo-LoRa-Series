@@ -61,6 +61,7 @@ examples
 
 ```
 
+
 <h3 align = "left">常见问题 :</h3>
 
 1. GPS没有数据输出，[参考GPS恢复出厂](firmware/GPS_%20reset)
@@ -88,3 +89,25 @@ examples
 - [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
 - [GSP NEO-6/NEO-8](https://www.u-blox.com/en/product/neo-6-series)
 - [GPS Air530]()
+
+
+<h3 align = "left">注意事项 :</h3>
+
+1. LoRa设置输出功率后需要设置最低电流。设置sx1262如下 :
+
+```
+    // digitalWrite(LoRa_Busy, LOW);
+    // set output power to 10 dBm (accepted range is -17 - 22 dBm)
+    if (radio.setOutputPower(22) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.println(F("Selected output power is invalid for this module!"));
+        while (true);
+    }
+
+
+    // set over current protection limit to 80 mA (accepted range is 45 - 240 mA)
+    // NOTE: set value to 0 to disable overcurrent protection
+    if (radio.setCurrentLimit(80) == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
+        Serial.println(F("Selected current limit is invalid for this module!"));
+        while (true);
+    }
+```
