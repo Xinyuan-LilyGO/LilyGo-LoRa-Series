@@ -117,7 +117,9 @@ void setup()
 
     // set the function that will be called
     // when new packet is received
-#ifdef RADIO_USING_SX1262
+#if defined(RADIO_USING_SX1262)
+    radio.setDio1Action(setFlag);
+#elif defined(RADIO_USING_SX1268)
     radio.setDio1Action(setFlag);
 #else
     radio.setDio0Action(setFlag);

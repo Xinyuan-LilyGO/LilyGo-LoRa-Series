@@ -5,6 +5,7 @@
 // #define LILYGO_TBeam_V1_0
 // #define LILYGO_TBeam_V1_1
 // #define LILYGO_T3_V1_0
+// #define LILYGO_T3_V1_3
 // #define LILYGO_T3_V1_6
 // #define LILYGO_T3_V2_0
 
@@ -87,6 +88,24 @@
 
 #define HAS_DISPLAY
 
+#elif defined(LILYGO_T3_V1_3)
+
+#define I2C_SDA                     21
+#define I2C_SCL                     22
+#define OLED_RST                    UNUSE_PIN
+
+#define RADIO_SCLK_PIN              5
+#define RADIO_MISO_PIN              19
+#define RADIO_MOSI_PIN              27
+#define RADIO_CS_PIN                18
+#define RADIO_DI0_PIN               26
+#define RADIO_RST_PIN               14
+#define RADIO_DIO1_PIN              33
+#define RADIO_BUSY_PIN              32
+
+#define ADC_PIN                     35
+
+#define HAS_DISPLAY
 #elif defined(LILYGO_T3_V1_6)
 #define I2C_SDA                     21
 #define I2C_SCL                     22
