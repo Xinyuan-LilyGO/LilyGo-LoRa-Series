@@ -1,6 +1,5 @@
 #include <SPI.h>
 #include <SX128XLT.h>
-#include "Settings.h"
 #include "boards.h"
 
 
