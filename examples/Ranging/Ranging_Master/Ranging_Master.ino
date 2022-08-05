@@ -4,14 +4,6 @@
 #include <SX128XLT.h>
 #include "boards.h"
 
-#define RADIO_SCLK_PIN              5
-#define RADIO_MISO_PIN              19
-#define RADIO_MOSI_PIN              27
-#define NSS 18
-#define RFBUSY 32
-#define NRESET 23
-#define LED1 25
-#define DIO1 26
 #define LORA_DEVICE DEVICE_SX1280                //we need to define the device we are using
 
 
