@@ -28,7 +28,7 @@
 |       [LoRa32 V2.0]()       |                                [Product link](https://pt.aliexpress.com/item/32847443952.html)                                |                                                      [LoRa32 V2.0](schematic/T3_V2.0.pdf)                                                      |
 | [LoRa32 V2.1_1.6 Version]() | [AliExpress](https://pt.aliexpress.com/item/32872078587.html)/[Amazon](https://www.amazon.com/dp/B09SHRWVNB?ref=myi_title_dp) |                                                    [LoRa32 V2.1_1.6](schematic/T3_V1.6.pdf)                                                    |
 |      [T-Motion S76G]()      |                              [Product link](https://www.aliexpress.com/item/4000571051141.html)                               |                                                       [T-Motion](schematic/T-Motion.pdf)                                                       |
-|    [LoRa32 V1.8 2.4G]()     |                                                       🔱[Product link]()                                                       |                                                   [LoRa32 V1.8 2.4G](schematic/T3_V1.8.pdf)                                                    |
+|    [LoRa32 V1.8 2.4G]()     |                                🔱[Product link](https://www.lilygo.cc/products/lora-v1-8-esp32)                                |                                                   [LoRa32 V1.8 2.4G](schematic/T3_V1.8.pdf)                                                    |
 
 ## Example description
 
