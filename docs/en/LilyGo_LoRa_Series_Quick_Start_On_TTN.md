@@ -69,7 +69,11 @@ It needs to fill in a unique `Gateway EUI`, if there is no better choice, you ca
 
 ### Enable the SPI interface of the Raspberry Pi
 
-![spi](../static/spi.gif)
+Open the /boot/config.txt file and write the following at the end of the file:
+
+```
+dtoverlay=spi0-1cs
+```
 
 ### Download sx1302_hal source code and compile
 
