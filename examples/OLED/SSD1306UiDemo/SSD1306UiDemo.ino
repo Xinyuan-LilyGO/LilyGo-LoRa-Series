@@ -119,7 +119,6 @@ int overlaysCount = 1;
 void setup()
 {
     initBoard();
-    delay(1500);
 
     // The ESP is capable of rendering 60fps in 80Mhz mode
     // but that won't give you much time for anything else

@@ -28,6 +28,7 @@ bool initPMU()
     // PMU.setChgLEDMode(LED_BLINK_4HZ);
 
     /*
+    * Warning:
     * The default ESP32 power supply has been turned on,
     * no need to set, please do not set it, if it is turned off,
     * it will not be able to program
@@ -38,14 +39,22 @@ bool initPMU()
     * * * */
 
     /*
-     *   Turn off unused power sources to save power
+    *   Warning:
+    *   Disable it will cause abnormal communication between boot and AXP power supply,
+    *   do not turn it off
+    *
+    *   PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    *
+    *****/
+
+    /*
+     * *   Turn off unused power sources to save power
      * **/
 
-    PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
     PMU.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
     PMU.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
+    // PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
+    // PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
 
     /*
      * Set the power of LoRa and GPS module to 3.3V
@@ -81,7 +90,14 @@ bool initPMU()
 
 void disablePeripherals()
 {
-    PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    /*
+    *   Warning:
+    *   Disable it will cause abnormal communication between boot and AXP power supply,
+    *   do not turn it off
+    *
+    *   PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    *
+    *****/
     PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
     PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
 }
@@ -136,35 +152,6 @@ void initBoard()
 #endif
     pinMode(BOARD_LED, OUTPUT);
     digitalWrite(BOARD_LED, LED_ON);
-#endif
-
-
-#ifdef HAS_DISPLAY
-    Wire.beginTransmission(0x3C);
-    if (Wire.endTransmission() == 0) {
-        Serial.println("Started OLED");
-        u8g2 = new U8G2_SSD1306_128X64_NONAME_F_HW_I2C(U8G2_R0, U8X8_PIN_NONE);
-        u8g2->begin();
-        u8g2->clearBuffer();
-        u8g2->setFlipMode(0);
-        u8g2->setFontMode(1); // Transparent
-        u8g2->setDrawColor(1);
-        u8g2->setFontDirection(0);
-        u8g2->firstPage();
-        do {
-            u8g2->setFont(u8g2_font_inb19_mr);
-            u8g2->drawStr(0, 30, "LilyGo");
-            u8g2->drawHLine(2, 35, 47);
-            u8g2->drawHLine(3, 36, 47);
-            u8g2->drawVLine(45, 32, 12);
-            u8g2->drawVLine(46, 33, 12);
-            u8g2->setFont(u8g2_font_inb19_mf);
-            u8g2->drawStr(58, 60, "LoRa");
-        } while ( u8g2->nextPage() );
-        u8g2->sendBuffer();
-        u8g2->setFont(u8g2_font_fur11_tf);
-        delay(5000);
-    }
 #endif
 
 }

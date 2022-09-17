@@ -143,7 +143,6 @@ long timeSinceLastModeSwitch = 0;
 void setup()
 {
     initBoard();
-    delay(1500);
 
     // Initialising the UI will init the display too.
     display.init();
