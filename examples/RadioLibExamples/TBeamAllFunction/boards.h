@@ -32,14 +32,23 @@ bool initPMU()
     *
     * * * */
 
+
+    /*
+    *   Warning:
+    *   Disable it will cause abnormal communication between boot and AXP power supply,
+    *   do not turn it off
+    *
+    *   PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    *
+    *****/
+
     /*
      *   Turn off unused power sources to save power
      * **/
 
-    PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    // PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
+    // PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
     PMU.setPowerOutPut(AXP192_DCDC2, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
-    PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
     PMU.setPowerOutPut(AXP192_EXTEN, AXP202_OFF);
 
     /*
@@ -76,7 +85,14 @@ bool initPMU()
 
 void disablePeripherals()
 {
-    PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    /*
+    *   Warning:
+    *   Disable it will cause abnormal communication between boot and AXP power supply,
+    *   do not turn it off
+    *
+    *   PMU.setPowerOutPut(AXP192_DCDC1, AXP202_OFF);
+    *
+    *****/
     PMU.setPowerOutPut(AXP192_LDO2, AXP202_OFF);
     PMU.setPowerOutPut(AXP192_LDO3, AXP202_OFF);
 }

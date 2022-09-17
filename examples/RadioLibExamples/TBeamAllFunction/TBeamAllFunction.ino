@@ -319,13 +319,15 @@ void ButtonHandleEvent(AceButton *, uint8_t eventType, uint8_t buttonState)
         disablePeripherals();
 
         //If the power is not turned off, the peripheral should be set to sleep
-        /*
-        radio.sleep();
+        // radio.sleep();
+
         if (oled) {
             oled->displayOff();
         }
-        */
-        delay(1000);
+        // Wait for your finger to release
+        while (!digitalRead(BUTTON_PIN)) {
+            delay(100);
+        }
         esp_sleep_enable_ext1_wakeup(BUTTON_PIN_MASK, ESP_EXT1_WAKEUP_ALL_LOW);
         esp_deep_sleep_start();
         break;
