@@ -1,5 +1,11 @@
-1. Tool download  [flash_download_tool](https://www.espressif.com/sites/default/files/tools/flash_download_tool_v3.8.5.zip)
 
-2. Set according to the picture 
 
-    ![](./SETTING.png)
+
+# Firmware Description
+```
+
+├── GPS_ reset_test         # This is not preferred, try `NMEA_Reset` first
+├── NMEA_Reset              # When Tbema GPS fails or no message is output, please use the firmware in the NMEA_Reset folder to restore and test
+└── T3_SleepTest            # T3_V1.6 Deep Sleep Test Firmware
+
+```
