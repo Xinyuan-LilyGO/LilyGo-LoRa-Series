@@ -79,7 +79,7 @@ examples
 
 <h3 align = "left">Precautions :</h3>
 
-1. If there is no data output from GPS, [see Restoring factory defaults ](firmware/GPS_%20reset)
+1. If there is no data output from GPS, [see Restoring factory defaults ](firmware/NMEA_Reset/README.MD)
 
 <h3 align = "left">PinOut :</h3>
 

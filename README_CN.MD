@@ -73,7 +73,7 @@ examples
 
 <h3 align = "left">常见问题 :</h3>
 
-1. GPS没有数据输出，[参考GPS恢复出厂](firmware/GPS_%20reset)
+1. GPS没有数据输出，[参考GPS恢复出厂](firmware/NMEA_Reset/README.MD)
 
 
 <h3 align = "left">引脚映射 :</h3>
