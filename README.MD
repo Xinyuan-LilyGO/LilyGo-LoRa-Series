@@ -75,6 +75,12 @@ examples
 
 ```
 
+<h3 align = "left">Radio resolution:</h3>
+
+How to distinguish the model of Radio just need to look at the sticker on the board, 
+433MHz is SX1278,
+868MHz is SX1276,
+If the label says SX1262 then it is SX1262
 
 
 <h3 align = "left">Precautions :</h3>

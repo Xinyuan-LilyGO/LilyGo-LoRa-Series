@@ -69,7 +69,12 @@ examples
     └─TTN_OTTA
 
 ```
+<h3 align = "left">LoRa 型号分辨:</h3>
 
+分辨LoRa的型号只需要查看板子上的贴纸,
+433MHz则是SX1278，
+868MHz则是SX1276，
+如果标签写的是SX1262则是SX1262
 
 <h3 align = "left">常见问题 :</h3>
 
