@@ -53,7 +53,7 @@ void setup()
 
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
 
-    if (LT.begin(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN, RADIO_DI0_PIN, LORA_DEVICE)) {
+    if (LT.begin(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN, RADIO_DIO1_PIN, LORA_DEVICE)) {
         Serial.println(F("Device found"));
         led_Flash(2, 125);
         delay(1000);

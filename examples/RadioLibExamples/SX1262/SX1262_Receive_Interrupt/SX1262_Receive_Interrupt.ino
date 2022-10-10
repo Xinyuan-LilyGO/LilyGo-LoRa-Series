@@ -131,6 +131,22 @@ void loop()
             Serial.print(radio.getSNR());
             Serial.println(F(" dB"));
 
+
+#ifdef HAS_DISPLAY
+            if (u8g2) {
+                u8g2->clearBuffer();
+                char buf[256];
+                u8g2->drawStr(0, 12, "Received OK!");
+                snprintf(buf, sizeof(buf), "RX:%s", str);
+                u8g2->drawStr(0, 26, buf);
+                snprintf(buf, sizeof(buf), "RSSI:%.2f", radio.getRSSI());
+                u8g2->drawStr(0, 40, buf);
+                snprintf(buf, sizeof(buf), "SNR:%.2f", radio.getSNR());
+                u8g2->drawStr(0, 54, buf);
+                u8g2->sendBuffer();
+            }
+#endif
+
         } else if (state == ERR_CRC_MISMATCH) {
             // packet was received, but is malformed
             Serial.println(F("CRC error!"));

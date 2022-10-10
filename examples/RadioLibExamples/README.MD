@@ -1,5 +1,5 @@
 
-## SX1262 SX1276 SX1278 examples need install the following dependency library files:
+## SX1262 SX1276 SX1278 SX1280 examples need install the following dependency library files:
 - [RadioLib](https://github.com/jgromes/RadioLib)
 - [U8g2_Arduino](https://github.com/olikraus/U8g2_Arduino)
 
