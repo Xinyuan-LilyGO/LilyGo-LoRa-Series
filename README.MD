@@ -2,9 +2,6 @@
 
 ## **English | [中文](./README_CN.MD)**
 
-
-<h3 align = "left">Quick start:</h3>
-
 ## USE Arduino IDE
 
 1. Install the current upstream Arduino IDE at the 1.8 level or later. The current version is at the [Arduino website](http://www.arduino.cc/en/main/software). (NOTE: MacOS may require that you install separate drivers to interact with your board. You will get error messages that occur when the IDE attempts to upload code. You should consider running the Arduino IDE in a Virtual Machine on Linux. Installing other drivers on your Mac is out of scope for this document.)
@@ -19,22 +16,47 @@
 7. For other examples except the `GPS` directory, please **uncomment** in the upper part of `utilities.h` according to your board model, otherwise the compilation will report an error
 8. Upload
 
-<h3 align = "left">Product 📷:</h3>
+## Product 📷
 
-|           Product           |                                                         Product  Link                                                         |                                                                   Schematic                                                                    |        Corresponding example macro definition         |
-| :-------------------------: | :---------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------: |
-|    [T-Beam SX1278/76 ]()    |                                [Product link](https://pt.aliexpress.com/item/32967228739.html)                                | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) | LILYGO_TBeam_V0_7/LILYGO_TBeam_V1_0/LILYGO_TBeam_V1_1 |
-|      [T-Beam SX1262]()      |                               [Product link](https://pt.aliexpress.com/item/4001287221970.html)                               | [TBeamV0.7](schematic/LilyGo_TBeam_V0.7.pdf)/     [TBeamV1.0](schematic/LilyGo_TBeam_V1.0.pdf)/  [TBeamV1.1 ](schematic/LilyGo_TBeam_V1.1.pdf) | LILYGO_TBeam_V0_7/LILYGO_TBeam_V1_0/LILYGO_TBeam_V1_1 |
-|   [LoRa32 V1.0 SX1276]()    |                                [Product link](https://pt.aliexpress.com/item/32842155838.html)                                |                                                                       ❌                                                                        |                    LILYGO_T3_V1_0                     |
-|   [LoRa32 V1.0 SX1278]()    |                                [Product link](https://pt.aliexpress.com/item/32842155838.html)                                |                                                                       ❌                                                                        |                    LILYGO_T3_V1_0                     |
-|   [LoRa32 V1.3 SX1276]()    |                               [Product link](https://pt.aliexpress.com/item/4000628100802.html)                               |                                                      [LoRa32 V1.3](schematic/T3_V1.3.pdf)                                                      |                    LILYGO_T3_V1_3                     |
-|       [LoRa32 V2.0]()       |                                [Product link](https://pt.aliexpress.com/item/32847443952.html)                                |                                                      [LoRa32 V2.0](schematic/T3_V2.0.pdf)                                                      |                    LILYGO_T3_V1_3                     |
-| [LoRa32 V2.1_1.6 Version]() | [AliExpress](https://pt.aliexpress.com/item/32872078587.html)/[Amazon](https://www.amazon.com/dp/B09SHRWVNB?ref=myi_title_dp) |                                                    [LoRa32 V2.1_1.6](schematic/T3_V1.6.pdf)                                                    |                    LILYGO_T3_V1_6                     |
-|      [T-Motion S76G]()      |                              [Product link](https://www.aliexpress.com/item/4000571051141.html)                               |                                                       [T-Motion](schematic/T-Motion.pdf)                                                       |                    LILYGO_T3_V1_6                     |
-|    [LoRa32 V1.8 2.4G]()     |                                🔱[Product link](https://www.lilygo.cc/products/lora-v1-8-esp32)                                |                                                   [LoRa32 V1.8 2.4G](schematic/T3_V1.8.pdf)                                                    |                    LILYGO_T3_V1_8                     |
+| Product                   | Product Link                    | Schematic                                              | Corresponding example macro definition                    |
+| :-----------------------: | :-----------------------------: | :----------------------------------------------------: | :-------------------------------------------------------: |
+| [T-Beam SX1278/76][1-4]   | [AliExpress][1]                 | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
+| [T-Beam SX1262][1-4]      | [AliExpress][2]                 | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
+| [LoRa32 V1.0 SX1276][3-1] | [AliExpress][3]                 | ❌                                                    | LILYGO_T3_V1_0                                             |
+| [LoRa32 V1.0 SX1278][3-1] | [AliExpress][4]                 | ❌                                                    | LILYGO_T3_V1_0                                             |
+| [LoRa32 V1.3 SX1276][5-2] | [AliExpress][5]                 | [LoRa32 V1.3][5-1]                                     | LILYGO_T3_V1_3                                            |
+| [LoRa32 V2.0][6-2]        | [AliExpress][6]                 | [LoRa32 V2.0][6-1]                                     | LILYGO_T3_V1_3                                            |
+| [LoRa32 V2.1 & 1.6][7-4]  | [AliExpress][7-1]/[Amazon][7-2] | [LoRa32 V2.1_1.6][7-3]                                 | LILYGO_T3_V1_6                                            |
+| [T-Motion S76G][8-2]      | [AliExpress][8]                 | [T-Motion][8-1]                                        | LILYGO_T3_V1_6                                            |
+| [LoRa32 V1.8 2.4G][9-2]   | [lilygo.cc][9]                  | [LoRa32 V1.8 2.4G][9-1]                                | LILYGO_T3_V1_8                                            |
+
+[1]: https://pt.aliexpress.com/item/32967228739.html "T-Beam SX1278/76"
+[1-1]: schematic/LilyGo_TBeam_V0.7.pdf
+[1-2]: schematic/LilyGo_TBeam_V1.0.pdf
+[1-3]: schematic/LilyGo_TBeam_V1.1.pdf
+[1-4]: assets/image/t-beam_v1.1_pinmap.jpg
+[2]: https://pt.aliexpress.com/item/4001287221970.html "T-Beam SX1262"
+[3]: https://pt.aliexpress.com/item/32842155838.html "LoRa32 V1.0 SX1276"
+[3-1]: assets/image/lora32_v1.0_pinmap.jpg
+[4]: https://pt.aliexpress.com/item/32842155838.html "LoRa32 V1.0 SX1278"
+[5]: https://pt.aliexpress.com/item/4000628100802.html "LoRa32 V1.3 SX1276"
+[5-1]: schematic/T3_V1.3.pdf
+[5-2]: assets/image/lora32_v1.3_pinmap.jpg
+[6]: https://pt.aliexpress.com/item/32847443952.html "LoRa32 V2.0"
+[6-1]: schematic/T3_V2.0.pdf
+[6-2]: assets/image/lora32_v2.0_pinmap.jpg
+[7-1]: https://pt.aliexpress.com/item/32872078587.html "AliExpress"
+[7-2]: https://www.amazon.com/dp/B09SHRWVNB?ref=myi_title_dp "Amazon"
+[7-3]: schematic/T3_V1.6.pdf
+[7-4]: assets/image/lora32_v1.6.1_pinmap.jpg
+[8]: https://www.aliexpress.com/item/4000571051141.html "T-Motion S76G"
+[8-1]: schematic/T-Motion.pdf
+[8-2]: assets/image/t-motion_v1.0_pinmap.jpg
+[9]: https://www.lilygo.cc/products/lora-v1-8-esp32 "LoRa32 V1.8 2.4G"
+[9-1]: schematic/T3_V1.8.pdf
+[9-2]: assets/image/lora32_v1.8_pinmap.jpg
 
 ## Example description
-
 
 ```
 examples
@@ -75,29 +97,28 @@ examples
 
 ```
 
-<h3 align = "left">Radio resolution:</h3>
+## Radio resolution
 
 How to distinguish the model of Radio just need to look at the sticker on the board, 
 433MHz is SX1278,
 868MHz is SX1276,
 If the label says SX1262 then it is SX1262
 
-
-<h3 align = "left">Precautions :</h3>
+## Precautions
 
 1. If there is no data output from GPS, [see Restoring factory defaults ](firmware/NMEA_Reset/README.MD)
 
-<h3 align = "left">PinOut :</h3>
+## PinOut
 
 - See [utilities.h](examples/ArduinoLoRa/LoRaReceiver/utilities.h)
 
-<h3 align = "left">Application :</h3>
+## Application
 
 - [T-Beam SoftRF](https://github.com/lyusupov/SoftRF)
 - [T-Beam Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter)
 - [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
 
-### TTN
+## TTN
 
 To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_Start](./docs/en/LilyGo_LoRa_Series_Quick_Start_On_TTN.md)
 
@@ -110,9 +131,7 @@ To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Se
 - [SX1280](https://www.semtech.com/products/wireless-rf/lora-24ghz/sx1280)
 - [GSP NEO-6/NEO-8](https://www.u-blox.com/en/product/neo-6-series)
 
-
-
-<h3 align = "left">Announcements :</h3>
+## Announcements
 
 1. After setting the LoRa output power, set the lowest current. Set sx1262 as follows :
 
