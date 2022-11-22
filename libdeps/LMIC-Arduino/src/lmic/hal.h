@@ -13,13 +13,13 @@
 #define _hal_hpp_
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
 
 /*
  * initialize hardware (IO, SPI, TIMER, IRQ).
  */
-void hal_init (void);
+void lmic_hal_init (void);
 
 /*
  * drive radio NSS pin (0=low, 1=high).

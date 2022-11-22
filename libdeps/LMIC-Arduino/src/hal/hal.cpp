@@ -17,7 +17,8 @@
 // -----------------------------------------------------------------------------
 // I/O
 
-static void hal_io_init () {
+static void hal_io_init ()
+{
     // NSS and DIO0 are required, DIO1 is required for LoRa, DIO2 for FSK
     ASSERT(lmic_pins.nss != LMIC_UNUSED_PIN);
     ASSERT(lmic_pins.dio[0] != LMIC_UNUSED_PIN);
@@ -37,17 +38,19 @@ static void hal_io_init () {
 }
 
 // val == 1  => tx 1
-void hal_pin_rxtx (u1_t val) {
+void hal_pin_rxtx (u1_t val)
+{
     if (lmic_pins.rxtx != LMIC_UNUSED_PIN)
         digitalWrite(lmic_pins.rxtx, val ? !lmic_pins.rx_level : lmic_pins.rx_level );
 }
 
 // set radio RST pin to given value (or keep floating!)
-void hal_pin_rst (u1_t val) {
+void hal_pin_rst (u1_t val)
+{
     if (lmic_pins.rst == LMIC_UNUSED_PIN)
         return;
 
-    if(val == 0 || val == 1) { // drive pin
+    if (val == 0 || val == 1) { // drive pin
         pinMode(lmic_pins.rst, OUTPUT);
         digitalWrite(lmic_pins.rst, val);
     } else { // keep pin floating
@@ -57,7 +60,8 @@ void hal_pin_rst (u1_t val) {
 
 static bool dio_states[NUM_DIO] = {0};
 
-static void hal_io_check() {
+static void hal_io_check()
+{
     uint8_t i;
     for (i = 0; i < NUM_DIO; ++i) {
         if (lmic_pins.dio[i] == LMIC_UNUSED_PIN)
@@ -76,11 +80,13 @@ static void hal_io_check() {
 
 static const SPISettings settings(10E6, MSBFIRST, SPI_MODE0);
 
-static void hal_spi_init () {
+static void hal_spi_init ()
+{
     SPI.begin();
 }
 
-void hal_pin_nss (u1_t val) {
+void hal_pin_nss (u1_t val)
+{
     if (!val)
         SPI.beginTransaction(settings);
     else
@@ -91,25 +97,28 @@ void hal_pin_nss (u1_t val) {
 }
 
 // perform SPI transaction with radio
-u1_t hal_spi (u1_t out) {
+u1_t hal_spi (u1_t out)
+{
     u1_t res = SPI.transfer(out);
-/*
-    Serial.print(">");
-    Serial.print(out, HEX);
-    Serial.print("<");
-    Serial.println(res, HEX);
-    */
+    /*
+        Serial.print(">");
+        Serial.print(out, HEX);
+        Serial.print("<");
+        Serial.println(res, HEX);
+        */
     return res;
 }
 
 // -----------------------------------------------------------------------------
 // TIME
 
-static void hal_time_init () {
+static void hal_time_init ()
+{
     // Nothing to do
 }
 
-u4_t hal_ticks () {
+u4_t hal_ticks ()
+{
     // Because micros() is scaled down in this function, micros() will
     // overflow before the tick timer should, causing the tick timer to
     // miss a significant part of its values if not corrected. To fix
@@ -156,11 +165,13 @@ u4_t hal_ticks () {
 
 // Returns the number of ticks until time. Negative values indicate that
 // time has already passed.
-static s4_t delta_time(u4_t time) {
+static s4_t delta_time(u4_t time)
+{
     return (s4_t)(time - hal_ticks());
 }
 
-void hal_waitUntil (u4_t time) {
+void hal_waitUntil (u4_t time)
+{
     s4_t delta = delta_time(time);
     // From delayMicroseconds docs: Currently, the largest value that
     // will produce an accurate delay is 16383.
@@ -173,20 +184,23 @@ void hal_waitUntil (u4_t time) {
 }
 
 // check and rewind for target time
-u1_t hal_checkTimer (u4_t time) {
+u1_t hal_checkTimer (u4_t time)
+{
     // No need to schedule wakeup, since we're not sleeping
     return delta_time(time) <= 0;
 }
 
 static uint8_t irqlevel = 0;
 
-void hal_disableIRQs () {
+void hal_disableIRQs ()
+{
     noInterrupts();
     irqlevel++;
 }
 
-void hal_enableIRQs () {
-    if(--irqlevel == 0) {
+void hal_enableIRQs ()
+{
+    if (--irqlevel == 0) {
         interrupts();
 
         // Instead of using proper interrupts (which are a bit tricky
@@ -201,7 +215,8 @@ void hal_enableIRQs () {
     }
 }
 
-void hal_sleep () {
+void hal_sleep ()
+{
     // Not implemented
 }
 
@@ -214,7 +229,8 @@ static int uart_putchar (char c, FILE *)
     return 0 ;
 }
 
-void hal_printf_init() {
+void hal_printf_init()
+{
     // create a FILE structure to reference our UART output function
     static FILE uartout;
     memset(&uartout, 0, sizeof(uartout));
@@ -227,7 +243,8 @@ void hal_printf_init() {
 }
 #endif // defined(LMIC_PRINTF_TO)
 
-void hal_init () {
+void lmic_hal_init ()
+{
     // configure radio I/O and interrupt handler
     hal_io_init();
     // configure radio SPI
@@ -240,7 +257,8 @@ void hal_init () {
 #endif
 }
 
-void hal_failed (const char *file, u2_t line) {
+void hal_failed (const char *file, u2_t line)
+{
 #if defined(LMIC_FAILURE_TO)
     LMIC_FAILURE_TO.println("FAILURE ");
     LMIC_FAILURE_TO.print(file);
@@ -249,5 +267,5 @@ void hal_failed (const char *file, u2_t line) {
     LMIC_FAILURE_TO.flush();
 #endif
     hal_disableIRQs();
-    while(1);
+    while (1);
 }
