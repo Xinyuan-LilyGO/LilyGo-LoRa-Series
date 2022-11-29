@@ -5,13 +5,11 @@
 ## Index
 
 - [Required](#required)
-- [Create a gateway on TTN](#create-a-gateway-on-ttn)
 - [Run sx1302_hal on the Raspberry Pi](#run-sx1302_hal-on-the-raspberry-pi)
-  - [Enable the SPI interface of the Raspberry Pi](#enable-the-spi-interface-of-the-raspberry-pi)
-  - [Download sx1302_hal source code and compile](#download-sx1302_hal-source-code-and-compile)
-  - [Configure global_conf](#configure-global_conf)
-  - [Run sx1302_hal](#run-sx1302_hal)
-  - [Check gateway connection status](#check-gateway-connection-status)
+  - [Deploy sx1302_hal](#deploy-sx1302hal)
+  - [Get relevant information](#get-relevant-information)
+- [Create a gateway on TTN](#create-a-gateway-on-ttn)
+- [Check gateway connection status](#check-gateway-connection-status)
 - [Create end device model on TTN](#create-end-device-model-on-ttn)
   - [Enter the create Application page](#enter-the-create-application-page)
   - [Create end device](#create-end-device)
@@ -33,389 +31,57 @@
 >
 > TTN Version: v3.15.1
 
-## Create a gateway on TTN
-
-1. Log in to https://console.cloud.thethings.network/
-
-2. Select the cluster according to the frequency band supported by the gateway
-
-![cluster_picker](../static/cluster_picker.png)
-
-The frequency band supported by `T-SX1302` is `868MHZ`, here you need to select the `Europe1` cluster
-
-> ! Warning
->
-> `Legacy V2 Console` is a server of TTN V2 version, it will be closed in December 2021, it is not recommended to use
-
-3. Create a gateway
-
-![create_gateways](../static/create_gateways.png)
-
-4. Configure gateway information
-
-It needs to fill in a unique `Gateway EUI`, if there is no better choice, you can use the MAC address of the Raspberry Pi
-
-![config_gateway_info](../static/config_gateway_info.png)
-
-5. Select frequency
-
-![slelct_frequenry](../static/slelct_frequenry.png)
-
 ## Run sx1302_hal on the Raspberry Pi
 
 > NOTE
 >
 > The LoRaWAN gateway that has been connected to TTN, you can ignore this section
 
-### Enable the SPI interface of the Raspberry Pi
+### Deploy sx1302_hal
 
-Open the /boot/config.txt file and write the following at the end of the file:
-
-```
-dtoverlay=spi0-1cs
-```
-
-### Download sx1302_hal source code and compile
-
-1. Download source code:
+Execute [sx1302_hal.sh](../../tools/sx1302_hal.sh) on Raspberry Pi to automatically deploy sx1302_hal.
 
 ```shell
-cd ~
-git clone https://github.com/Lora-net/sx1302_hal.git
-cd sx1302_hal
-git checkout V2.1.0
+sudo ./sx1302_hal.sh -f eu868
+sudo reboot
 ```
 
-2. Modify the source code
-
-Because `sx1302 hal` cannot read the temperature of `T-SX1302`, some codes in `libloragw/src/loragw_hal.c` need to be commented:
-
-```diff
-diff --git a/libloragw/src/loragw_hal.c b/libloragw/src/loragw_hal.c
-index ffc8ec0..504bb42 100644
---- a/libloragw/src/loragw_hal.c
-+++ b/libloragw/src/loragw_hal.c
-@@ -1093,6 +1093,7 @@ int lgw_start(void) {
-     dbg_init_random();
-
-     if (CONTEXT_COM_TYPE == LGW_COM_SPI) {
-+#if 0
-         /* Find the temperature sensor on the known supported ports */
-         for (i = 0; i < (int)(sizeof I2C_PORT_TEMP_SENSOR); i++) {
-             ts_addr = I2C_PORT_TEMP_SENSOR[i];
-@@ -1116,7 +1117,7 @@ int lgw_start(void) {
-             printf("ERROR: no temperature sensor found.\n");
-             return LGW_HAL_ERROR;
-         }
--
-+#endif
-         /* Configure ADC AD338R for full duplex (CN490 reference design) */
-         if (CONTEXT_BOARD.full_duplex == true) {
-             err = i2c_linuxdev_open(I2C_DEVICE, I2C_PORT_DAC_AD5338R, &ad_fd);
-@@ -1285,14 +1286,14 @@ int lgw_receive(uint8_t max_pkt, struct lgw_pkt_rx_s *pkt_data) {
-         nb_pkt_left = nb_pkt_fetched - max_pkt;
-         printf("WARNING: not enough space allocated, fetched %d packet(s), %d will be left in RX buffer\n", nb_pkt_fetched, nb_pkt_left);
-     }
--
-+#if 0
-     /* Apply RSSI temperature compensation */
-     res = lgw_get_temperature(&current_temperature);
-     if (res != LGW_I2C_SUCCESS) {
-         printf("ERROR: failed to get current temperature\n");
-         return LGW_HAL_ERROR;
-     }
--
-+#endif
-     /* Iterate on the RX buffer to get parsed packets */
-     for (nb_pkt_found = 0; nb_pkt_found < ((nb_pkt_fetched <= max_pkt) ? nb_pkt_fetched : max_pkt); nb_pkt_found++) {
-         /* Get packet and move to next one */
-```
-
-Change the reset pin of `T-SX1302` to `GPIO7`:
-
-```diff
-diff --git a/tools/reset_lgw.sh b/tools/reset_lgw.sh
-index b58f0e9..56ff943 100755
---- a/tools/reset_lgw.sh
-+++ b/tools/reset_lgw.sh
-@@ -12,7 +12,7 @@
- # GPIO mapping has to be adapted with HW
- #
-
--SX1302_RESET_PIN=23     # SX1302 reset
-+SX1302_RESET_PIN=7      # SX1302 reset
- SX1302_POWER_EN_PIN=18  # SX1302 power enable
- SX1261_RESET_PIN=22     # SX1261 reset (LBT / Spectral Scan)
- AD5338R_RESET_PIN=13    # AD5338R reset (full-duplex CN490 reference design)
-@@ -90,4 +90,4 @@ case "$1" in
-     ;;
- esac
-```
-
-3. compile
+### Get relevant information
 
 ```shell
-make clean all
-make install
-make install_conf
+pi@raspberrypi:~ $ cat .sx1302_hal/.output
+Gateway EUI: B827EBFFFEFC7AF0
+Gateway Server address: eu1.cloud.thethings.network
+Gateway Server port: 1700
 ```
 
-### Configure global_conf
+## Create a gateway on TTN
 
-```shell
-cd ~/sx1302_hal/bin
-touch global_conf.json.sx1250.T-SX1302
-```
+1. Log in to https://console.cloud.thethings.network/
 
-Add the following content to `global_conf.json.sx1250.T-SX1302` :
+2. Select the cluster according to the frequency band supported by the gateway. The frequency band supported by `T-SX1302` is `868MHZ`, here you need to select the `Europe1` cluster
 
-```json
-{
-    "SX130x_conf": {
-        "com_type": "SPI",
-        "com_path": "/dev/spidev0.0",
-        "lorawan_public": true,
-        "clksrc": 0,
-        "antenna_gain": 0, /* antenna gain, in dBi */
-        "full_duplex": false,
-        "precision_timestamp": {
-            "enable": false,
-            "max_ts_metrics": 255,
-            "nb_symbols": 1
-        },
-        "radio_0": {
-            "enable": true,
-            "type": "SX1250",
-            "freq": 867500000,
-            "rssi_offset": -215.4,
-            "rssi_tcomp": {
-                "coeff_a": 0,
-                "coeff_b": 0,
-                "coeff_c": 20.41,
-                "coeff_d": 2162.56,
-                "coeff_e": 0
-            },
-            "tx_enable": true,
-            "tx_freq_min": 863000000,
-            "tx_freq_max": 870000000,
-            "tx_gain_lut": [
-                {
-                    "rf_power": 12,
-                    "pa_gain": 0,
-                    "pwr_idx": 15
-                },
-                {
-                    "rf_power": 13,
-                    "pa_gain": 0,
-                    "pwr_idx": 16
-                },
-                {
-                    "rf_power": 14,
-                    "pa_gain": 0,
-                    "pwr_idx": 17
-                },
-                {
-                    "rf_power": 15,
-                    "pa_gain": 0,
-                    "pwr_idx": 19
-                },
-                {
-                    "rf_power": 16,
-                    "pa_gain": 0,
-                    "pwr_idx": 20
-                },
-                {
-                    "rf_power": 17,
-                    "pa_gain": 0,
-                    "pwr_idx": 22
-                },
-                {
-                    "rf_power": 18,
-                    "pa_gain": 1,
-                    "pwr_idx": 1
-                },
-                {
-                    "rf_power": 19,
-                    "pa_gain": 1,
-                    "pwr_idx": 2
-                },
-                {
-                    "rf_power": 20,
-                    "pa_gain": 1,
-                    "pwr_idx": 3
-                },
-                {
-                    "rf_power": 21,
-                    "pa_gain": 1,
-                    "pwr_idx": 4
-                },
-                {
-                    "rf_power": 22,
-                    "pa_gain": 1,
-                    "pwr_idx": 5
-                },
-                {
-                    "rf_power": 23,
-                    "pa_gain": 1,
-                    "pwr_idx": 6
-                },
-                {
-                    "rf_power": 24,
-                    "pa_gain": 1,
-                    "pwr_idx": 7
-                },
-                {
-                    "rf_power": 25,
-                    "pa_gain": 1,
-                    "pwr_idx": 9
-                },
-                {
-                    "rf_power": 26,
-                    "pa_gain": 1,
-                    "pwr_idx": 11
-                },
-                {
-                    "rf_power": 27,
-                    "pa_gain": 1,
-                    "pwr_idx": 14
-                }
-            ]
-        },
-        "radio_1": {
-            "enable": true,
-            "type": "SX1250",
-            "freq": 868500000,
-            "rssi_offset": -215.4,
-            "rssi_tcomp": {
-                "coeff_a": 0,
-                "coeff_b": 0,
-                "coeff_c": 20.41,
-                "coeff_d": 2162.56,
-                "coeff_e": 0
-            },
-            "tx_enable": true
-        },
-        "chan_multiSF_0": {
-            "enable": true,
-            "radio": 1,
-            "if": -400000
-        },
-        "chan_multiSF_1": {
-            "enable": true,
-            "radio": 1,
-            "if": -200000
-        },
-        "chan_multiSF_2": {
-            "enable": true,
-            "radio": 1,
-            "if": 0
-        },
-        "chan_multiSF_3": {
-            "enable": true,
-            "radio": 0,
-            "if": -400000
-        },
-        "chan_multiSF_4": {
-            "enable": true,
-            "radio": 0,
-            "if": -200000
-        },
-        "chan_multiSF_5": {
-            "enable": true,
-            "radio": 0,
-            "if": 0
-        },
-        "chan_multiSF_6": {
-            "enable": true,
-            "radio": 0,
-            "if": 200000
-        },
-        "chan_multiSF_7": {
-            "enable": true,
-            "radio": 0,
-            "if": 400000
-        },
-        "chan_Lora_std": {
-            "enable": true,
-            "radio": 1,
-            "if": -200000,
-            "bandwidth": 250000,
-            "spread_factor": 7,
-            "implicit_hdr": false,
-            "implicit_payload_length": 17,
-            "implicit_crc_en": false,
-            "implicit_coderate": 1
-        },
-        "chan_FSK": {
-            "enable": true,
-            "radio": 1,
-            "if": 300000,
-            "bandwidth": 125000,
-            "datarate": 50000
-        }
-    },
-    "gateway_conf": {
-        "gateway_ID": "b827ebFFFEfc7af0",
-        /* change with default server address/ports */
-        "server_address": "eu1.cloud.thethings.network",
-        "serv_port_up": 1700,
-        "serv_port_down": 1700,
-        /* adjust the following parameters for your network */
-        "keepalive_interval": 10,
-        "stat_interval": 30,
-        "push_timeout_ms": 100,
-        /* forward only valid packets */
-        "forward_crc_valid": true,
-        "forward_crc_error": false,
-        "forward_crc_disabled": false,
-        /* GPS configuration */
-        //"gps_tty_path": "/dev/ttyS0",
-        /* GPS reference coordinates */
-        // "ref_latitude": 0.0,
-        //"ref_longitude": 0.0,
-        //"ref_altitude": 0,
-        /* Beaconing parameters */
-        "beacon_period": 0,
-        "beacon_freq_hz": 869525000,
-        "beacon_datarate": 9,
-        "beacon_bw_hz": 125000,
-        "beacon_power": 14,
-        "beacon_infodesc": 0
-    },
-    "debug_conf": {
-        "ref_payload": [
-            {
-                "id": "0xCAFE1234"
-            },
-            {
-                "id": "0xCAFE2345"
-            }
-        ],
-        "log_file": "loragw_hal.log"
-    }
-}
-```
+    ![cluster_picker](../static/cluster_picker.png)
 
-Among them, `gateway_ID` is modified to `b827ebFFFEfc7af0`
+    > ! Warning
+    >
+    > `Legacy V2 Console` is a server of TTN V2 version, it will be closed in December 2021, it is not recommended to use
 
-`server_address` is changed to `eu1.cloud.thethings.network`
+3. Create a gateway
 
-These information should be consistent with the Gateway information created on `TTN`
+    ![create_gateways](../static/create_gateways.png)
 
-![lilygo_gateway_overview](../static/lilygo_gateway_overview.png)
+4. Configure gateway information
 
-> NOTE
->
-> `serv_port_up` and `serv_port_down` are `1700`
+    Fill in the [Gateway EUI] obtained after deploying sx1302_hal (#get related information)
 
-### Run sx1302_hal
+    ![config_gateway_info](../static/config_gateway_info.png)
 
-```shell
-cd ~/sx1302_hal/bin
-./lora_pkt_fwd -c global_conf.json.sx1250.T-SX1302
-```
+5. Select frequency，Need to be consistent with the frequency band parameters of sx1302_hal.sh
 
-### Check gateway connection status
+    ![slelct_frequenry](../static/slelct_frequenry.png)
+
+## Check gateway connection status
 
 Check if the gateway is successfully connected on TTN
 
