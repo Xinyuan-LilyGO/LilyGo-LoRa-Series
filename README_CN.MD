@@ -68,6 +68,7 @@
 │  ├─TinyGPS_FullExample
 │  ├─TinyGPS_KitchenSink
 │  ├─UBlox_BasicNMEARead        # Only support Ublox GNSS Module 
+│  ├─UBlox_Recovery             # Only support Ublox GNSS Module 
 │  └─UBlox_NMEAParsing          # Only support Ublox GNSS Module 
 ├─OLED                          # OLED demo examples
 │  ├─SH1106FontUsage
