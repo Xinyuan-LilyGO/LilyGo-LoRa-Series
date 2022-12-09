@@ -196,7 +196,7 @@
 
 
 #else
-#error "Please select the version you purchased in utilities.h"
+#error "For the first use, please define the board version and model in <utilities. h>"
 #endif
 
 

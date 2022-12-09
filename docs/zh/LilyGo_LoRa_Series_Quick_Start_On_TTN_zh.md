@@ -145,7 +145,7 @@ index 2874773..9b8aade 100644
  /*
 @@ -171,12 +171,3 @@
  #else
- #error "Please select the version you purchased in utilities.h"
+ #error "For the first use, please define the board version and model in <utilities. h>"
  #endif
 ```
 
@@ -223,4 +223,4 @@ index 896be89..6b39f54 100644
 | 版本  | 主要改动 | 日期       | 作者    |
 | ----- | -------- | ---------- | ------- |
 | 1.0.0 | 初始版本 | 2021/10/22 | liangyy |
-| 1.1.0 |         | 2022/11/29 | liangyy |
+| 1.1.0 |          | 2022/11/29 | liangyy |
