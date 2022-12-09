@@ -3,18 +3,21 @@
 
 // #define LILYGO_TBeam_V0_7
 // #define LILYGO_TBeam_V1_X
+// #define LILYGO_TBeam_S3_Core_V3_0
 // #define LILYGO_T3_V1_0
 // #define LILYGO_T3_V1_3
 // #define LILYGO_T3_V1_6
 // #define LILYGO_T3_V2_0
-#define LILYGO_T3_S3_V1_0
+// #define LILYGO_T3_S3_V1_0
 /*
 * The default program uses 868MHz,
 * if you need to change it,
 * please open this note and change to the frequency you need to test
 * */
 
-// #define LoRa_frequency      915.0
+#ifndef LoRa_frequency
+#define LoRa_frequency      868.0
+#endif
 
 
 #define UNUSE_PIN                   (0)
@@ -70,6 +73,64 @@
 #define GPS_BAUD_RATE               9600
 #define HAS_GPS
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
+#define HAS_PMU
+
+
+#elif defined(LILYGO_TBeam_S3_Core_V3_0)
+
+#define I2C_SDA                    17
+#define I2C_SCL                    18
+
+#define I2C1_SDA                    42
+#define I2C1_SCL                    41
+#define PMU_IRQ                     40
+
+#define GPS_RX_PIN                  9
+#define GPS_TX_PIN                  8
+#define GPS_WAKEUP_PIN              7
+#define GPS_1PPS_PIN                6
+
+#define BUTTON_PIN                  0
+#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define BUTTON_CONUT                (1)
+#define BUTTON_ARRAY                {BUTTON_PIN}
+
+#define RADIO_SCLK_PIN              (12)
+#define RADIO_MISO_PIN              (13)
+#define RADIO_MOSI_PIN              (11)
+#define RADIO_CS_PIN                (10)
+#define RADIO_DI0_PIN               (-1)
+#define RADIO_RST_PIN               (5)
+#define RADIO_DIO1_PIN              (1)
+#define RADIO_BUSY_PIN              (4)
+
+#define SPI_MOSI                    (35)
+#define SPI_SCK                     (36)
+#define SPI_MISO                    (37)
+#define SPI_CS                      (47)
+#define IMU_CS                      (34)
+#define IMU_INT                     (33)
+
+#define SDCARD_MOSI                 SPI_MOSI
+#define SDCARD_MISO                 SPI_MISO
+#define SDCARD_SCLK                 SPI_SCK
+#define SDCARD_CS                   SPI_CS
+
+#define PIN_NONE                    (-1)
+#define RTC_INT                     (14)
+
+#define GPS_BAUD_RATE               9600
+
+#define HAS_SDCARD
+#define HAS_GPS
+#define HAS_DISPLAY
+#define HAS_PMU
+
+#define __HAS_SPI1__
+#define __HAS_SENSOR__
+
+#define PMU_WIRE_PORT   Wire1
+#define DISPLAY_MODEL   U8G2_SH1106_128X64_NONAME_F_HW_I2C
 
 #elif defined(LILYGO_T3_V1_0)
 #define I2C_SDA                     4

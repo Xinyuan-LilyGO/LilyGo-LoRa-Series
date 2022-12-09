@@ -55,11 +55,8 @@ void setup()
 
     // initialize SX1262 with default settings
     Serial.print(F("[SX1262] Initializing ... "));
-#ifndef LoRa_frequency
-    int state = radio.begin(868.0);
-#else
     int state = radio.begin(LoRa_frequency);
-#endif
+
 #ifdef HAS_DISPLAY
     if (u8g2) {
         if (state != RADIOLIB_ERR_NONE) {
