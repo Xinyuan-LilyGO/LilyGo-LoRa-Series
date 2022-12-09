@@ -6,29 +6,33 @@
 
 1. Install the current upstream Arduino IDE at the 1.8 level or later. The current version is at the [Arduino website](http://www.arduino.cc/en/main/software). (NOTE: MacOS may require that you install separate drivers to interact with your board. You will get error messages that occur when the IDE attempts to upload code. You should consider running the Arduino IDE in a Virtual Machine on Linux. Installing other drivers on your Mac is out of scope for this document.)
 2. Start Arduino and open Preferences window. In additional board manager add url: `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json` If you have multiple URLs (e.g., for other boards), just add previously mentioned URL, separated by a comma.
-3. Copy all folders in the `libdeps` directory to your Arduino Libraries Directory,
+3. Copy all folders in the `lib` directory to your Arduino Libraries Directory,
 - in MacOS, it is `~/Documents/Arduino/libraries`
 - in Linux, it is `~/Arduino/libraries` 
 - in Windows, it is `Documents/Arduino/libraries` 
 4. Open the corresponding example
-5. In the Arduino Application, navigate to the Board Manager menu ("Tools => Board => Board Manager"), search for `esp32`, and make sure that you install the latest version. After you do this, you can select the board you have from the list of boards in the "ESP32 Arduino" menu ("Tools=> Board => ESP32 Arduino"). It's very important to note that the list of boards is NOT in alphabetical order. Look for the board you are working with carefully in the list. `T-Beam` users can choose `TTGO T-Beam`, `lora32(T3)` users can choose `ESP32 Dev Module` , `T-Motion` users choose `Nucleo_l073RZ`
-6. Select the port of the board in the port
-7. For other examples except the `GPS` directory, please **uncomment** in the upper part of `utilities.h` according to your board model, otherwise the compilation will report an error
-8. Upload
+5. In the Arduino Application, navigate to the Board Manager menu ("Tools => Board => Board Manager"), search for `esp32`, and make sure that you install the latest version. After you do this, you can select the board you have from the list of boards in the "ESP32 Arduino" menu ("Tools=> Board => ESP32 Arduino"). It's very important to note that the list of boards is NOT in alphabetical order. Look for the board you are working with carefully in the list. 
+6. `T-Beam` users can choose `TTGO T-Beam`, `lora32(T3)` users can choose `ESP32 Dev Module` , `T-Motion` users choose `Nucleo_l073RZ`,`T3-S3-V1.0`and `T-BeamS3 Core` users can selected `ESP32S3 Dev Module`
+7. Select the port of the board in the port
+8. For other examples except the `GPS` directory, please **uncomment** in the upper part of `utilities.h` according to your board model, otherwise the compilation will report an error
+9. Upload
 
 ## Product 📷
 
-| Product                   | Product Link                    | Schematic                                              | Corresponding example macro definition                    |
+|          Product          |          Product Link           |                       Schematic                        |          Corresponding example macro definition           |
 | :-----------------------: | :-----------------------------: | :----------------------------------------------------: | :-------------------------------------------------------: |
-| [T-Beam SX1278/76][1-4]   | [AliExpress][1]                 | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
-| [T-Beam SX1262][1-4]      | [AliExpress][2]                 | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
-| [LoRa32 V1.0 SX1276][3-1] | [AliExpress][3]                 | ❌                                                    | LILYGO_T3_V1_0                                             |
-| [LoRa32 V1.0 SX1278][3-1] | [AliExpress][4]                 | ❌                                                    | LILYGO_T3_V1_0                                             |
-| [LoRa32 V1.3 SX1276][5-2] | [AliExpress][5]                 | [LoRa32 V1.3][5-1]                                     | LILYGO_T3_V1_3                                            |
-| [LoRa32 V2.0][6-2]        | [AliExpress][6]                 | [LoRa32 V2.0][6-1]                                     | LILYGO_T3_V1_3                                            |
-| [LoRa32 V2.1 & 1.6][7-4]  | [AliExpress][7-1]/[Amazon][7-2] | [LoRa32 V2.1_1.6][7-3]                                 | LILYGO_T3_V1_6                                            |
-| [T-Motion S76G][8-2]      | [AliExpress][8]                 | [T-Motion][8-1]                                        | LILYGO_T3_V1_6                                            |
-| [LoRa32 V1.8 2.4G][9-2]   | [lilygo.cc][9]                  | [LoRa32 V1.8 2.4G][9-1]                                | LILYGO_T3_V1_8                                            |
+|  [T-Beam SX1278/76][1-4]  |         [AliExpress][1]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
+|   [T-Beam SX1262][1-4]    |         [AliExpress][2]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
+| [LoRa32 V1.0 SX1276][3-1] |         [AliExpress][3]         |                           ❌                            |                      LILYGO_T3_V1_0                       |
+| [LoRa32 V1.0 SX1278][3-1] |         [AliExpress][4]         |                           ❌                            |                      LILYGO_T3_V1_0                       |
+| [LoRa32 V1.3 SX1276][5-2] |         [AliExpress][5]         |                   [LoRa32 V1.3][5-1]                   |                      LILYGO_T3_V1_3                       |
+|    [LoRa32 V2.0][6-2]     |         [AliExpress][6]         |                   [LoRa32 V2.0][6-1]                   |                      LILYGO_T3_V1_3                       |
+| [LoRa32 V2.1 & 1.6][7-4]  | [AliExpress][7-1]/[Amazon][7-2] |                 [LoRa32 V2.1_1.6][7-3]                 |                      LILYGO_T3_V1_6                       |
+|   [T-Motion S76G][8-2]    |         [AliExpress][8]         |                    [T-Motion][8-1]                     |                      LILYGO_T3_V1_6                       |
+|  [LoRa32 V1.8 2.4G][9-2]  |         [lilygo.cc][9]          |                [LoRa32 V1.8 2.4G][9-1]                 |                      LILYGO_T3_V1_8                       |
+|   [LoRa T3 S3 V1.0][10]   |         [lilygo.cc][10]         |                [LoRa T3 S3 V1.0][10-1]                 |                     LILYGO_T3_S3_V1_0                     |
+|   [LoRa T3 S3 V1.1][11]   |         [lilygo.cc][11]         |                [LoRa T3 S3 V1.1][11-1]                 |             LILYGO_T3_S3_V1_0  (Same as 1.0)              |
+
 
 [1]: https://pt.aliexpress.com/item/32967228739.html "T-Beam SX1278/76"
 [1-1]: schematic/LilyGo_TBeam_V0.7.pdf
@@ -55,6 +59,13 @@
 [9]: https://www.lilygo.cc/products/lora-v1-8-esp32 "LoRa32 V1.8 2.4G"
 [9-1]: schematic/T3_V1.8.pdf
 [9-2]: assets/image/lora32_v1.8_pinmap.jpg
+[10]: https://pt.aliexpress.com/item/1005004627139838.html "LoRa T3 S3 V1.0"
+[10-1]: schematic/T3_S3_V1.0.pdf
+[11]: NULL
+[11-1]: schematic/T3_S3_V1.1.pdf
+
+
+
 
 ## Example description
 
@@ -125,11 +136,15 @@ To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Se
 <h3 align = "left">Datasheet :</h3>
 
 - [AXP192](http://www.x-powers.com/en.php/Info/product_detail/article_id/29)
+- [AXP2101](./lib/XPowersLib/datasheet/AXP2101_Datasheet_V1.0_en.pdf)
 - [SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 - [SX1278](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
 - [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
 - [SX1280](https://www.semtech.com/products/wireless-rf/lora-24ghz/sx1280)
+- [sx1280](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
 - [GSP NEO-6/NEO-8](https://www.u-blox.com/en/product/neo-6-series)
+- [GSP MAX-M10](https://www.u-blox.com/zh/product/max-m10-series)
+
 
 ## Announcements
 

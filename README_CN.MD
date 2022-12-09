@@ -4,26 +4,28 @@
 
 ## 快速开始:
 
-1. 将 `libdeps` 目录中所有文件夹复制到`~/Arduino/libraries`目录内,Windons用户放在 `"我的文档/Arduino/libraries"`
+1. 将 `lib` 目录中所有文件夹复制到`~/Arduino/libraries`目录内,Windons用户放在 `"我的文档/Arduino/libraries"`
 2. 打开对应的示例
-3. `T-Beam`用户可以选择`TTGO T-Beam`,`lora32(T3)`用户可以选择`ESP32 Dev Module`,`T-Motion` 用户选择 `Nucleo_l073RZ`
+3. `T-Beam`用户可以选择`TTGO T-Beam`,`lora32(T3)`用户可以选择`ESP32 Dev Module`,`T-Motion` 用户选择 `Nucleo_l073RZ`,`T3-S3-V1.0`和`T-BeamS3-Core`用户选择`ESP32S3 Dev Module`
 4. 在端口中选择板子的端口
 5. 除了GPS 目录外的其他示例，请在`utilities.h` 中上方根据你的板子型号取消注释,否则编译将报错误
 6. 上传
 
 ## Product 📷
 
-| Product                   | Product Link                    | Schematic                                              | Corresponding example macro definition                    |
+|          Product          |          Product Link           |                       Schematic                        |          Corresponding example macro definition           |
 | :-----------------------: | :-----------------------------: | :----------------------------------------------------: | :-------------------------------------------------------: |
-| [T-Beam SX1278/76][1-4]   | [AliExpress][1]                 | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
-| [T-Beam SX1262][1-4]      | [AliExpress][2]                 | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
-| [LoRa32 V1.0 SX1276][3-1] | [AliExpress][3]                 | ❌                                                    | LILYGO_T3_V1_0                                             |
-| [LoRa32 V1.0 SX1278][3-1] | [AliExpress][4]                 | ❌                                                    | LILYGO_T3_V1_0                                             |
-| [LoRa32 V1.3 SX1276][5-2] | [AliExpress][5]                 | [LoRa32 V1.3][5-1]                                     | LILYGO_T3_V1_3                                            |
-| [LoRa32 V2.0][6-2]        | [AliExpress][6]                 | [LoRa32 V2.0][6-1]                                     | LILYGO_T3_V1_3                                            |
-| [LoRa32 V2.1 & 1.6][7-4]  | [AliExpress][7-1]/[Amazon][7-2] | [LoRa32 V2.1_1.6][7-3]                                 | LILYGO_T3_V1_6                                            |
-| [T-Motion S76G][8-2]      | [AliExpress][8]                 | [T-Motion][8-1]                                        | LILYGO_T3_V1_6                                            |
-| [LoRa32 V1.8 2.4G][9-2]   | [lilygo.cc][9]                  | [LoRa32 V1.8 2.4G][9-1]                                | LILYGO_T3_V1_8                                            |
+|  [T-Beam SX1278/76][1-4]  |         [AliExpress][1]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
+|   [T-Beam SX1262][1-4]    |         [AliExpress][2]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_0 / LILYGO_TBeam_V1_1 |
+| [LoRa32 V1.0 SX1276][3-1] |         [AliExpress][3]         |                           ❌                            |                      LILYGO_T3_V1_0                       |
+| [LoRa32 V1.0 SX1278][3-1] |         [AliExpress][4]         |                           ❌                            |                      LILYGO_T3_V1_0                       |
+| [LoRa32 V1.3 SX1276][5-2] |         [AliExpress][5]         |                   [LoRa32 V1.3][5-1]                   |                      LILYGO_T3_V1_3                       |
+|    [LoRa32 V2.0][6-2]     |         [AliExpress][6]         |                   [LoRa32 V2.0][6-1]                   |                      LILYGO_T3_V1_3                       |
+| [LoRa32 V2.1 & 1.6][7-4]  | [AliExpress][7-1]/[Amazon][7-2] |                 [LoRa32 V2.1_1.6][7-3]                 |                      LILYGO_T3_V1_6                       |
+|   [T-Motion S76G][8-2]    |         [AliExpress][8]         |                    [T-Motion][8-1]                     |                      LILYGO_T3_V1_6                       |
+|  [LoRa32 V1.8 2.4G][9-2]  |         [lilygo.cc][9]          |                [LoRa32 V1.8 2.4G][9-1]                 |                      LILYGO_T3_V1_8                       |
+|   [LoRa T3 S3 V1.0][10]   |         [lilygo.cc][10]         |                [LoRa T3 S3 V1.0][10-1]                 |                     LILYGO_T3_S3_V1_0                     |
+|   [LoRa T3 S3 V1.1][11]   |         [lilygo.cc][11]         |                [LoRa T3 S3 V1.1][11-1]                 |             LILYGO_T3_S3_V1_0  (Same as 1.0)              |
 
 [1]: https://pt.aliexpress.com/item/32967228739.html "T-Beam SX1278/76"
 [1-1]: schematic/LilyGo_TBeam_V0.7.pdf
@@ -50,6 +52,10 @@
 [9]: https://www.lilygo.cc/products/lora-v1-8-esp32 "LoRa32 V1.8 2.4G"
 [9-1]: schematic/T3_V1.8.pdf
 [9-2]: assets/image/lora32_v1.8_pinmap.jpg
+[10]: https://pt.aliexpress.com/item/1005004627139838.html "LoRa T3 S3 V1.0"
+[10-1]: schematic/T3_S3_V1.0.pdf
+[11]: NULL
+[11-1]: schematic/T3_S3_V1.1.pdf
 
 ## 示例描述
 
@@ -121,11 +127,14 @@ examples
 ## 数据手册
 
 - [AXP192](http://www.x-powers.com/en.php/Info/product_detail/article_id/29)
+- [AXP2101](./lib/XPowersLib/datasheet/AXP2101_Datasheet_V1.0_en.pdf)
 - [SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 - [SX1278](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
 - [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
+- [sx1280](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
 - [GSP NEO-6/NEO-8](https://www.u-blox.com/en/product/neo-6-series)
-- [GPS Air530]()
+- [GSP MAX-M10](https://www.u-blox.com/zh/product/max-m10-series)
+
 
 
 ## 注意事项
