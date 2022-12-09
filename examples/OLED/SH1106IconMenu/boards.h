@@ -386,15 +386,7 @@ void initBoard()
     delay(3000);
 #endif
 
-#ifdef HAS_DISPLAY
-    if (u8g2) {
-        u8g2->clearBuffer();
-        do {
-            u8g2->setCursor(0, 16);
-            u8g2->println( "Waiting to receive data");;
-        } while ( u8g2->nextPage() );
-    }
-#endif
+
 
 }
 

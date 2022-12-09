@@ -4,7 +4,7 @@
 */
 
 #include <TinyGPS++.h>
-#include "utilities.h"
+#include "boards.h"
 
 TinyGPSPlus gps;
 
