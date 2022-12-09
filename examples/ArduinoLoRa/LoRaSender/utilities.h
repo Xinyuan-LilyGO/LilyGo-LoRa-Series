@@ -6,8 +6,7 @@
 * RadioLib Library supports also SX1262/SX1268 see https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/tree/master/examples/RadioLibExamples
 * */
 // #define LILYGO_TBeam_V0_7
-// #define LILYGO_TBeam_V1_0
-// #define LILYGO_TBeam_V1_1
+// #define LILYGO_TBeam_V1_X
 // #define LILYGO_T3_V1_0
 // #define LILYGO_T3_V1_3
 // #define LILYGO_T3_V1_6
@@ -50,7 +49,7 @@
 #define HAS_GPS
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
 
-#elif defined(LILYGO_TBeam_V1_0) || defined(LILYGO_TBeam_V1_1)
+#elif defined(LILYGO_TBeam_V1_X)
 
 #define GPS_RX_PIN                  34
 #define GPS_TX_PIN                  12

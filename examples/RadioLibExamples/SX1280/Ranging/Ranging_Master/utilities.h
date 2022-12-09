@@ -3,8 +3,7 @@
 
 
 // #define LILYGO_TBeam_V0_7    //NO SUPPOTR
-// #define LILYGO_TBeam_V1_0    //NO SUPPOTR
-// #define LILYGO_TBeam_V1_1    //NO SUPPOTR
+// #define LILYGO_TBeam_V1_X    //NO SUPPOTR
 // #define LILYGO_T3_V1_0       //NO SUPPOTR
 // #define LILYGO_T3_V1_3       //NO SUPPOTR
 // #define LILYGO_T3_V1_6       //NO SUPPOTR
@@ -36,7 +35,7 @@
 #define HAS_GPS
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
 
-#elif defined(LILYGO_TBeam_V1_0) || defined(LILYGO_TBeam_V1_1)
+#elif defined(LILYGO_TBeam_V1_X)
 
 #define GPS_RX_PIN                  34
 #define GPS_TX_PIN                  12
