@@ -90,7 +90,7 @@ void setup() {
   // initialize SX1278 with default settings
   Serial.print(F("[SX1278] Initializing ... "));
   int state = radio.beginFSK();
-  if (state == ERR_NONE) {
+  if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
     Serial.print(F("failed, code "));
@@ -105,7 +105,16 @@ void setup() {
   // initialize SSTV client
   Serial.print(F("[SSTV] Initializing ... "));
   // SSTV mode:                   Wrasse (SC2-180)
-  // correction factor:           0.95
+  state = sstv.begin(Wrasse);
+  if(state == RADIOLIB_ERR_NONE) {
+    Serial.println(F("success!"));
+  } else {
+    Serial.print(F("failed, code "));
+    Serial.println(state);
+    while(true);
+  }
+
+  // set correction factor
   // NOTE: Due to different speeds of various platforms
   //       supported by RadioLib (Arduino Uno, ESP32 etc),
   //       and because SSTV is analog protocol, incorrect
@@ -114,8 +123,9 @@ void setup() {
   //       to adjust the length of timing pulses
   //       (lower number = shorter pulses).
   //       The value is usually around 0.95 (95%).
-  state = sstv.begin(Wrasse, 0.95);
-  if(state == ERR_NONE) {
+  Serial.print(F("[SSTV] Setting correction ... "));
+  state = sstv.setCorrection(0.95);
+  if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
     Serial.print(F("failed, code "));

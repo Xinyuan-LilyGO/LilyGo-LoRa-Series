@@ -26,6 +26,13 @@ class AFSKClient  {
     AFSKClient(PhysicalLayer* phy, RADIOLIB_PIN_TYPE pin);
 
     /*!
+      \brief Initialization method.
+
+      \returns \ref status_codes
+    */
+    int16_t begin();
+
+    /*!
       \brief Start transmitting audio tone.
 
       \param freq Frequency of the tone in Hz.
@@ -39,11 +46,13 @@ class AFSKClient  {
     /*!
       \brief Stops transmitting audio tone.
 
+      \param freq Keep transmitter on - this may limit noise when switching transmitter on or off.
+
       \returns \ref status_codes
     */
-    int16_t noTone();
+    int16_t noTone(bool keepOn = false);
 
-#ifndef RADIOLIB_GODMODE
+#if !defined(RADIOLIB_GODMODE)
   private:
 #endif
     PhysicalLayer* _phy;
@@ -55,6 +64,7 @@ class AFSKClient  {
     friend class HellClient;
     friend class SSTVClient;
     friend class AX25Client;
+    friend class FSK4Client;
 };
 
 #endif

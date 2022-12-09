@@ -107,7 +107,7 @@ void setup()
     int state = radio.begin(LoRa_frequency);
 #endif
 
-    if (state == ERR_NONE) {
+    if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
     } else {
         Serial.print(F("failed, code "));
@@ -181,7 +181,7 @@ void SenderLoop(void)
     snprintf(buff[0], sizeof(buff[0]), "T-Beam Lora Sender");
     // Send data every 3 seconds
     if (millis() - loraLoopMillis > 3000) {
-        int transmissionState = ERR_NONE;
+        int transmissionState = RADIOLIB_ERR_NONE;
         transmissionState = radio.startTransmit(String(loraLoopMillis).c_str());
         // check if the previous transmission finished
         if (receivedFlag) {
@@ -190,7 +190,7 @@ void SenderLoop(void)
             enableInterrupt = false;
             // reset flag
             receivedFlag = false;
-            if (transmissionState == ERR_NONE) {
+            if (transmissionState == RADIOLIB_ERR_NONE) {
                 // packet was successfully sent
                 Serial.println(F("transmission finished!"));
                 // NOTE: when using interrupt-driven transmit method,
@@ -250,7 +250,7 @@ void ReceiveLoop(void)
           int state = radio.readData(byteArr, 8);
         */
 
-        if (state == ERR_NONE) {
+        if (state == RADIOLIB_ERR_NONE) {
             // packet was successfully received
             Serial.println(F("[RADIO] Received packet!"));
 
@@ -269,7 +269,7 @@ void ReceiveLoop(void)
             Serial.print(radio.getSNR());
             Serial.println(F(" dB"));
 
-        } else if (state == ERR_CRC_MISMATCH) {
+        } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
             // packet was received, but is malformed
             Serial.println(F("CRC error!"));
 
@@ -304,7 +304,7 @@ void ButtonHandleEvent(AceButton *, uint8_t eventType, uint8_t buttonState)
         if (funcSelectIndex == 2) {
             Serial.print(F("[RADIO] Starting to listen ... "));
             int state = radio.startReceive();
-            if (state == ERR_NONE) {
+            if (state == RADIOLIB_ERR_NONE) {
                 Serial.println(F("success!"));
             } else {
                 Serial.print(F("failed, code "));

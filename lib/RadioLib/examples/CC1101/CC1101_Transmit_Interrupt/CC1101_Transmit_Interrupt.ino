@@ -22,7 +22,7 @@
 // CS pin:    10
 // GDO0 pin:  2
 // RST pin:   unused
-// GDO2 pin:  3 (optional)
+// GDO2 pin:  3
 CC1101 radio = new Module(10, 2, RADIOLIB_NC, 3);
 
 // or using RadioShield
@@ -30,7 +30,7 @@ CC1101 radio = new Module(10, 2, RADIOLIB_NC, 3);
 //CC1101 radio = RadioShield.ModuleA;
 
 // save transmission state between loops
-int transmissionState = ERR_NONE;
+int transmissionState = RADIOLIB_ERR_NONE;
 
 void setup() {
   Serial.begin(9600);
@@ -38,7 +38,7 @@ void setup() {
   // initialize CC1101 with default settings
   Serial.print(F("[CC1101] Initializing ... "));
   int state = radio.begin();
-  if (state == ERR_NONE) {
+  if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
     Serial.print(F("failed, code "));
@@ -48,7 +48,10 @@ void setup() {
 
   // set the function that will be called
   // when packet transmission is finished
-  radio.setGdo0Action(setFlag);
+  // NOTE: Unlike other modules (such as SX127x),
+  //       different GDOx pins are used for
+  //       transmit and receive interrupts!
+  radio.setGdo2Action(setFlag);
 
   // start transmitting the first packet
   Serial.print(F("[CC1101] Sending first packet ... "));
@@ -75,6 +78,9 @@ volatile bool enableInterrupt = true;
 // is transmitted by the module
 // IMPORTANT: this function MUST be 'void' type
 //            and MUST NOT have any arguments!
+#if defined(ESP8266) || defined(ESP32)
+  ICACHE_RAM_ATTR
+#endif
 void setFlag(void) {
   // check if the interrupt is enabled
   if(!enableInterrupt) {
@@ -95,7 +101,7 @@ void loop() {
     // reset flag
     transmittedFlag = false;
 
-    if (transmissionState == ERR_NONE) {
+    if (transmissionState == RADIOLIB_ERR_NONE) {
       // packet was successfully sent
       Serial.println(F("transmission finished!"));
 
@@ -108,6 +114,11 @@ void loop() {
       Serial.println(transmissionState);
 
     }
+
+    // clean up after transmission is finished
+    // this will ensure transmitter is disabled,
+    // RF switch is powered down etc.
+    radio.finishTransmit();
 
     // wait a second before transmitting again
     delay(1000);

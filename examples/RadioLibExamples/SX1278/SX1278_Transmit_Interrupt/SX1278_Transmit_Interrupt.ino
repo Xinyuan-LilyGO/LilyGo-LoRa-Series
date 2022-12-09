@@ -23,7 +23,7 @@
 SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DI0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 // save transmission state between loops
-int transmissionState = ERR_NONE;
+int transmissionState = RADIOLIB_ERR_NONE;
 
 // flag to indicate that a packet was sent
 volatile bool transmittedFlag = false;
@@ -62,14 +62,14 @@ void setup()
 #endif
 #ifdef HAS_DISPLAY
     if (u8g2) {
-        if (state != ERR_NONE) {
+        if (state != RADIOLIB_ERR_NONE) {
             u8g2->clearBuffer();
             u8g2->drawStr(0, 12, "Initializing: FAIL!");
             u8g2->sendBuffer();
         }
     }
 #endif
-    if (state == ERR_NONE) {
+    if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
     } else {
         Serial.print(F("failed, code "));
@@ -111,7 +111,7 @@ void loop()
         // reset flag
         transmittedFlag = false;
 
-        if (transmissionState == ERR_NONE) {
+        if (transmissionState == RADIOLIB_ERR_NONE) {
             // packet was successfully sent
             Serial.println(F("transmission finished!"));
 

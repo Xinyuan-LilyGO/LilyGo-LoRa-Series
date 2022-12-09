@@ -1,5 +1,5 @@
-#if !defined(_RADIOLIB_SSTV_H)
-#define _RADIOLIB_SSTV_H
+#if !defined(_RADIOLIB_RADIOLIB_SSTV_H)
+#define _RADIOLIB_RADIOLIB_SSTV_H
 
 #include "../../TypeDef.h"
 
@@ -12,28 +12,28 @@
 // http://www.barberdsp.com/downloads/Dayton%20Paper.pdf
 
 // VIS codes
-#define SSTV_SCOTTIE_1                                60
-#define SSTV_SCOTTIE_2                                56
-#define SSTV_SCOTTIE_DX                               76
-#define SSTV_MARTIN_1                                 44
-#define SSTV_MARTIN_2                                 40
-#define SSTV_WRASSE_SC2_180                           55
-#define SSTV_PASOKON_P3                               113
-#define SSTV_PASOKON_P5                               114
-#define SSTV_PASOKON_P7                               115
+#define RADIOLIB_SSTV_SCOTTIE_1                                 60
+#define RADIOLIB_SSTV_SCOTTIE_2                                 56
+#define RADIOLIB_SSTV_SCOTTIE_DX                                76
+#define RADIOLIB_SSTV_MARTIN_1                                  44
+#define RADIOLIB_SSTV_MARTIN_2                                  40
+#define RADIOLIB_SSTV_WRASSE_SC2_180                            55
+#define RADIOLIB_SSTV_PASOKON_P3                                113
+#define RADIOLIB_SSTV_PASOKON_P5                                114
+#define RADIOLIB_SSTV_PASOKON_P7                                115
 
 // SSTV tones in Hz
-#define SSTV_TONE_LEADER                              1900
-#define SSTV_TONE_BREAK                               1200
-#define SSTV_TONE_VIS_1                               1100
-#define SSTV_TONE_VIS_0                               1300
-#define SSTV_TONE_BRIGHTNESS_MIN                      1500
-#define SSTV_TONE_BRIGHTNESS_MAX                      2300
+#define RADIOLIB_SSTV_TONE_LEADER                               1900
+#define RADIOLIB_SSTV_TONE_BREAK                                1200
+#define RADIOLIB_SSTV_TONE_VIS_1                                1100
+#define RADIOLIB_SSTV_TONE_VIS_0                                1300
+#define RADIOLIB_SSTV_TONE_BRIGHTNESS_MIN                       1500
+#define RADIOLIB_SSTV_TONE_BRIGHTNESS_MAX                       2300
 
 // calibration header timing in us
-#define SSTV_HEADER_LEADER_LENGTH                     300000
-#define SSTV_HEADER_BREAK_LENGTH                      10000
-#define SSTV_HEADER_BIT_LENGTH                        30000
+#define RADIOLIB_SSTV_HEADER_LEADER_LENGTH                      300000
+#define RADIOLIB_SSTV_HEADER_BREAK_LENGTH                       10000
+#define RADIOLIB_SSTV_HEADER_BIT_LENGTH                         30000
 
 /*!
   \struct tone_t
@@ -144,11 +144,9 @@ class SSTVClient {
 
       \param mode SSTV mode to be used. Currently supported modes are Scottie1, Scottie2, ScottieDX, Martin1, Martin2, Wrasse, PasokonP3, PasokonP5 and PasokonP7.
 
-      \param correction Timing correction factor, used to adjust the length of timing pulses. Less than 1.0 leads to shorter timing pulses, defaults to 1.0 (no correction).
-
       \returns \ref status_codes
     */
-    int16_t begin(float base, const SSTVMode_t& mode, float correction = 1.0);
+    int16_t begin(float base, const SSTVMode_t& mode);
 
     #if !defined(RADIOLIB_EXCLUDE_AFSK)
     /*!
@@ -156,12 +154,19 @@ class SSTVClient {
 
       \param mode SSTV mode to be used. Currently supported modes are Scottie1, Scottie2, ScottieDX, Martin1, Martin2, Wrasse, PasokonP3, PasokonP5 and PasokonP7.
 
+      \returns \ref status_codes
+    */
+    int16_t begin(const SSTVMode_t& mode);
+    #endif
+
+    /*!
+      \brief Set correction coefficient for tone length.
+
       \param correction Timing correction factor, used to adjust the length of timing pulses. Less than 1.0 leads to shorter timing pulses, defaults to 1.0 (no correction).
 
       \returns \ref status_codes
     */
-    int16_t begin(const SSTVMode_t& mode, float correction = 1.0);
-    #endif
+    int16_t setCorrection(float correction);
 
     /*!
       \brief Sends out tone at 1900 Hz.
@@ -187,7 +192,7 @@ class SSTVClient {
     */
     uint16_t getPictureHeight() const;
 
-#ifndef RADIOLIB_GODMODE
+#if !defined(RADIOLIB_GODMODE)
   private:
 #endif
     PhysicalLayer* _phy;

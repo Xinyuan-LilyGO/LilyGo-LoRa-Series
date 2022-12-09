@@ -1,7 +1,8 @@
-#ifndef _RADIOLIB_PHYSICAL_LAYER_H
+#if !defined(_RADIOLIB_PHYSICAL_LAYER_H)
 #define _RADIOLIB_PHYSICAL_LAYER_H
 
 #include "../../TypeDef.h"
+#include "../../Module.h"
 
 /*!
   \class PhysicalLayer
@@ -20,7 +21,7 @@ class PhysicalLayer {
 
       \param freqStep Frequency step of the synthesizer in Hz.
 
-      \param maxPacketLength Maximum length of packet that can be received by the module-
+      \param maxPacketLength Maximum length of packet that can be received by the module.
     */
     PhysicalLayer(float freqStep, size_t maxPacketLength);
 
@@ -139,11 +140,19 @@ class PhysicalLayer {
     virtual int16_t startTransmit(uint8_t* data, size_t len, uint8_t addr = 0) = 0;
 
     /*!
+      \brief Clean up after transmission is done.
+
+      \returns \ref status_codes
+    */
+    virtual int16_t finishTransmit() = 0;
+
+    /*!
       \brief Reads data that was received after calling startReceive method.
 
       \param str Address of Arduino String to save the received data.
 
-      \param len Expected number of characters in the message.
+      \param len Expected number of characters in the message. When set to 0, the packet length will be retreived automatically.
+      When more bytes than received are requested, only the number of bytes requested will be returned.
 
       \returns \ref status_codes
     */
@@ -154,7 +163,8 @@ class PhysicalLayer {
 
       \param data Pointer to array to save the received binary data.
 
-      \param len Number of bytes that will be received. Must be known in advance for binary transmissions.
+      \param len Number of bytes that will be read. When set to 0, the packet length will be retreived automatically.
+      When more bytes than received are requested, only the number of bytes requested will be returned.
 
       \returns \ref status_codes
     */
@@ -181,8 +191,25 @@ class PhysicalLayer {
     // configuration methods
 
     /*!
-      \brief Sets FSK frequency deviation from carrier frequency. Allowed values depend on bit rate setting and must be lower than 200 kHz.
-      Only available in FSK mode. Must be implemented in module class.
+      \brief Sets carrier frequency. Must be implemented in module class.
+
+      \param freq Carrier frequency to be set in MHz.
+
+      \returns \ref status_codes
+    */
+    virtual int16_t setFrequency(float freq) = 0;
+
+    /*!
+      \brief Sets FSK bit rate. Only available in FSK mode. Must be implemented in module class.
+
+      \param br Bit rate to be set (in kbps).
+
+      \returns \ref status_codes
+    */
+    virtual int16_t setBitRate(float br) = 0;
+
+    /*!
+      \brief Sets FSK frequency deviation from carrier frequency. Only available in FSK mode. Must be implemented in module class.
 
       \param freqDev Frequency deviation to be set (in kHz).
 
@@ -216,46 +243,159 @@ class PhysicalLayer {
     float getFreqStep() const;
 
     /*!
-     \brief Query modem for the packet length of received payload. Must be implemented in module class.
+      \brief Query modem for the packet length of received payload. Must be implemented in module class.
 
-     \param update Update received packet length. Will return cached value when set to false.
+      \param update Update received packet length. Will return cached value when set to false.
 
-     \returns Length of last received packet in bytes.
-   */
-   virtual size_t getPacketLength(bool update = true) = 0;
+      \returns Length of last received packet in bytes.
+    */
+    virtual size_t getPacketLength(bool update = true) = 0;
 
-   /*!
-    \brief Get truly random number in range 0 - max.
+    /*!
+      \brief Get truly random number in range 0 - max.
 
-    \param max The maximum value of the random number (non-inclusive).
+      \param max The maximum value of the random number (non-inclusive).
 
-    \returns Random number.
-   */
-   int32_t random(int32_t max);
+      \returns Random number.
+    */
+    int32_t random(int32_t max);
 
-   /*!
-    \brief Get truly random number in range min - max.
+    /*!
+      \brief Get truly random number in range min - max.
 
-    \param min The minimum value of the random number (inclusive).
+      \param min The minimum value of the random number (inclusive).
 
-    \param max The maximum value of the random number (non-inclusive).
-   
-    \returns Random number.
-   */
-   int32_t random(int32_t min, int32_t max);
+      \param max The maximum value of the random number (non-inclusive).
 
-   /*!
-    \brief Get one truly random byte from RSSI noise. Must be implemented in module class.
+      \returns Random number.
+    */
+    int32_t random(int32_t min, int32_t max);
 
-    \returns TRNG byte.
-  */
-   virtual uint8_t random() = 0;
+    /*!
+      \brief Get one truly random byte from RSSI noise. Must be implemented in module class.
 
-#ifndef RADIOLIB_GODMODE
+      \returns TRNG byte.
+    */
+    virtual uint8_t randomByte() = 0;
+
+    /*!
+      \brief Configure module parameters for direct modes. Must be called prior to "ham" modes like RTTY or AX.25. Only available in FSK mode.
+
+      \returns \ref status_codes
+    */
+    int16_t startDirect();
+
+    #if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+    /*!
+      \brief Set sync word to be used to determine start of packet in direct reception mode.
+
+      \param syncWord Sync word bits.
+
+      \param len Sync word length in bits. Set to zero to disable sync word matching.
+
+      \returns \ref status_codes
+    */
+    int16_t setDirectSyncWord(uint32_t syncWord, uint8_t len);
+
+    /*!
+      \brief Set interrupt service routine function to call when data bit is receveid in direct mode. Must be implemented in module class.
+
+      \param func Pointer to interrupt service routine.
+    */
+    virtual void setDirectAction(void (*func)(void)) = 0;
+
+    /*!
+      \brief Function to read and process data bit in direct reception mode. Must be implemented in module class.
+
+      \param pin Pin on which to read.
+    */
+    virtual void readBit(RADIOLIB_PIN_TYPE pin) = 0;
+
+    /*!
+      \brief Get the number of direct mode bytes currently available in buffer.
+
+      \returns Number of available bytes.
+    */
+    int16_t available();
+
+    /*!
+      \brief Forcefully drop synchronization.
+    */
+    void dropSync();
+
+    /*!
+      \brief Get data from direct mode buffer.
+
+      \param drop Drop synchronization on read - next reading will require waiting for the sync word again. Defautls to true.
+
+      \returns Byte from direct mode buffer.
+    */
+    uint8_t read(bool drop = true);
+    #endif
+
+    /*!
+      \brief Configure DIO pin mapping to get a given signal on a DIO pin (if available).
+
+      \param pin Pin number onto which a signal is to be placed.
+
+      \param value The value that indicates which function to place on that pin. See chip datasheet for details.
+
+      \returns \ref status_codes
+    */
+    virtual int16_t setDIOMapping(RADIOLIB_PIN_TYPE pin, uint8_t value);
+
+    #if defined(RADIOLIB_INTERRUPT_TIMING)
+
+    /*!
+      \brief Set function to be called to set up the timing interrupt.
+      For details, see https://github.com/jgromes/RadioLib/wiki/Interrupt-Based-Timing
+
+      \param func Setup function to be called, with one argument (pulse length in microseconds).
+    */
+    void setInterruptSetup(void (*func)(uint32_t));
+
+    /*!
+      \brief Set timing interrupt flag.
+      For details, see https://github.com/jgromes/RadioLib/wiki/Interrupt-Based-Timing
+    */
+    void setTimerFlag();
+
+    #endif
+
+#if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+  protected:
+    void updateDirectBuffer(uint8_t bit);
+#endif
+
+#if !defined(RADIOLIB_GODMODE)
   private:
 #endif
     float _freqStep;
     size_t _maxPacketLength;
+
+    #if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+    uint8_t _bufferBitPos;
+    uint8_t _bufferWritePos;
+    uint8_t _bufferReadPos;
+    uint8_t _buffer[RADIOLIB_STATIC_ARRAY_SIZE];
+    uint32_t _syncBuffer;
+    uint32_t _directSyncWord;
+    uint8_t _directSyncWordLen;
+    uint32_t _directSyncWordMask;
+    bool _gotSync;
+    #endif
+
+    virtual Module* getMod() = 0;
+
+    // allow specific classes access the private getMod method
+    friend class AFSKClient;
+    friend class RTTYClient;
+    friend class MorseClient;
+    friend class HellClient;
+    friend class SSTVClient;
+    friend class AX25Client;
+    friend class FSK4Client;
+    friend class PagerClient;
 };
 
 #endif

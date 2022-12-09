@@ -8,13 +8,13 @@
 #include "../PhysicalLayer/PhysicalLayer.h"
 #include "../AFSK/AFSK.h"
 
-#define HELL_FONT_WIDTH                               7
-#define HELL_FONT_HEIGHT                              7
+#define RADIOLIB_HELL_FONT_WIDTH                                7
+#define RADIOLIB_HELL_FONT_HEIGHT                               7
 
 // font definition: characters are stored in rows,
 //                  least significant byte of each character is the first row
 //                  Hellschreiber use 7x7 characters, but this simplified font uses only 5x5 - the extra bytes aren't stored
-static const uint8_t HellFont[64][HELL_FONT_WIDTH - 2] RADIOLIB_PROGMEM = {
+static const uint8_t HellFont[64][RADIOLIB_HELL_FONT_WIDTH - 2] RADIOLIB_NONVOLATILE = {
   { 0b0000000, 0b0000000, 0b0000000, 0b0000000, 0b0000000 },  // space
   { 0b0001000, 0b0001000, 0b0001000, 0b0000000, 0b0001000 },  // !
   { 0b0010100, 0b0010100, 0b0000000, 0b0000000, 0b0000000 },  // "
@@ -27,7 +27,7 @@ static const uint8_t HellFont[64][HELL_FONT_WIDTH - 2] RADIOLIB_PROGMEM = {
   { 0b0010000, 0b0001000, 0b0001000, 0b0001000, 0b0010000 },  // )
   { 0b0010100, 0b0001000, 0b0010100, 0b0000000, 0b0000000 },  // *
   { 0b0001000, 0b0001000, 0b0111110, 0b0001000, 0b0001000 },  // +
-  { 0b0001000, 0b0010000, 0b0000000, 0b0000000, 0b0000000 },  // ´
+  { 0b0000000, 0b0000000, 0b0000000, 0b0001000, 0b0010000 },  // ,
   { 0b0000000, 0b0000000, 0b0111110, 0b0000000, 0b0000000 },  // -
   { 0b0000000, 0b0000000, 0b0000000, 0b0000000, 0b0001000 },  // .
   { 0b0000010, 0b0000100, 0b0001000, 0b0010000, 0b0100000 },  // /
@@ -119,8 +119,17 @@ class HellClient {
       \brief Method to "print" a buffer of pixels, this is exposed to allow users to send custom characters.
 
       \param buff Buffer of pixels to send, in a 7x7 pixel array.
+
+      \returns Always returns the number of printed glyphs (1).
     */
     size_t printGlyph(uint8_t* buff);
+
+    /*!
+      \brief Invert text color.
+
+      \param invert Whether to enable color inversion (white text on black background), or not (black text on white background)
+    */
+    void setInversion(bool invert);
 
     size_t write(const char* str);
     size_t write(uint8_t* buff, size_t len);
@@ -149,7 +158,7 @@ class HellClient {
     size_t println(unsigned long, int = DEC);
     size_t println(double, int = 2);
 
-#ifndef RADIOLIB_GODMODE
+#if !defined(RADIOLIB_GODMODE)
   private:
 #endif
     PhysicalLayer* _phy;
@@ -159,6 +168,7 @@ class HellClient {
 
     uint32_t _base = 0, _baseHz = 0;
     uint32_t _pixelDuration = 0;
+    bool _inv = false;
 
     size_t printNumber(unsigned long, uint8_t);
     size_t printFloat(double, uint8_t);

@@ -1,52 +1,25 @@
-#ifndef _RADIOLIB_MODULE_H
+#if !defined(_RADIOLIB_MODULE_H)
 #define _RADIOLIB_MODULE_H
 
 #include "TypeDef.h"
 
-#include <SPI.h>
-#ifndef RADIOLIB_SOFTWARE_SERIAL_UNSUPPORTED
-#include <SoftwareSerial.h>
+#if defined(RADIOLIB_BUILD_ARDUINO)
+  #include <SPI.h>
 #endif
 
 /*!
   \class Module
 
-  \brief Implements all common low-level SPI/UART/I2C methods to control the wireless module.
+  \brief Implements all common low-level methods to control the wireless module.
   Every module class contains one private instance of this class.
 */
 class Module {
   public:
 
-    /*!
-      \brief UART-based module constructor.
-
-      \param rx Arduino pin to be used as Rx pin for SoftwareSerial communication.
-
-      \param tx Arduino pin to be used as Tx pin for SoftwareSerial communication.
-
-      \param serial HardwareSerial to be used on platforms that do not support SoftwareSerial. Defaults to Serial1.
-
-      \param rst Arduino pin to be used as hardware reset for the module. Defaults to NC (unused).
-    */
-#ifdef RADIOLIB_SOFTWARE_SERIAL_UNSUPPORTED
-    Module(RADIOLIB_PIN_TYPE rx, RADIOLIB_PIN_TYPE tx, HardwareSerial* serial = &RADIOLIB_HARDWARE_SERIAL_PORT, RADIOLIB_PIN_TYPE rst = RADIOLIB_NC);
-#else
-    Module(RADIOLIB_PIN_TYPE rx, RADIOLIB_PIN_TYPE tx, HardwareSerial* serial = nullptr, RADIOLIB_PIN_TYPE rst = RADIOLIB_NC);
-#endif
+    #if defined(RADIOLIB_BUILD_ARDUINO)
 
     /*!
-      \brief SPI-based module constructor. Will use the default SPI interface automatically initialize it.
-
-      \param cs Arduino pin to be used as chip select.
-
-      \param irq Arduino pin to be used as interrupt/GPIO.
-
-      \param rst Arduino pin to be used as hardware reset for the module.
-    */
-    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst);
-
-    /*!
-      \brief Extended SPI-based module constructor. Will use the default SPI interface automatically initialize it.
+      \brief Arduino Module constructor. Will use the default SPI interface and automatically initialize it
 
       \param cs Arduino pin to be used as chip select.
 
@@ -56,25 +29,10 @@ class Module {
 
       \param gpio Arduino pin to be used as additional interrupt/GPIO.
     */
-    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, RADIOLIB_PIN_TYPE gpio);
+    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, RADIOLIB_PIN_TYPE gpio = RADIOLIB_NC);
 
     /*!
-      \brief SPI-based module constructor.
-
-      \param cs Arduino pin to be used as chip select.
-
-      \param irq Arduino pin to be used as interrupt/GPIO.
-
-      \param rst Arduino pin to be used as hardware reset for the module.
-
-      \param spi SPI interface to be used, can also use software SPI implementations.
-
-      \param spiSettings SPI interface settings.
-    */
-    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, SPIClass& spi, SPISettings spiSettings);
-
-    /*!
-      \brief Extended SPI-based module constructor.
+      \brief Arduino Module constructor. Will not attempt SPI interface initialization.
 
       \param cs Arduino pin to be used as chip select.
 
@@ -88,32 +46,24 @@ class Module {
 
       \param spiSettings SPI interface settings.
     */
-    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, RADIOLIB_PIN_TYPE gpio, SPIClass& spi, SPISettings spiSettings);
+    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, RADIOLIB_PIN_TYPE gpio, SPIClass& spi, SPISettings spiSettings = RADIOLIB_DEFAULT_SPI_SETTINGS);
+
+    #else
 
     /*!
-      \brief Generic module constructor.
+      \brief Default constructor.
 
-      \param cs Arduino pin to be used as chip select.
+      \param cs Pin to be used as chip select.
 
-      \param irq Arduino pin to be used as interrupt/GPIO.
+      \param irq Pin to be used as interrupt/GPIO.
 
-      \param rst Arduino pin to be used as hardware reset for the module.
+      \param rst Pin to be used as hardware reset for the module.
 
-      \param tx Arduino pin to be used as Tx pin for SoftwareSerial communication.
-
-      \param rx Arduino pin to be used as Rx pin for SoftwareSerial communication.
-
-      \param spi SPI interface to be used. Defaults to Arduino hardware SPI interface, can also use software SPI implementations.
-
-      \param spiSettings SPI interface settings. Defaults to 2 MHz clock, MSB first, mode 0.
-
-      \param serial HardwareSerial to be used on ESP32 and SAMD. Defaults to 1
+      \param gpio Pin to be used as additional interrupt/GPIO.
     */
-#ifdef RADIOLIB_SOFTWARE_SERIAL_UNSUPPORTED
-    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, RADIOLIB_PIN_TYPE rx, RADIOLIB_PIN_TYPE tx, SPIClass& spi = RADIOLIB_DEFAULT_SPI, SPISettings spiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0), HardwareSerial* serial = &RADIOLIB_HARDWARE_SERIAL_PORT);
-#else
-    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, RADIOLIB_PIN_TYPE rx, RADIOLIB_PIN_TYPE tx, SPIClass& spi = RADIOLIB_DEFAULT_SPI, SPISettings spiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0), HardwareSerial* serial = nullptr);
-#endif
+    Module(RADIOLIB_PIN_TYPE cs, RADIOLIB_PIN_TYPE irq, RADIOLIB_PIN_TYPE rst, RADIOLIB_PIN_TYPE gpio = RADIOLIB_NC);
+
+    #endif
 
     /*!
       \brief Copy constructor.
@@ -132,25 +82,6 @@ class Module {
     // public member variables
 
     /*!
-      \brief Internal SoftwareSerial instance.
-    */
-#ifdef RADIOLIB_SOFTWARE_SERIAL_UNSUPPORTED
-    HardwareSerial* ModuleSerial;
-#else
-    SoftwareSerial* ModuleSerial;
-#endif
-
-    /*!
-      \brief Baud rate of SoftwareSerial UART communication. Defaults to 9600 baud.
-    */
-    uint32_t baudrate = 9600;
-
-    /*!
-      \brief Line feed to be used when sending AT commands. Defaults to CR+LF.
-    */
-    char AtLineFeed[3] = {'\r', '\n'};
-
-    /*!
       \brief Basic SPI read command. Defaults to 0x00.
     */
     uint8_t SPIreadCommand = 0b00000000;
@@ -160,55 +91,36 @@ class Module {
     */
     uint8_t SPIwriteCommand = 0b10000000;
 
+    #if defined(RADIOLIB_INTERRUPT_TIMING)
+
+    /*!
+      \brief Timer interrupt setup callback typedef.
+    */
+    typedef void (*TimerSetupCb_t)(uint32_t len);
+
+    /*!
+      \brief Callback to timer interrupt setup function when running in interrupt timing control mode.
+    */
+    TimerSetupCb_t TimerSetupCb = nullptr;
+
+    /*!
+      \brief Timer flag variable to be controlled by a platform-dependent interrupt.
+    */
+    volatile bool TimerFlag = false;
+
+    #endif
+
     // basic methods
 
     /*!
       \brief Initialize low-level module control.
-
-      \param interface Interface to be used on the module. See \ref shield_config for details.
     */
-    void init(uint8_t interface);
+    void init();
 
     /*!
       \brief Terminate low-level module control.
-
-      \param interface Interface to be terminated. See \ref shield_config for details.
     */
-    void term(uint8_t interface);
-
-    // AT methods
-
-    /*!
-      \brief Empty internal AT buffer.
-    */
-    void ATemptyBuffer();
-
-    /*!
-      \brief Get response after sending AT command.
-
-      \returns True if AT response contains the string "OK", false otherwise.
-    */
-    bool ATgetResponse();
-
-    /*!
-      \brief Send AT command. Will also call ATgetResponse.
-
-      \param cmd AT command to be sent. Line feed characters are added automatically.
-
-      \returns True if AT response contains the string "OK", false otherwise.
-    */
-    bool ATsendCommand(const char* cmd);
-
-    /*!
-      \brief Send raw AT data. Will also call ATgetResponse.
-
-      \param data Data to be sent.
-
-      \param len Number of bytes to send.
-
-      \returns True if AT response contains the string "OK", false otherwise.
-    */
-    bool ATsendData(uint8_t* data, uint32_t len);
+    void term();
 
     // SPI methods
 
@@ -238,9 +150,11 @@ class Module {
 
       \param checkInterval Number of milliseconds between register writing and verification reading. Some registers need up to 10ms to process the change.
 
+      \param checkMask Mask of bits to check, only bits set to 1 will be verified.
+
       \returns \ref status_codes
     */
-    int16_t SPIsetRegValue(uint8_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2);
+    int16_t SPIsetRegValue(uint8_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2, uint8_t checkMask = 0xFF);
 
     /*!
       \brief SPI burst read method.
@@ -325,35 +239,7 @@ class Module {
 
       \returns Pin number of second interrupt/GPIO configured in the constructor.
     */
-    RADIOLIB_PIN_TYPE getGpio() const { return(_rx); }
-
-    /*!
-      \brief Access method to get the pin number of UART Rx.
-
-      \returns Pin number of UART Rx configured in the constructor.
-    */
-    RADIOLIB_PIN_TYPE getRx() const { return(_rx); }
-
-    /*!
-      \brief Access method to get the pin number of UART Rx.
-
-      \returns Pin number of UART Rx configured in the constructor.
-    */
-    RADIOLIB_PIN_TYPE getTx() const { return(_tx); }
-
-    /*!
-      \brief Access method to get the SPI interface.
-
-      \returns SPI interface configured in the constructor.
-    */
-    SPIClass* getSpi() const { return(_spi); }
-
-    /*!
-      \brief Access method to get the SPI interface settings.
-
-      \returns SPI interface settings configured in the constructor.
-    */
-    SPISettings getSpiSettings() const { return(_spiSettings); }
+    RADIOLIB_PIN_TYPE getGpio() const { return(_gpio); }
 
     /*!
       \brief Some modules contain external RF switch controlled by two pins. This function gives RadioLib control over those two pins to automatically switch Rx and Tx state.
@@ -374,6 +260,16 @@ class Module {
     */
     void setRfSwitchState(RADIOLIB_PIN_STATUS rxPinState, RADIOLIB_PIN_STATUS txPinState);
 
+    /*!
+      \brief Wait for time to elapse, either using the microsecond timer, or the TimerFlag.
+      Note that in interrupt timing mode, it is up to the user to set up the timing interrupt!
+
+      \param start Waiting start timestamp, in microseconds.
+
+      \param len Waiting duration, in microseconds;
+    */
+    void waitForMicroseconds(uint32_t start, uint32_t len);
+
     // Arduino core overrides
 
     /*!
@@ -383,7 +279,7 @@ class Module {
 
       \param mode Which mode to set.
     */
-    static void pinMode(RADIOLIB_PIN_TYPE pin, RADIOLIB_PIN_MODE mode);
+    void pinMode(RADIOLIB_PIN_TYPE pin, RADIOLIB_PIN_MODE mode);
 
     /*!
       \brief Arduino core digitalWrite override that checks RADIOLIB_NC as alias for unused pin.
@@ -392,7 +288,7 @@ class Module {
 
       \param value Whether to set the pin high or low.
     */
-    static void digitalWrite(RADIOLIB_PIN_TYPE pin, RADIOLIB_PIN_STATUS value);
+    void digitalWrite(RADIOLIB_PIN_TYPE pin, RADIOLIB_PIN_STATUS value);
 
     /*!
       \brief Arduino core digitalWrite override that checks RADIOLIB_NC as alias for unused pin.
@@ -401,7 +297,7 @@ class Module {
 
       \returns Pin value.
     */
-    static RADIOLIB_PIN_STATUS digitalRead(RADIOLIB_PIN_TYPE pin);
+    RADIOLIB_PIN_STATUS digitalRead(RADIOLIB_PIN_TYPE pin);
 
     /*!
       \brief Arduino core tone override that checks RADIOLIB_NC as alias for unused pin and RADIOLIB_TONE_UNSUPPORTED to make sure the platform does support tone.
@@ -410,14 +306,14 @@ class Module {
 
       \param value Frequency to output.
     */
-    static void tone(RADIOLIB_PIN_TYPE pin, uint16_t value);
+    void tone(RADIOLIB_PIN_TYPE pin, uint16_t value, uint32_t duration = 0);
 
     /*!
       \brief Arduino core noTone override that checks RADIOLIB_NC as alias for unused pin and RADIOLIB_TONE_UNSUPPORTED to make sure the platform does support tone.
 
       \param pin Pin to write to.
     */
-    static void noTone(RADIOLIB_PIN_TYPE pin);
+    void noTone(RADIOLIB_PIN_TYPE pin);
 
     /*!
       \brief Arduino core attachInterrupt override.
@@ -428,62 +324,167 @@ class Module {
 
       \param mode Pin hcange direction.
     */
-    static void attachInterrupt(RADIOLIB_PIN_TYPE interruptNum, void (*userFunc)(void), RADIOLIB_INTERRUPT_STATUS mode);
+    void attachInterrupt(RADIOLIB_PIN_TYPE interruptNum, void (*userFunc)(void), RADIOLIB_INTERRUPT_STATUS mode);
 
     /*!
       \brief Arduino core detachInterrupt override.
 
       \param interruptNum Interrupt number.
     */
-    static void detachInterrupt(RADIOLIB_PIN_TYPE interruptNum);
+    void detachInterrupt(RADIOLIB_PIN_TYPE interruptNum);
 
     /*!
       \brief Arduino core yield override.
     */
-    static void yield();
+    void yield();
 
     /*!
       \brief Arduino core delay override.
 
       \param ms Delay length in milliseconds.
     */
-    static void delay(uint32_t ms);
+    void delay(uint32_t ms);
 
     /*!
       \brief Arduino core delayMicroseconds override.
 
       \param us Delay length in microseconds.
     */
-    static void delayMicroseconds(uint32_t us);
+    void delayMicroseconds(uint32_t us);
 
     /*!
       \brief Arduino core millis override.
     */
-    static uint32_t millis();
+    uint32_t millis();
 
     /*!
       \brief Arduino core micros override.
     */
-    static uint32_t micros();
+    uint32_t micros();
 
-#ifndef RADIOLIB_GODMODE
+    /*!
+      \brief Arduino core pulseIn override.
+    */
+    uint32_t pulseIn(RADIOLIB_PIN_TYPE pin, RADIOLIB_PIN_STATUS state, uint32_t timeout);
+
+    /*!
+      \brief Arduino core SPI begin override.
+    */
+    void begin();
+
+    /*!
+      \brief Arduino core SPI beginTransaction override.
+    */
+    void beginTransaction();
+
+    /*!
+      \brief Arduino core SPI transfer override.
+    */
+    uint8_t transfer(uint8_t b);
+
+    /*!
+      \brief Arduino core SPI endTransaction override.
+    */
+    void endTransaction();
+
+    /*!
+      \brief Arduino core SPI end override.
+    */
+    void end();
+
+    // helper functions to set up SPI overrides on Arduino
+    #if defined(RADIOLIB_BUILD_ARDUINO)
+    void SPIbegin();
+    void SPIend();
+    #endif
+    virtual void SPIbeginTransaction();
+    virtual uint8_t SPItransfer(uint8_t b);
+    virtual void SPIendTransaction();
+
+    /*!
+      \brief Function to reflect bits within a byte.
+    */
+    static uint8_t flipBits(uint8_t b);
+
+    /*!
+      \brief Function to reflect bits within an integer.
+    */
+    static uint16_t flipBits16(uint16_t i);
+
+    /*!
+      \brief Function to dump data as hex into the debug port.
+
+      \param data Data to dump.
+
+      \param len Number of bytes to dump.
+    */
+    static void hexdump(uint8_t* data, size_t len);
+
+    /*!
+      \brief Function to dump device registers as hex into the debug port.
+
+      \param start First address to dump.
+
+      \param len Number of bytes to dump.
+    */
+    void regdump(uint8_t start, uint8_t len);
+
+#if !defined(RADIOLIB_GODMODE)
   private:
 #endif
+
+    // pins
     RADIOLIB_PIN_TYPE _cs = RADIOLIB_NC;
     RADIOLIB_PIN_TYPE _irq = RADIOLIB_NC;
     RADIOLIB_PIN_TYPE _rst = RADIOLIB_NC;
-    RADIOLIB_PIN_TYPE _rx = RADIOLIB_NC;
-    RADIOLIB_PIN_TYPE _tx = RADIOLIB_NC;
+    RADIOLIB_PIN_TYPE _gpio = RADIOLIB_NC;
 
-    SPISettings _spiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0);
-
-    bool _initInterface = false;
+    // SPI interface (Arduino only)
+    #if defined(RADIOLIB_BUILD_ARDUINO)
     SPIClass* _spi = NULL;
+    SPISettings _spiSettings = RADIOLIB_DEFAULT_SPI_SETTINGS;
+    bool _initInterface = false;
+    #endif
 
+    // RF switch presence and pins
     bool _useRfSwitch = false;
-    RADIOLIB_PIN_TYPE _rxEn = RADIOLIB_NC, _txEn = RADIOLIB_NC;
+    RADIOLIB_PIN_TYPE _rxEn = RADIOLIB_NC;
+    RADIOLIB_PIN_TYPE _txEn = RADIOLIB_NC;
 
-    uint32_t _ATtimeout = 15000;
+    #if defined(RADIOLIB_INTERRUPT_TIMING)
+    uint32_t _prevTimingLen = 0;
+    #endif
+
+    // hardware abstraction layer callbacks
+    // this is placed at the end of Module class because the callback generator macros
+    // screw with the private/public access specifiers
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_PIN_MODE);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_DIGITAL_WRITE);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_DIGITAL_READ);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_TONE);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_NO_TONE);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_ATTACH_INTERRUPT);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_DETACH_INTERRUPT);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_YIELD);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_DELAY);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_DELAY_MICROSECONDS);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_MILLIS);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_MICROS);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_PULSE_IN);
+
+    #if defined(RADIOLIB_BUILD_ARDUINO)
+    RADIOLIB_GENERATE_CALLBACK_SPI(RADIOLIB_CB_ARGS_SPI_BEGIN);
+    RADIOLIB_GENERATE_CALLBACK_SPI(RADIOLIB_CB_ARGS_SPI_BEGIN_TRANSACTION);
+    RADIOLIB_GENERATE_CALLBACK_SPI(RADIOLIB_CB_ARGS_SPI_TRANSFER);
+    RADIOLIB_GENERATE_CALLBACK_SPI(RADIOLIB_CB_ARGS_SPI_END_TRANSACTION);
+    RADIOLIB_GENERATE_CALLBACK_SPI(RADIOLIB_CB_ARGS_SPI_END);
+    #else
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_SPI_BEGIN);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_SPI_BEGIN_TRANSACTION);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_SPI_TRANSFER);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_SPI_END_TRANSACTION);
+    RADIOLIB_GENERATE_CALLBACK(RADIOLIB_CB_ARGS_SPI_END);
+    #endif
 };
 
 #endif

@@ -52,7 +52,7 @@ void setup() {
   // (RF69, CC1101, Si4432 etc.), use the basic begin() method
   // int state = radio.begin();
 
-  if(state == ERR_NONE) {
+  if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
     Serial.print(F("failed, code "));
@@ -65,7 +65,7 @@ void setup() {
   // AFSK tone frequency:         400 Hz
   // speed:                       122.5 Baud ("Feld Hell")
   state = hell.begin(400);
-  if(state == ERR_NONE) {
+  if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
     Serial.print(F("failed, code "));
@@ -89,6 +89,12 @@ void loop() {
 
   // string saved in flash
   hell.print(F("Flash String"));
+
+  // in AFSK mode, it is possible to invert the text colors
+  // use white text on black background
+  hell.setInversion(true);
+  hell.print("Inverted String");
+  hell.setInversion(false);
 
   // character
   hell.print('c');

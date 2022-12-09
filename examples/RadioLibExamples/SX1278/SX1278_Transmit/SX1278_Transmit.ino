@@ -37,14 +37,14 @@ void setup()
 #endif
 #ifdef HAS_DISPLAY
     if (u8g2) {
-        if (state != ERR_NONE) {
+        if (state != RADIOLIB_ERR_NONE) {
             u8g2->clearBuffer();
             u8g2->drawStr(0, 12, "Initializing: FAIL!");
             u8g2->sendBuffer();
         }
     }
 #endif
-    if (state == ERR_NONE) {
+    if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
     } else {
         Serial.print(F("failed, code "));
@@ -71,7 +71,7 @@ void loop()
       int state = radio.transmit(byteArr, 8);
     */
 
-    if (state == ERR_NONE) {
+    if (state == RADIOLIB_ERR_NONE) {
         // the packet was successfully transmitted
         Serial.println(F(" success!"));
 

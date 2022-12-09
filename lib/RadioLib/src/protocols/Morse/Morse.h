@@ -1,84 +1,88 @@
-#if !defined(_RADIOLIB_MORSE_H) && !defined(RADIOLIB_EXCLUDE_MORSE)
-#define _RADIOLIB_MORSE_H
+#if !defined(_RADIOLIB_RADIOLIB_MORSE_H) && !defined(RADIOLIB_EXCLUDE_MORSE)
+#define _RADIOLIB_RADIOLIB_MORSE_H
 
 #include "../../TypeDef.h"
 #include "../PhysicalLayer/PhysicalLayer.h"
 #include "../AFSK/AFSK.h"
 
-#define MORSE_DOT                                     0b0
-#define MORSE_DASH                                    0b1
-#define MORSE_GUARDBIT                                0b1
-#define MORSE_UNSUPORTED                              0xFF
+#define RADIOLIB_MORSE_DOT                                      0b0
+#define RADIOLIB_MORSE_DASH                                     0b1
+#define RADIOLIB_MORSE_GUARDBIT                                 0b1
+#define RADIOLIB_MORSE_UNSUPORTED                               0xFF
+#define RADIOLIB_MORSE_ASCII_OFFSET                             32
+#define RADIOLIB_MORSE_INTER_SYMBOL                             0x00
+#define RADIOLIB_MORSE_CHAR_COMPLETE                            0x01
+#define RADIOLIB_MORSE_WORD_COMPLETE                            0x02
 
 // Morse character table: - using codes defined in ITU-R M.1677-1
 //                        - Morse code representation is saved LSb first, using additional bit as guard
-//                        - position in array corresponds ASCII code minus MORSE_ASCII_OFFSET
-//                        - ASCII characters marked MORSE_UNSUPORTED do not have ITU-R M.1677-1 equivalent
-static const uint8_t MorseTable[] RADIOLIB_PROGMEM = {
-    0b00,                   // space
-    0b110101,               // ! (unsupported)
-    0b1010010,              // "
-    MORSE_UNSUPORTED,       // # (unsupported)
-    MORSE_UNSUPORTED,       // $ (unsupported)
-    MORSE_UNSUPORTED,       // % (unsupported)
-    MORSE_UNSUPORTED,       // & (unsupported)
-    0b1011110,              // '
-    0b101101,               // (
-    0b1101101,              // )
-    MORSE_UNSUPORTED,       // * (unsupported)
-    0b101010,               // +
-    0b1110011,              // ,
-    0b1100001,              // -
-    0b1101010,              // .
-    0b101001,               // /
-    0b111111,               // 0
-    0b111110,               // 1
-    0b111100,               // 2
-    0b111000,               // 3
-    0b110000,               // 4
-    0b100000,               // 5
-    0b100001,               // 6
-    0b100011,               // 7
-    0b100111,               // 8
-    0b101111,               // 9
-    0b1000111,              // :
-    MORSE_UNSUPORTED,       // ; (unsupported)
-    MORSE_UNSUPORTED,       // < (unsupported)
-    0b110001,               // =
-    MORSE_UNSUPORTED,       // > (unsupported)
-    0b1001100,              // ?
-    0b1010110,              // @
-    0b110,                  // A
-    0b10001,                // B
-    0b10101,                // C
-    0b1001,                 // D
-    0b10,                   // E
-    0b10100,                // F
-    0b1011,                 // G
-    0b10000,                // H
-    0b100,                  // I
-    0b11110,                // J
-    0b1101,                 // K
-    0b10010,                // L
-    0b111,                  // M
-    0b101,                  // N
-    0b1111,                 // O
-    0b10110,                // P
-    0b11011,                // Q
-    0b1010,                 // R
-    0b1000,                 // S
-    0b11,                   // T
-    0b1100,                 // U
-    0b11000,                // V
-    0b1110,                 // W
-    0b11001,                // X
-    0b11101,                // Y
-    0b10011,                // Z
-    MORSE_UNSUPORTED,       // [ (unsupported)
-    MORSE_UNSUPORTED,       // \ (unsupported)
-    MORSE_UNSUPORTED,       // ] (unsupported)
-    0b1101000,              // ^ (unsupported, used as alias for end of work)
-    0b110101                // _ (unsupported, used as alias for starting signal)
+//                        - position in array corresponds ASCII code minus RADIOLIB_MORSE_ASCII_OFFSET
+//                        - ASCII characters marked RADIOLIB_MORSE_UNSUPORTED do not have ITU-R M.1677-1 equivalent
+static const uint8_t MorseTable[] RADIOLIB_NONVOLATILE = {
+    0b00,                         // space
+    0b110101,                     // ! (unsupported)
+    0b1010010,                    // "
+    RADIOLIB_MORSE_UNSUPORTED,    // # (unsupported)
+    RADIOLIB_MORSE_UNSUPORTED,    // $ (unsupported)
+    RADIOLIB_MORSE_UNSUPORTED,    // % (unsupported)
+    RADIOLIB_MORSE_UNSUPORTED,    // & (unsupported)
+    0b1011110,                    // '
+    0b101101,                     // (
+    0b1101101,                    // )
+    RADIOLIB_MORSE_UNSUPORTED,    // * (unsupported)
+    0b101010,                     // +
+    0b1110011,                    // ,
+    0b1100001,                    // -
+    0b1101010,                    // .
+    0b101001,                     // /
+    0b111111,                     // 0
+    0b111110,                     // 1
+    0b111100,                     // 2
+    0b111000,                     // 3
+    0b110000,                     // 4
+    0b100000,                     // 5
+    0b100001,                     // 6
+    0b100011,                     // 7
+    0b100111,                     // 8
+    0b101111,                     // 9
+    0b1000111,                    // :
+    RADIOLIB_MORSE_UNSUPORTED,    // ; (unsupported)
+    RADIOLIB_MORSE_UNSUPORTED,    // < (unsupported)
+    0b110001,                     // =
+    RADIOLIB_MORSE_UNSUPORTED,    // > (unsupported)
+    0b1001100,                    // ?
+    0b1010110,                    // @
+    0b110,                        // A
+    0b10001,                      // B
+    0b10101,                      // C
+    0b1001,                       // D
+    0b10,                         // E
+    0b10100,                      // F
+    0b1011,                       // G
+    0b10000,                      // H
+    0b100,                        // I
+    0b11110,                      // J
+    0b1101,                       // K
+    0b10010,                      // L
+    0b111,                        // M
+    0b101,                        // N
+    0b1111,                       // O
+    0b10110,                      // P
+    0b11011,                      // Q
+    0b1010,                       // R
+    0b1000,                       // S
+    0b11,                         // T
+    0b1100,                       // U
+    0b11000,                      // V
+    0b1110,                       // W
+    0b11001,                      // X
+    0b11101,                      // Y
+    0b10011,                      // Z
+    RADIOLIB_MORSE_UNSUPORTED,    // [ (unsupported)
+    RADIOLIB_MORSE_UNSUPORTED,    // \ (unsupported)
+    RADIOLIB_MORSE_UNSUPORTED,    // ] (unsupported)
+    0b1101000,                    // ^ (unsupported, used as alias for end of work)
+    0b110101                      // _ (unsupported, used as alias for starting signal)
 };
 
 /*!
@@ -124,6 +128,34 @@ class MorseClient {
     */
     size_t startSignal();
 
+    /*!
+      \brief Decode Morse symbol to ASCII.
+
+      \param symbol Morse code symbol, respresented as outlined in MorseTable.
+
+      \param len Symbol length (number of dots and dashes).
+
+      \returns ASCII character matching the symbol, or 0xFF if no match is found.
+    */
+    static char decode(uint8_t symbol, uint8_t len);
+
+    /*!
+      \brief Read Morse tone on input pin.
+
+      \param symbol Pointer to the symbol buffer.
+
+      \param len Pointer to the length counter.
+
+      \param low Low threshold for decision limit (dot length, pause length etc.), defaults to 0.75.
+
+      \param high High threshold for decision limit (dot length, pause length etc.), defaults to 1.25.
+
+      \returns 0 if not enough symbols were decoded, 1 if inter-character space was detected, 2 if inter-word space was detected.
+    */
+    #if !defined(RADIOLIB_EXCLUDE_AFSK)
+    int read(byte* symbol, byte* len, float low = 0.75f, float high = 1.25f);
+    #endif
+
     size_t write(const char* str);
     size_t write(uint8_t* buff, size_t len);
     size_t write(uint8_t b);
@@ -151,7 +183,7 @@ class MorseClient {
     size_t println(unsigned long, int = DEC);
     size_t println(double, int = 2);
 
-#ifndef RADIOLIB_GODMODE
+#if !defined(RADIOLIB_GODMODE)
   private:
 #endif
     PhysicalLayer* _phy;
@@ -160,7 +192,17 @@ class MorseClient {
     #endif
 
     uint32_t _base = 0, _baseHz = 0;
-    uint16_t _dotLength = 0;
+    float _basePeriod = 0.0f;
+    uint32_t _dotLength = 0;
+    uint32_t _dashLength = 0;
+    uint32_t _letterSpace = 0;
+    uint16_t _wordSpace = 0;
+
+    // variables to keep decoding state
+    uint32_t signalCounter = 0;
+    uint32_t signalStart = 0;
+    uint32_t pauseCounter = 0;
+    uint32_t pauseStart = 0;
 
     size_t printNumber(unsigned long, uint8_t);
     size_t printFloat(double, uint8_t);
