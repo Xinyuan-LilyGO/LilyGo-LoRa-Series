@@ -8,7 +8,7 @@
 #include <FS.h>
 #endif
 
-#if defined(LILYGO_TBeam_V1_0) || defined(LILYGO_TBeam_V1_1)
+#if defined(LILYGO_TBeam_V1_X)
 #include <axp20x.h>
 AXP20X_Class PMU;
 

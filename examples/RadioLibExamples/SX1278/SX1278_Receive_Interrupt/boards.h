@@ -13,7 +13,7 @@
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C *u8g2 = nullptr;
 #endif
 
-#if defined(LILYGO_TBeam_V1_0) || defined(LILYGO_TBeam_V1_1)
+#if defined(LILYGO_TBeam_V1_X)
 #include <axp20x.h>
 AXP20X_Class PMU;
 
