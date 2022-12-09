@@ -1,0 +1,53 @@
+{
+    "description": "An Arduino library for sending and receiving data using LoRa radios.", 
+    "repository": {
+        "url": "https://github.com/sandeepmistry/arduino-LoRa", 
+        "type": "git"
+    }, 
+    "platforms": [
+        "atmelavr", 
+        "atmelsam", 
+        "espressif32", 
+        "espressif8266", 
+        "gd32v", 
+        "infineonxmc", 
+        "intel_arc32", 
+        "kendryte210", 
+        "microchippic32", 
+        "nordicnrf51", 
+        "nordicnrf52", 
+        "ststm32", 
+        "ststm8", 
+        "teensy", 
+        "timsp430"
+    ], 
+    "export": {
+        "exclude": [
+            "extras", 
+            "docs", 
+            "tests", 
+            "test", 
+            "*.doxyfile", 
+            "*.pdf"
+        ], 
+        "include": null
+    }, 
+    "authors": [
+        {
+            "maintainer": true, 
+            "name": "Sandeep Mistry", 
+            "url": null, 
+            "email": "sandeep.mistry@gmail.com"
+        }
+    ], 
+    "keywords": [
+        "communication"
+    ], 
+    "id": 1167, 
+    "name": "LoRa", 
+    "frameworks": [
+        "arduino"
+    ], 
+    "version": "0.7.0", 
+    "homepage": null
+}
