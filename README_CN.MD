@@ -98,7 +98,25 @@
 │  │  │  └─Ranging_Slave
 │  │  ├─SX128x_Receive_Interrupt
 │  │  └─SX128x_Transmit_Interrupt
-│  └─TBeamAllFunction           # T-Beam all function example
+│  └─TBeamAllFunction   # T-Beam all function example,Only tbeamv1.x is supported temporarily
+├── Sensor            # Sensor examples , just support t-beam-s3-core
+│   ├── PCF8563_AlarmByUnits
+│   ├── PCF8563_SimpleTime
+│   ├── PCF8563_TimeLib
+│   ├── PCF8563_TimeSynchronization
+│   ├── QMC6310_CalibrateExample
+│   ├── QMC6310_CompassExample
+│   ├── QMC6310_GetDataExample
+│   ├── QMC6310_GetPolarExample
+│   ├── QMI8658_BlockExample
+│   ├── QMI8658_GetDataExample
+│   ├── QMI8658_InterruptBlockExample
+│   ├── QMI8658_InterruptExample
+│   ├── QMI8658_LockingMechanismExample
+│   ├── QMI8658_MadgwickAHRS
+│   ├── QMI8658_PedometerExample
+│   ├── QMI8658_ReadFromFifoExample
+│   └── QMI8658_WakeOnMotion
 ├─SleepTest
 └─TTN                           # OTAA method Join TTN example
     └─TTN_OTTA
