@@ -59,6 +59,24 @@
 
 #define SENSORLIB_ATTR_NOT_IMPLEMENTED    __attribute__((error("Not implemented")))
 
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+#define SPI_DATA_ORDER  MSBFIRST
+#define DEFAULT_SDA     (0xFF)
+#define DEFAULT_SCL     (0xFF)
+#define DEFAULT_SPISETTING  SPISettings()
+#else   //esp32
+#define SPI_DATA_ORDER  SPI_MSBFIRST
+#define DEFAULT_SDA     (SDA)
+#define DEFAULT_SCL     (SCL)
+#define DEFAULT_SPISETTING  SPISettings(__freq, __dataOrder, __dataMode);
+#endif
+
+#ifndef ESP32
+#define log_e(...)
+#define log_i(...)
+#define log_d(...)
+#endif
+
 
 template <class chipType>
 class SensorCommon
@@ -73,7 +91,7 @@ public:
         }
     }
 
-    void setSpiSetting(uint32_t freq, uint8_t dataOrder = SPI_MSBFIRST, uint8_t dataMode = SPI_MODE0)
+    void setSpiSetting(uint32_t freq, uint8_t dataOrder = SPI_DATA_ORDER, uint8_t dataMode = SPI_MODE0)
     {
         __freq = freq;
         __dataOrder = dataOrder;
@@ -86,7 +104,11 @@ public:
         LOG("Using Wire interface.\n");
         if (__has_init)return thisChip().initImpl();
         __wire = &w;
-        __wire->begin(sda, scl);
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+        __wire->begin();
+#else
+        __wire->begin(__sda, __scl);
+#endif
         __addr = addr;
         __spi = NULL;
         thisReadRegCallback = NULL;
@@ -103,12 +125,16 @@ public:
         __cs  = cs;
         pinMode(__cs, OUTPUT);
         digitalWrite(__cs, HIGH);
-        __spiSetting = new SPISettings(__freq, __dataOrder, __dataMode);
+        __spiSetting = new  DEFAULT_SPISETTING;
         if (!__spiSetting) {
             return false;
         }
         if (mosi != -1 && miso != -1 && sck == -1) {
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+            __spi->begin();
+#else
             __spi->begin(sck, miso, mosi);
+#endif
         } else {
             __spi->begin();
         }
@@ -332,7 +358,11 @@ protected:
 
         if (__wire) {
             log_i("SDA:%d SCL:%d", __sda, __scl);
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+            __wire->begin();
+#else
             __wire->begin(__sda, __scl);
+#endif
         }
         if (__spi) {
             // int cs, int mosi = -1, int miso = -1, int sck = -1, SPIClass &spi = SPI
@@ -375,7 +405,7 @@ protected:
     SPISettings *__spiSetting           = NULL;
 #endif
     uint32_t    __freq                  = 1000000;
-    uint8_t     __dataOrder             = SPI_MSBFIRST;
+    uint8_t     __dataOrder             = SPI_DATA_ORDER;
     uint8_t     __dataMode              = SPI_MODE0;
     int         __readMask              = -1;
     int         __sda                   = -1;
