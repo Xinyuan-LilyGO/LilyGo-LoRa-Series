@@ -1,0 +1,37 @@
+:repository-owner: arduino-libraries
+:repository-name: MadgwickAHRS
+
+= Madgwick Library =
+
+image:https://github.com/{repository-owner}/{repository-name}/actions/workflows/check-arduino.yml/badge.svg["Check Arduino status", link="https://github.com/{repository-owner}/{repository-name}/actions/workflows/check-arduino.yml"]
+image:https://github.com/{repository-owner}/{repository-name}/actions/workflows/compile-examples.yml/badge.svg["Compile Examples status", link="https://github.com/{repository-owner}/{repository-name}/actions/workflows/compile-examples.yml"]
+image:https://github.com/{repository-owner}/{repository-name}/actions/workflows/spell-check.yml/badge.svg["Spell Check status", link="https://github.com/{repository-owner}/{repository-name}/actions/workflows/spell-check.yml"]
+
+This library wraps the official implementation of MadgwickAHRS algorithm to get orientation of an object based on accelerometer and gyroscope readings
+
+== License ==
+
+Copyright (c) Arduino LLC. All right reserved.
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+
+Implementation of Madgwick's IMU and AHRS algorithms.
+See: http://www.x-io.co.uk/node/8#open_source_ahrs_and_imu_algorithms
+
+Date			Author          Notes
+29/09/2011	SOH Madgwick    Initial release
+02/10/2011	SOH Madgwick	Optimised for reduced CPU load
+19/02/2012	SOH Madgwick	Magnetometer measurement is normalised

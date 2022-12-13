@@ -1,0 +1,25 @@
+#######################################
+# Syntax Coloring Map For MadgwickAHRS
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Madgwick	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+update	KEYWORD2
+updateIMU	KEYWORD2
+getPitch	KEYWORD2
+getYaw	KEYWORD2
+getRoll	KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
