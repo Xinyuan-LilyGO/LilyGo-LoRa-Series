@@ -11,7 +11,7 @@ void setup()
 
     Serial.println("sleep test");
 
-    LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DI0_PIN);
+    LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DIO0_PIN);
     if (!LoRa.begin(LoRa_frequency)) {
         Serial.println("Starting LoRa failed!");
         while (1);
@@ -27,7 +27,7 @@ void setup()
 
     pinMode(RADIO_CS_PIN, INPUT);
     pinMode(RADIO_RST_PIN, INPUT);
-    pinMode(RADIO_DI0_PIN, INPUT);
+    pinMode(RADIO_DIO0_PIN, INPUT);
     pinMode(RADIO_CS_PIN, INPUT);
     pinMode(I2C_SDA, INPUT);
     pinMode(I2C_SDA, INPUT);

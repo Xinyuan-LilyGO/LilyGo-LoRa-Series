@@ -20,7 +20,7 @@
 #include <RadioLib.h>
 #include "boards.h"
 
-SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DI0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 void setup()
 {
@@ -89,11 +89,11 @@ void loop()
             u8g2->sendBuffer();
         }
 #endif
-    } else if (state == ERR_PACKET_TOO_LONG) {
+    } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
         // the supplied packet was longer than 256 bytes
         Serial.println(F("too long!"));
 
-    } else if (state == ERR_TX_TIMEOUT) {
+    } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
         // timeout occurred while transmitting packet
         Serial.println(F("timeout!"));
 

@@ -10,7 +10,7 @@ void setup()
 
     Serial.println("LoRa Receiver");
 
-    LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DI0_PIN);
+    LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DIO0_PIN);
     if (!LoRa.begin(LoRa_frequency)) {
         Serial.println("Starting LoRa failed!");
         while (1);

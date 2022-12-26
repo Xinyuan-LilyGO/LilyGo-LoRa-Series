@@ -89,11 +89,11 @@ void loop()
             u8g2->sendBuffer();
         }
 #endif
-    } else if (state == ERR_PACKET_TOO_LONG) {
+    } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
         // the supplied packet was longer than 256 bytes
         Serial.println(F("too long!"));
 
-    } else if (state == ERR_TX_TIMEOUT) {
+    } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
         // timeout occurred while transmitting packet
         Serial.println(F("timeout!"));
 

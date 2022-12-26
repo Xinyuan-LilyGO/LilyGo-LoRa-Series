@@ -26,7 +26,7 @@
 #include <RadioLib.h>
 #include "boards.h"
 
-SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DI0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 // flag to indicate that a packet was received
 volatile bool receivedFlag = false;

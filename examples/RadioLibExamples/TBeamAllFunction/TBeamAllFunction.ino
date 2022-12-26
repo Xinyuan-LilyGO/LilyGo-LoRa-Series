@@ -34,7 +34,7 @@ uint8_t         funcSelectIndex = 0;
 #ifdef RADIO_USING_SX1262
 RADIO_TYPE      radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #else
-RADIO_TYPE      radio = new Module(RADIO_CS_PIN, RADIO_DI0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+RADIO_TYPE      radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
 
 void ButtonHandleEvent(AceButton *, uint8_t eventType, uint8_t buttonState);
