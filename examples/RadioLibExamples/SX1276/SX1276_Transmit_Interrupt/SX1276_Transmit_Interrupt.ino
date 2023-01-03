@@ -22,6 +22,29 @@
 
 SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
+// save transmission state between loops
+int transmissionState = RADIOLIB_ERR_NONE;
+
+// flag to indicate that a packet was sent
+volatile bool transmittedFlag = false;
+
+// disable interrupt when it's not needed
+volatile bool enableInterrupt = true;
+
+// this function is called when a complete packet
+// is transmitted by the module
+// IMPORTANT: this function MUST be 'void' type
+//            and MUST NOT have any arguments!
+void setFlag(void)
+{
+    // check if the interrupt is enabled
+    if (!enableInterrupt) {
+        return;
+    }
+    // we sent a packet, set the flag
+    transmittedFlag = true;
+}
+
 void setup()
 {
     initBoard();
@@ -46,39 +69,81 @@ void setup()
 #endif
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
+        radio.setOutputPower(20);
+        radio.setBandwidth(125);
+        radio.setCurrentLimit(120);
     } else {
         Serial.print(F("failed, code "));
         Serial.println(state);
         while (true);
     }
+
+    // set the function that will be called
+    // when packet transmission is finished
+    radio.setDio0Action(setFlag);
+
+    // start transmitting the first packet
+    Serial.print(F("[SX1276] Sending first packet ... "));
+
+    // you can transmit C-string or Arduino string up to
+    // 256 characters long
+    transmissionState = radio.startTransmit("Hello World!");
+
+    // you can also transmit byte array up to 256 bytes long
+    /*
+      byte byteArr[] = {0x01, 0x23, 0x45, 0x67,
+                        0x89, 0xAB, 0xCD, 0xEF};
+      state = radio.startTransmit(byteArr, 8);
+    */
 }
 
 
 void loop()
 {
-    Serial.print(F("[SX1276] Transmitting packet ... "));
+    // check if the previous transmission finished
+    if (transmittedFlag) {
+        // disable the interrupt service routine while
+        // processing the data
+        enableInterrupt = false;
 
-    // you can transmit C-string or Arduino string up to
-    // 256 characters long
-    // NOTE: transmit() is a blocking method!
-    //       See example SX127x_Transmit_Interrupt for details
-    //       on non-blocking transmission method.
-    int state = radio.transmit("Hello World!");
+        // reset flag
+        transmittedFlag = false;
 
-    // you can also transmit byte array up to 256 bytes long
-    /*
-      byte byteArr[] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
-      int state = radio.transmit(byteArr, 8);
-    */
+        if (transmissionState == RADIOLIB_ERR_NONE) {
+            // packet was successfully sent
+            Serial.println(F("transmission finished!"));
 
-    if (state == RADIOLIB_ERR_NONE) {
-        // the packet was successfully transmitted
-        Serial.println(F(" success!"));
+            // NOTE: when using interrupt-driven transmit method,
+            //       it is not possible to automatically measure
+            //       transmission data rate using getDataRate()
 
-        // print measured data rate
-        Serial.print(F("[SX1276] Datarate:\t"));
-        Serial.print(radio.getDataRate());
-        Serial.println(F(" bps"));
+        } else {
+            Serial.print(F("failed, code "));
+            Serial.println(transmissionState);
+
+        }
+
+        // clean up after transmission is finished
+        // this will ensure transmitter is disabled,
+        // RF switch is powered down etc.
+        radio.finishTransmit();
+
+        // wait a second before transmitting again
+        delay(1000);
+
+        // send another one
+        Serial.print(F("[SX1276] Sending another packet ... "));
+
+        // you can transmit C-string or Arduino string up to
+        // 256 characters long
+        transmissionState = radio.startTransmit("Hello World!");
+
+        // you can also transmit byte array up to 256 bytes long
+        /*
+          byte byteArr[] = {0x01, 0x23, 0x45, 0x67,
+                            0x89, 0xAB, 0xCD, 0xEF};
+          int state = radio.startTransmit(byteArr, 8);
+        */
 #ifdef HAS_DISPLAY
         if (u8g2) {
             char buf[256];
@@ -89,23 +154,12 @@ void loop()
             u8g2->sendBuffer();
         }
 #endif
-    } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
-        // the supplied packet was longer than 256 bytes
-        Serial.println(F("too long!"));
 
-    } else if (state == RADIOLIB_ERR_TX_TIMEOUT) {
-        // timeout occurred while transmitting packet
-        Serial.println(F("timeout!"));
 
-    } else {
-        // some other error occurred
-        Serial.print(F("failed, code "));
-        Serial.println(state);
-
+        // we're ready to send more packets,
+        // enable interrupt service routine
+        enableInterrupt = true;
     }
-
-    // wait for a second before transmitting again
-    delay(1000);
 }
 
 

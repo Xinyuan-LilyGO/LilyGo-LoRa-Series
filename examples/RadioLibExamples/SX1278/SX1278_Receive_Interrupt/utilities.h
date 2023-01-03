@@ -1,7 +1,9 @@
 
 #pragma once
 
-
+/*
+* This sample program only supports SX1278
+* */
 // #define LILYGO_TBeam_V0_7
 // #define LILYGO_TBeam_V1_X
 // #define LILYGO_T3_V1_0

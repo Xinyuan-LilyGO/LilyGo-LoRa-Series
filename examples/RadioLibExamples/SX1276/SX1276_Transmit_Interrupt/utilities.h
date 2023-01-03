@@ -2,7 +2,7 @@
 #pragma once
 
 /*
-* This sample program only supports T-Beam
+* This sample program only supports SX1276
 * */
 // #define LILYGO_TBeam_V0_7
 // #define LILYGO_TBeam_V1_X
@@ -10,14 +10,14 @@
 // #define LILYGO_T3_V1_3
 // #define LILYGO_T3_V1_6
 // #define LILYGO_T3_V2_0
-#define LILYGO_T3_S3_V1_0
+// #define LILYGO_T3_S3_V1_0
+
+
 /*
 * The default program uses 868MHz,
 * if you need to change it,
 * please open this note and change to the frequency you need to test
 * */
-
-// #define LoRa_frequency      915.0
 
 
 #define UNUSE_PIN                   (0)
