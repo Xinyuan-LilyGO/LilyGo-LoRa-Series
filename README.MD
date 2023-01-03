@@ -110,6 +110,9 @@
 │  │  └─SX128x_Transmit_Interrupt
 │  └─TBeamAllFunction   # T-Beam all function example,Only tbeamv1.x is supported temporarily
 ├── Sensor            # Sensor examples , just support t-beam-s3-core
+│   ├── BME280_AdvancedsettingsExample
+│   ├── BME280_TestExample
+│   ├── BME280_UnifiedExample
 │   ├── PCF8563_AlarmByUnits
 │   ├── PCF8563_SimpleTime
 │   ├── PCF8563_TimeLib
