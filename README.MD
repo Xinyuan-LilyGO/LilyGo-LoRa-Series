@@ -131,8 +131,8 @@
 │   ├── QMI8658_ReadFromFifoExample
 │   └── QMI8658_WakeOnMotion
 ├─SleepTest
-└─TTN                           # OTAA method Join TTN example
-    └─TTN_OTTA
+└─LoRaWAN                           # OTAA method Join TTN example
+    └─OTTA
 ```
 
 ## Radio resolution
