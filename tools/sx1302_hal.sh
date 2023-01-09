@@ -11,7 +11,7 @@ PLAIN='\033[0m'
 
 # set -euxo pipefail
 
-readonly __version=0.1.0
+readonly __version=0.1.1
 
 readonly WORK_DIR=/home/pi/.sx1302_hal
 
@@ -107,7 +107,7 @@ index ffc8ec0..504bb42 100644
 +++ b/libloragw/src/loragw_hal.c
 @@ -1093,6 +1093,7 @@ int lgw_start(void) {
      dbg_init_random();
-
+ 
      if (CONTEXT_COM_TYPE == LGW_COM_SPI) {
 +#if 0
          /* Find the temperature sensor on the known supported ports */
@@ -191,13 +191,26 @@ raspiConfig() {
 }
 
 
+getEthName() {
+    local interface=`ifconfig | grep enx | awk '{print $1}'`
+    if [ "$interface" = "" ]; then
+        interface=`ifconfig | grep eth0 | awk '{print $1}'`
+    fi
+    echo $interface
+}
+
+
 getGatewayID() {
     local readonly GWID_MIDFIX="FFFE"
-    local interface=`ifconfig | grep enx | awk '{print $1}'`
-    interface=${interface%%:*}
-    local readonly GWID_BEGIN=$(ip link show $interface | awk '/ether/ {print $2}' | awk -F\: '{print $1$2$3}')
-    local readonly GWID_END=$(ip link show $interface | awk '/ether/ {print $2}' | awk -F\: '{print $4$5$6}')
-    echo $GWID_BEGIN$GWID_MIDFIX$GWID_END
+    local interface=`getEthName`
+    if [ "$interface" = "" ]; then
+        echo "001122"$GWID_MIDFIX"334455"
+    else
+        interface=${interface%%:*}
+        local readonly GWID_BEGIN=$(ip link show $interface | awk '/ether/ {print $2}' | awk -F\: '{print $1$2$3}')
+        local readonly GWID_END=$(ip link show $interface | awk '/ether/ {print $2}' | awk -F\: '{print $4$5$6}')
+        echo $GWID_BEGIN$GWID_MIDFIX$GWID_END
+    fi
 }
 
 
@@ -221,27 +234,97 @@ eu868Config() {
             "type": "SX1250",
             "freq": 867500000,
             "rssi_offset": -215.4,
-            "rssi_tcomp": {"coeff_a": 0, "coeff_b": 0, "coeff_c": 20.41, "coeff_d": 2162.56, "coeff_e": 0},
+            "rssi_tcomp": {
+                "coeff_a": 0,
+                "coeff_b": 0,
+                "coeff_c": 20.41,
+                "coeff_d": 2162.56,
+                "coeff_e": 0
+            },
             "tx_enable": true,
             "tx_freq_min": 863000000,
             "tx_freq_max": 870000000,
             "tx_gain_lut": [
-                {"rf_power": 12, "pa_gain": 0, "pwr_idx": 15},
-                {"rf_power": 13, "pa_gain": 0, "pwr_idx": 16},
-                {"rf_power": 14, "pa_gain": 0, "pwr_idx": 17},
-                {"rf_power": 15, "pa_gain": 0, "pwr_idx": 19},
-                {"rf_power": 16, "pa_gain": 0, "pwr_idx": 20},
-                {"rf_power": 17, "pa_gain": 0, "pwr_idx": 22},
-                {"rf_power": 18, "pa_gain": 1, "pwr_idx": 1},
-                {"rf_power": 19, "pa_gain": 1, "pwr_idx": 2},
-                {"rf_power": 20, "pa_gain": 1, "pwr_idx": 3},
-                {"rf_power": 21, "pa_gain": 1, "pwr_idx": 4},
-                {"rf_power": 22, "pa_gain": 1, "pwr_idx": 5},
-                {"rf_power": 23, "pa_gain": 1, "pwr_idx": 6},
-                {"rf_power": 24, "pa_gain": 1, "pwr_idx": 7},
-                {"rf_power": 25, "pa_gain": 1, "pwr_idx": 9},
-                {"rf_power": 26, "pa_gain": 1, "pwr_idx": 11},
-                {"rf_power": 27, "pa_gain": 1, "pwr_idx": 14}
+                {
+                    "rf_power": 12,
+                    "pa_gain": 0,
+                    "pwr_idx": 15
+                },
+                {
+                    "rf_power": 13,
+                    "pa_gain": 0,
+                    "pwr_idx": 16
+                },
+                {
+                    "rf_power": 14,
+                    "pa_gain": 0,
+                    "pwr_idx": 17
+                },
+                {
+                    "rf_power": 15,
+                    "pa_gain": 0,
+                    "pwr_idx": 19
+                },
+                {
+                    "rf_power": 16,
+                    "pa_gain": 0,
+                    "pwr_idx": 20
+                },
+                {
+                    "rf_power": 17,
+                    "pa_gain": 0,
+                    "pwr_idx": 22
+                },
+                {
+                    "rf_power": 18,
+                    "pa_gain": 1,
+                    "pwr_idx": 1
+                },
+                {
+                    "rf_power": 19,
+                    "pa_gain": 1,
+                    "pwr_idx": 2
+                },
+                {
+                    "rf_power": 20,
+                    "pa_gain": 1,
+                    "pwr_idx": 3
+                },
+                {
+                    "rf_power": 21,
+                    "pa_gain": 1,
+                    "pwr_idx": 4
+                },
+                {
+                    "rf_power": 22,
+                    "pa_gain": 1,
+                    "pwr_idx": 5
+                },
+                {
+                    "rf_power": 23,
+                    "pa_gain": 1,
+                    "pwr_idx": 6
+                },
+                {
+                    "rf_power": 24,
+                    "pa_gain": 1,
+                    "pwr_idx": 7
+                },
+                {
+                    "rf_power": 25,
+                    "pa_gain": 1,
+                    "pwr_idx": 9
+                },
+                {
+                    "rf_power": 26,
+                    "pa_gain": 1,
+                    "pwr_idx": 11
+                },
+                {
+                    "rf_power": 27,
+                    "pa_gain": 1,
+                    "pwr_idx": 14
+                }
             ]
         },
         "radio_1": {
@@ -249,19 +332,73 @@ eu868Config() {
             "type": "SX1250",
             "freq": 868500000,
             "rssi_offset": -215.4,
-            "rssi_tcomp": {"coeff_a": 0, "coeff_b": 0, "coeff_c": 20.41, "coeff_d": 2162.56, "coeff_e": 0},
+            "rssi_tcomp": {
+                "coeff_a": 0,
+                "coeff_b": 0,
+                "coeff_c": 20.41,
+                "coeff_d": 2162.56,
+                "coeff_e": 0
+            },
             "tx_enable": true
         },
-        "chan_multiSF_0": {"enable": true, "radio": 1, "if": -400000},
-        "chan_multiSF_1": {"enable": true, "radio": 1, "if": -200000},
-        "chan_multiSF_2": {"enable": true, "radio": 1, "if": 0},
-        "chan_multiSF_3": {"enable": true, "radio": 0, "if": -400000},
-        "chan_multiSF_4": {"enable": true, "radio": 0, "if": -200000},
-        "chan_multiSF_5": {"enable": true, "radio": 0, "if": 0},
-        "chan_multiSF_6": {"enable": true, "radio": 0, "if": 200000},
-        "chan_multiSF_7": {"enable": true, "radio": 0, "if": 400000},
-        "chan_Lora_std": {"enable": true, "radio": 1, "if": -200000, "bandwidth": 250000, "spread_factor": 7, "implicit_hdr": false, "implicit_payload_length": 17, "implicit_crc_en": false, "implicit_coderate": 1},
-        "chan_FSK": {"enable": true, "radio": 1, "if": 300000, "bandwidth": 125000, "datarate": 50000}
+        "chan_multiSF_0": {
+            "enable": true,
+            "radio": 1,
+            "if": -400000
+        },
+        "chan_multiSF_1": {
+            "enable": true,
+            "radio": 1,
+            "if": -200000
+        },
+        "chan_multiSF_2": {
+            "enable": true,
+            "radio": 1,
+            "if": 0
+        },
+        "chan_multiSF_3": {
+            "enable": true,
+            "radio": 0,
+            "if": -400000
+        },
+        "chan_multiSF_4": {
+            "enable": true,
+            "radio": 0,
+            "if": -200000
+        },
+        "chan_multiSF_5": {
+            "enable": true,
+            "radio": 0,
+            "if": 0
+        },
+        "chan_multiSF_6": {
+            "enable": true,
+            "radio": 0,
+            "if": 200000
+        },
+        "chan_multiSF_7": {
+            "enable": true,
+            "radio": 0,
+            "if": 400000
+        },
+        "chan_Lora_std": {
+            "enable": true,
+            "radio": 1,
+            "if": -200000,
+            "bandwidth": 250000,
+            "spread_factor": 7,
+            "implicit_hdr": false,
+            "implicit_payload_length": 17,
+            "implicit_crc_en": false,
+            "implicit_coderate": 1
+        },
+        "chan_FSK": {
+            "enable": true,
+            "radio": 1,
+            "if": 300000,
+            "bandwidth": 125000,
+            "datarate": 50000
+        }
     },
     "gateway_conf": {
         "gateway_ID": "$1",
@@ -293,8 +430,12 @@ eu868Config() {
     },
     "debug_conf": {
         "ref_payload": [
-            {"id": "0xCAFE1234"},
-            {"id": "0xCAFE2345"}
+            {
+                "id": "0xCAFE1234"
+            },
+            {
+                "id": "0xCAFE2345"
+            }
         ],
         "log_file": "loragw_hal.log"
     }
@@ -564,6 +705,8 @@ EOF
     systemctl daemon-reload
     systemctl enable lora_pkt_fwd.service
     systemctl restart lora_pkt_fwd.service
+    sudo cp $WORK_DIR/$sx1302_hal_name-$sx1302_hal_version/tools/systemd/lora_pkt_fwd.conf /etc/rsyslog.d
+    sudo systemctl restart rsyslog
     # reboot
 }
 

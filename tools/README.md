@@ -1,5 +1,19 @@
 # sx1302_hal.sh
 
+## Download
+
+download script:
+
+```shell
+curl https://raw.githubusercontent.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/master/tools/sx1302_hal.sh
+```
+
+Alternatively, download the script and execute it automatically:
+
+```shell
+curl https://raw.githubusercontent.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/master/tools/sx1302_hal.sh | sudo bash
+```
+
 ## Usage
 
 > NOTE
