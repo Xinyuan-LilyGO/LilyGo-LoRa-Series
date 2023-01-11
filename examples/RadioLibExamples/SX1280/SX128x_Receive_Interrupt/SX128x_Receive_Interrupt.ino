@@ -76,13 +76,13 @@ void setup()
     }
 
     // set output power to 13 dBm
-    if (radio.setOutputPower(13) == ERR_INVALID_OUTPUT_POWER) {
+    if (radio.setOutputPower(13) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
     }
 
     // set spreading factor to 10
-    if (radio.setSpreadingFactor(10) == ERR_INVALID_SPREADING_FACTOR) {
+    if (radio.setSpreadingFactor(10) == RADIOLIB_ERR_INVALID_SPREADING_FACTOR) {
         Serial.println(F("Selected spreading factor is invalid for this module!"));
         while (true);
     }
