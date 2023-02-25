@@ -2,6 +2,8 @@
 
 README:
 
+[Record Video](https://youtu.be/Otu5d0fB6HU)
+
 Please use [Flash Download Tools](https://www.espressif.com.cn/sites/default/files/tools/flash_download_tool_3.9.3_0.zip), the configuration is consistent with the screenshot for burning.
 
 ![](setting.jpg)
