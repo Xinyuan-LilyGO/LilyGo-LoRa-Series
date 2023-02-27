@@ -18,7 +18,7 @@
 9. Upload
 
 ## Cautions 
-1. The output power setting of SX1280 cannot be greater than 5dbm. Failure to do so may result in damage to the FEM chip. (radio.setOutputPower(5);)
+1. The output power setting of SX1280 cannot be greater than 3dbm. Failure to do so may result in damage to the FEM chip.  Setting 3dbm already has 20dmb of output power(radio.setOutputPower(3);)
 
 ## Product 📷
 
