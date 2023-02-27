@@ -11,6 +11,9 @@
 5. 除了GPS 目录外的其他示例，请在`utilities.h` 中上方根据你的板子型号取消注释,否则编译将报错误
 6. 上传
 
+## 注意事项
+1. SX1280的输出功率设置不能大于5dbm，否则可能导致FEM芯片损坏。
+
 ## Product 📷
 
 |          Product          |          Product Link           |                       Schematic                        | Corresponding example macro definition |

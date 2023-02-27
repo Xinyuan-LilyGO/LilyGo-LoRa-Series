@@ -15,7 +15,7 @@ const uint8_t SpreadingFactor = LORA_SF8;        //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;            //LoRa coding rate
 const uint16_t Calibration = 11350;              //Manual Ranging calibrarion value
 
-const int8_t RangingTXPower = 12;                //Transmit power used
+const int8_t RangingTXPower = 5;                //Transmit power used   !!Cannot be greater than 5dbm!!
 const uint32_t RangingAddress = 16;              //must match address in recever
 
 const uint16_t  waittimemS = 10000;              //wait this long in mS for packet before assuming timeout

@@ -75,8 +75,8 @@ void setup()
         while (true);
     }
 
-    // set output power to 13 dBm
-    if (radio.setOutputPower(13) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+    // set output power to 5 dBm    !!Cannot be greater than 5dbm!!
+    if (radio.setOutputPower(3) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
     }

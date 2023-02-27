@@ -17,6 +17,9 @@
 8. For other examples except the `GPS` directory, please **uncomment** in the upper part of `utilities.h` according to your board model, otherwise the compilation will report an error
 9. Upload
 
+## Cautions 
+1. The output power setting of SX1280 cannot be greater than 5dbm. Failure to do so may result in damage to the FEM chip. (radio.setOutputPower(5);)
+
 ## Product 📷
 
 |          Product          |          Product Link           |                       Schematic                        | Corresponding example macro definition |
