@@ -75,6 +75,8 @@
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
 #define HAS_PMU
 
+//If you are using the screen of SH1106 model, please cancel this line of comment
+// #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
 
 #elif defined(LILYGO_TBeam_S3_Core_V3_0)
 
