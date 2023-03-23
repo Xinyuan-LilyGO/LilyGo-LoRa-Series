@@ -17,8 +17,13 @@
 8. For other examples except the `GPS` directory, please **uncomment** in the upper part of `utilities.h` according to your board model, otherwise the compilation will report an error
 9. Upload
 
-## Cautions 
-1. The output power setting of SX1280 cannot be greater than 3dbm. Failure to do so may result in damage to the FEM chip.  Setting 3dbm already has 20dmb of output power(radio.setOutputPower(3);)
+## ⚠ Cautions ⚠ 
+
+1. When using the SX1280 PA, it is recommended that the software control 1280 chip output 2 to 5 dbm, so that the entire module will output 20 dbm of power;
+When the output of 1280 chip is higher than 2 dbm, the output power of the entire module is only 20 dbm;
+When the output of 1280 chip is higher than 5 dbm, the output power of the entire module is only 20 dbm, but if 5 dbm is given to the FEM, it will damage the FEM chip (the maximum allowable input for the FEM is 5 dbm)
+If the output of the 1280 chip is lower than 2 dbm, the output power of the entire module is within 20 dbm.
+The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise damage to the FEM chip may occur. Set 3dBM to have an output power of 20dmb
 
 ## Product 📷
 
@@ -198,9 +203,4 @@ To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Se
     }
 ```
 
-## Tips:
 
-1. When using the SX1280 PA, it is recommended that the software control 1280 chip output 2 to 5 dbm, so that the entire module will output 20 dbm of power;
-When the output of 1280 chip is higher than 2 dbm, the output power of the entire module is only 20 dbm;
-When the output of 1280 chip is higher than 5 dbm, the output power of the entire module is only 20 dbm, but if 5 dbm is given to the FEM, it will damage the FEM chip (the maximum allowable input for the FEM is 5 dbm)
-If the output of the 1280 chip is lower than 2 dbm, the output power of the entire module is within 20 dbm.
