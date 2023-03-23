@@ -23,8 +23,8 @@ DISPLAY_MODEL *u8g2 = nullptr;
 #endif
 
 #if defined(HAS_PMU)
-#include "XPowersAXP2101.tpp"
-#include "XPowersAXP192.tpp"
+#include "XPowersLib.h"
+
 
 XPowersLibInterface *PMU = NULL;
 

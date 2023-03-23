@@ -35,8 +35,8 @@ if there is any loss, please bear it by yourself
 #include <Arduino.h>
 #include <Wire.h>
 #include "XPowersLibInterface.hpp"
-#include "XPowersAXP2101.tpp"
-#include "XPowersAXP192.tpp"
+#include "XPowersLib.h"
+
 
 #ifndef CONFIG_PMU_SDA
 #define CONFIG_PMU_SDA 21
