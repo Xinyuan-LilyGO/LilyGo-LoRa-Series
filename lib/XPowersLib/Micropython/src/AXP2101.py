@@ -845,16 +845,16 @@ class AXP2101(I2CInterface):
     def disableOverTemperaturePowerOff(self) -> None:
         super().clrRegisterBit(_AXP2101_PWROFF_EN, 2)
 
-    def enablePwrOnOverVolOffLevelPowerOff(self) -> None:
+    def enableLongPressShutdown(self) -> None:
         super().setRegisterBit(_AXP2101_PWROFF_EN, 1)
 
-    def disablePwrOnOverVolOffLevelPowerOff(self) -> None:
+    def disableLongPressShutdown(self) -> None:
         super().clrRegisterBit(_AXP2101_PWROFF_EN, 1)
 
-    def enablePwrOffSelectFunction(self) -> None:
+    def setLongPressRestart(self) -> None:
         super().setRegisterBit(_AXP2101_PWROFF_EN, 0)
 
-    def disablePwrOffSelectFunction(self) -> None:
+    def setLongPressPowerOFF(self) -> None:
         super().clrRegisterBit(_AXP2101_PWROFF_EN, 0)
 
     #!REG 23H

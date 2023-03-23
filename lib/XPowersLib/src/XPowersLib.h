@@ -22,7 +22,9 @@ typedef XPowersAXP192 XPowersPMU;
 #include "XPowersAXP2101.tpp"
 typedef XPowersAXP2101 XPowersPMU;
 #else
-#error "Please define power management chip model"
+#include "XPowersAXP192.tpp"
+// #include "XPowersAXP202.tpp"
+#include "XPowersAXP2101.tpp"
 #endif
 
 
