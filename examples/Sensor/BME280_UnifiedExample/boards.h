@@ -112,6 +112,40 @@ bool initPMU()
 
     } else if (PMU->getChipModel() == XPOWERS_AXP2101) {
 
+#if defined(CONFIG_IDF_TARGET_ESP32)
+        //Unuse power channel
+        PMU->disablePowerOutput(XPOWERS_DCDC2);
+        PMU->disablePowerOutput(XPOWERS_DCDC3);
+        PMU->disablePowerOutput(XPOWERS_DCDC4);
+        PMU->disablePowerOutput(XPOWERS_DCDC5);
+        PMU->disablePowerOutput(XPOWERS_ALDO1);
+        PMU->disablePowerOutput(XPOWERS_ALDO4);
+        PMU->disablePowerOutput(XPOWERS_BLDO1);
+        PMU->disablePowerOutput(XPOWERS_BLDO2);
+        PMU->disablePowerOutput(XPOWERS_DLDO1);
+        PMU->disablePowerOutput(XPOWERS_DLDO2);
+
+        // GNSS RTC PowerVDD 3300mV
+        PMU->setPowerChannelVoltage(XPOWERS_VBACKUP, 3300);
+        PMU->enablePowerOutput(XPOWERS_VBACKUP);
+
+        //ESP32 VDD 3300mV
+        // ! No need to set, automatically open , Don't close it
+        // PMU->setPowerChannelVoltage(XPOWERS_DCDC1, 3300);
+        // PMU->setProtectedChannel(XPOWERS_DCDC1);
+        PMU->setProtectedChannel(XPOWERS_DCDC1);
+
+        // LoRa VDD 3300mV
+        PMU->setPowerChannelVoltage(XPOWERS_ALDO2, 3300);
+        PMU->enablePowerOutput(XPOWERS_ALDO2);
+
+        //GNSS VDD 3300mV
+        PMU->setPowerChannelVoltage(XPOWERS_ALDO3, 3300);
+        PMU->enablePowerOutput(XPOWERS_ALDO3);
+
+#endif /*CONFIG_IDF_TARGET_ESP32*/
+
+
 #if defined(LILYGO_TBeam_S3_Core_V3_0)
 
         //t-beam m.2 inface
