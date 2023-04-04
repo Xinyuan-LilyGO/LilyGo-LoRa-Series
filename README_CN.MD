@@ -8,7 +8,7 @@
 2. 打开对应的示例
 3. `T-Beam`用户可以选择`TTGO T-Beam`,`lora32(T3)`用户可以选择`ESP32 Dev Module`,`T-Motion` 用户选择 `Nucleo_l073RZ`,`T3-S3-V1.0`和`T-BeamS3-Core`用户选择`ESP32S3 Dev Module`
 4. 在端口中选择板子的端口
-5. 除了GPS 目录外的其他示例，请在`utilities.h` 中上方根据你的板子型号取消注释,否则编译将报错误
+5. 请在每个草图的 `utilities.h` 文件的上方根据你的板子型号取消注释,否则编译将报错误
 6. 上传
 
 ## ⚠ 注意事项 ⚠ 
