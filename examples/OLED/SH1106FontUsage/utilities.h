@@ -3,7 +3,7 @@
 
 // #define LILYGO_TBeam_V0_7
 // #define LILYGO_TBeam_V1_X
-// #define LILYGO_TBeam_S3_Core_V3_0
+// #define LILYGO_TBeamS3_SUPREME_V3_0
 // #define LILYGO_T3_V1_0
 // #define LILYGO_T3_V1_3
 // #define LILYGO_T3_V1_6
@@ -78,7 +78,7 @@
 //If you are using the screen of SH1106 model, please cancel this line of comment
 // #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
 
-#elif defined(LILYGO_TBeam_S3_Core_V3_0)
+#elif defined(LILYGO_TBeamS3_SUPREME_V3_0)
 
 #define I2C_SDA                    17
 #define I2C_SCL                    18

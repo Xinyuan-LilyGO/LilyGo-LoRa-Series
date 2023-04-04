@@ -146,7 +146,7 @@ bool initPMU()
 #endif /*CONFIG_IDF_TARGET_ESP32*/
 
 
-#if defined(LILYGO_TBeam_S3_Core_V3_0)
+#if defined(LILYGO_TBeamS3_SUPREME_V3_0)
 
         //t-beam m.2 inface
         //gps

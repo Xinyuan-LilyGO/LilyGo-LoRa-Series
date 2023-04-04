@@ -6,7 +6,7 @@
 * */
 // #define LILYGO_TBeam_V0_7
 // #define LILYGO_TBeam_V1_X
-// #define LILYGO_TBeam_S3_Core_V3_0
+// #define LILYGO_TBeamS3_SUPREME_V3_0
 // #define LILYGO_T3_V1_0
 // #define LILYGO_T3_V1_3
 // #define LILYGO_T3_V1_6
@@ -79,7 +79,7 @@
 #define HAS_PMU
 
 
-#elif defined(LILYGO_TBeam_S3_Core_V3_0)
+#elif defined(LILYGO_TBeamS3_SUPREME_V3_0)
 
 #define I2C_SDA                    17
 #define I2C_SCL                    18
