@@ -63,7 +63,7 @@
 [12]: assets/image/T-BEAM-S3-Supreme.jpg
 [12-3]:assets/image/T-BEAM-S3Core.jpg
 [12-1]: NULL
-[12-2]: schematic/LilyGo_TBeam_S3_V3.0.pdf
+[12-2]: schematic/LilyGo_TBeam_S3_Core_V3.0.pdf
 
 
 ## 示例描述
