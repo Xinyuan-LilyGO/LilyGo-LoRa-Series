@@ -12,7 +12,7 @@
 - in Windows, it is `Documents/Arduino/libraries` 
 4. Open the corresponding example
 5. In the Arduino Application, navigate to the Board Manager menu ("Tools => Board => Board Manager"), search for `esp32`, and make sure that you install the latest version. After you do this, you can select the board you have from the list of boards in the "ESP32 Arduino" menu ("Tools=> Board => ESP32 Arduino"). It's very important to note that the list of boards is NOT in alphabetical order. Look for the board you are working with carefully in the list. 
-6. `T-Beam` users can choose `TTGO T-Beam`, `lora32(T3)` users can choose `ESP32 Dev Module` , `T-Motion` users choose `Nucleo_l073RZ`,`T3-S3-V1.0`and `T-BeamS3 Core` users can selected `ESP32S3 Dev Module`
+6. `T-Beam` users can choose `TTGO T-Beam`, `lora32(T3)` users can choose `ESP32 Dev Module` , `T-Motion` users choose `Nucleo_l073RZ`,`T3-S3-V1.0`and `T-BeamS3 Supreme` users can selected `ESP32S3 Dev Module`
 7. Select the port of the board in the port
 8. For other examples except the `GPS` directory, please **uncomment** in the upper part of `utilities.h` according to your board model, otherwise the compilation will report an error
 9. Upload
@@ -27,19 +27,20 @@ The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise 
 
 ## Product 📷
 
-|          Product          |          Product Link           |                       Schematic                        | Corresponding example macro definition |
-| :-----------------------: | :-----------------------------: | :----------------------------------------------------: | :------------------------------------: |
-|  [T-Beam SX1278/76][1-4]  |         [AliExpress][1]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_X  |
-|   [T-Beam SX1262][1-4]    |         [AliExpress][2]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_X  |
-| [LoRa32 V1.0 SX1276][3-1] |         [AliExpress][3]         |                           ❌                            |             LILYGO_T3_V1_0             |
-| [LoRa32 V1.0 SX1278][3-1] |         [AliExpress][4]         |                           ❌                            |             LILYGO_T3_V1_0             |
-| [LoRa32 V1.3 SX1276][5-2] |         [AliExpress][5]         |                   [LoRa32 V1.3][5-1]                   |             LILYGO_T3_V1_3             |
-|    [LoRa32 V2.0][6-2]     |         [AliExpress][6]         |                   [LoRa32 V2.0][6-1]                   |             LILYGO_T3_V1_3             |
-| [LoRa32 V2.1 & 1.6][7-4]  | [AliExpress][7-1]/[Amazon][7-2] |                 [LoRa32 V2.1_1.6][7-3]                 |             LILYGO_T3_V1_6             |
-|   [T-Motion S76G][8-2]    |         [AliExpress][8]         |                    [T-Motion][8-1]                     |             LILYGO_T3_V1_6             |
-|  [LoRa32 V1.8 2.4G][9-2]  |         [lilygo.cc][9]          |                [LoRa32 V1.8 2.4G][9-1]                 |             LILYGO_T3_V1_8             |
-|   [LoRa T3 S3 V1.0][10]   |         [lilygo.cc][10]         |                [LoRa T3 S3 V1.0][10-1]                 |           LILYGO_T3_S3_V1_0            |
-|   [LoRa T3 S3 V1.1][11]   |         [lilygo.cc][11]         |                [LoRa T3 S3 V1.1][11-1]                 |    LILYGO_T3_S3_V1_0  (Same as 1.0)    |
+|                    Product                    |          Product Link           |                       Schematic                        | Corresponding example macro definition |
+| :-------------------------------------------: | :-----------------------------: | :----------------------------------------------------: | :------------------------------------: |
+|            [T-Beam SX1278/76][1-4]            |         [AliExpress][1]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_X  |
+|             [T-Beam SX1262][1-4]              |         [AliExpress][2]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_X  |
+|           [LoRa32 V1.0 SX1276][3-1]           |         [AliExpress][3]         |                           ❌                            |             LILYGO_T3_V1_0             |
+|           [LoRa32 V1.0 SX1278][3-1]           |         [AliExpress][4]         |                           ❌                            |             LILYGO_T3_V1_0             |
+|           [LoRa32 V1.3 SX1276][5-2]           |         [AliExpress][5]         |                   [LoRa32 V1.3][5-1]                   |             LILYGO_T3_V1_3             |
+|              [LoRa32 V2.0][6-2]               |         [AliExpress][6]         |                   [LoRa32 V2.0][6-1]                   |             LILYGO_T3_V1_3             |
+|           [LoRa32 V2.1 & 1.6][7-4]            | [AliExpress][7-1]/[Amazon][7-2] |                 [LoRa32 V2.1_1.6][7-3]                 |             LILYGO_T3_V1_6             |
+|             [T-Motion S76G][8-2]              |         [AliExpress][8]         |                    [T-Motion][8-1]                     |             LILYGO_T3_V1_6             |
+|            [LoRa32 V1.8 2.4G][9-2]            |         [lilygo.cc][9]          |                [LoRa32 V1.8 2.4G][9-1]                 |             LILYGO_T3_V1_8             |
+|             [LoRa T3 S3 V1.0][10]             |         [lilygo.cc][10]         |                [LoRa T3 S3 V1.0][10-1]                 |           LILYGO_T3_S3_V1_0            |
+|             [LoRa T3 S3 V1.1][11]             |         [lilygo.cc][11]         |                [LoRa T3 S3 V1.1][11-1]                 |    LILYGO_T3_S3_V1_0  (Same as 1.0)    |
+| [T-Beam S3 Supreme][12]/[T-BeamS3 Core][12-3] |        [lilygo.cc][12-1]        |       [T-Beam S3 Supreme & T-Beam S3 Core][12-2]       |      LILYGO_TBeamS3_SUPREME_V3_0       |
 
 
 [1]: https://pt.aliexpress.com/item/32967228739.html "T-Beam SX1278/76"
@@ -71,7 +72,10 @@ The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise 
 [10-1]: schematic/T3_S3_V1.0.pdf
 [11]: NULL
 [11-1]: schematic/T3_S3_V1.1.pdf
-
+[12]: assets/image/T-BEAM-S3-Supreme.jpg
+[12-3]:assets/image/T-BEAM-S3Core.jpg
+[12-1]: NULL
+[12-2]: schematic/LilyGo_TBeam_S3_V3.0.pdf
 
 
 
@@ -118,7 +122,7 @@ The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise 
 │  │  ├─SX128x_Receive_Interrupt
 │  │  └─SX128x_Transmit_Interrupt
 │  └─TBeamAllFunction   # T-Beam all function example,Only tbeamv1.x is supported temporarily
-├── Sensor            # Sensor examples , just support t-beam-s3-core
+├── Sensor            # Sensor examples , just support t-beams3-supreme
 │   ├── BME280_AdvancedsettingsExample
 │   ├── BME280_TestExample
 │   ├── BME280_UnifiedExample
@@ -176,10 +180,13 @@ To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Se
 - [SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 - [SX1278](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
 - [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
-- [SX1280](https://www.semtech.com/products/wireless-rf/lora-24ghz/sx1280)
-- [sx1280](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
+- [SX1280](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
 - [GSP NEO-6/NEO-8](https://www.u-blox.com/en/product/neo-6-series)
 - [GSP MAX-M10](https://www.u-blox.com/zh/product/max-m10-series)
+- [PCF8563](./lib/SensorsLib/datasheet/PCF8563%20Datasheet%20Rev.11.pdf)
+- [QMI8658](./lib/SensorsLib/datasheet/QMI8658A%20Datasheet%20Rev1.0.pdf)
+- [QMC6310](./lib/SensorsLib/datasheet/QMC6310%20Datasheet%20Rev.C.pdf)
+- [BME280](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/)
 
 
 ## Announcements
