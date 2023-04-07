@@ -23,9 +23,9 @@
 |           [LoRa32 V1.0 SX1276][3-1]           |         [AliExpress][3]         |                           ❌                            |             LILYGO_T3_V1_0             |
 |           [LoRa32 V1.0 SX1278][3-1]           |         [AliExpress][4]         |                           ❌                            |             LILYGO_T3_V1_0             |
 |           [LoRa32 V1.3 SX1276][5-2]           |         [AliExpress][5]         |                   [LoRa32 V1.3][5-1]                   |             LILYGO_T3_V1_3             |
-|              [LoRa32 V2.0][6-2]               |         [AliExpress][6]         |                   [LoRa32 V2.0][6-1]                   |             LILYGO_T3_V1_3             |
+|              [LoRa32 V2.0][6-2]               |         [AliExpress][6]         |                   [LoRa32 V2.0][6-1]                   |             LILYGO_T3_V2_0             |
 |           [LoRa32 V2.1 & 1.6][7-4]            | [AliExpress][7-1]/[Amazon][7-2] |                 [LoRa32 V2.1_1.6][7-3]                 |             LILYGO_T3_V1_6             |
-|             [T-Motion S76G][8-2]              |         [AliExpress][8]         |                    [T-Motion][8-1]                     |             LILYGO_T3_V1_6             |
+|             [T-Motion S76G][8-2]              |         [AliExpress][8]         |                    [T-Motion][8-1]                     |          LILYGO_T_MOTION_S76G          |
 |            [LoRa32 V1.8 2.4G][9-2]            |         [lilygo.cc][9]          |                [LoRa32 V1.8 2.4G][9-1]                 |             LILYGO_T3_V1_8             |
 |             [LoRa T3 S3 V1.0][10]             |         [lilygo.cc][10]         |                [LoRa T3 S3 V1.0][10-1]                 |           LILYGO_T3_S3_V1_0            |
 |             [LoRa T3 S3 V1.1][11]             |         [lilygo.cc][11]         |                [LoRa T3 S3 V1.1][11-1]                 |    LILYGO_T3_S3_V1_0  (Same as 1.0)    |
