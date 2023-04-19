@@ -74,7 +74,7 @@ The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise 
 [11-1]: schematic/T3_S3_V1.1.pdf
 [12]: assets/image/T-BEAM-S3-Supreme.jpg
 [12-3]:assets/image/T-BEAM-S3Core.jpg
-[12-1]: NULL
+[12-1]: https://www.aliexpress.com/item/1005005418286231.html
 [12-2]: schematic/LilyGo_TBeam_S3_Core_V3.0.pdf
 
 
@@ -158,6 +158,9 @@ If the label says SX1262 then it is SX1262
 ## Precautions
 
 1. If there is no data output from GPS, [see Restoring factory defaults ](firmware/NMEA_Reset/README.MD)
+2. [GNSS troubleshooting from SoftRF](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-GNSS-troubleshooting)
+
+
 
 ## PinOut
 
