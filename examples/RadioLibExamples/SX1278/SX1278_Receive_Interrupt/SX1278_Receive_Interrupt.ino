@@ -72,6 +72,9 @@ void setup()
 
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
+        radio.setOutputPower(20);
+        radio.setBandwidth(125);
+        radio.setCurrentLimit(120);
     } else {
         Serial.print(F("failed, code "));
         Serial.println(state);
@@ -80,7 +83,7 @@ void setup()
 
     // set the function that will be called
     // when packet transmission is finished
-    radio.setDio0Action(setFlag);
+    radio.setDio0Action(setFlag, RISING);
 
     // start listening for LoRa packets
     Serial.print(F("[SX1278] Starting to listen ... "));

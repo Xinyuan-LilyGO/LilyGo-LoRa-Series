@@ -122,7 +122,7 @@ void setup()
 #elif defined(RADIO_USING_SX1268)
     radio.setDio1Action(setFlag);
 #else
-    radio.setDio0Action(setFlag);
+    radio.setDio0Action(setFlag, RISING);
 #endif
 }
 
