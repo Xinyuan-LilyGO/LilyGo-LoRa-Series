@@ -1,20 +1,21 @@
 #include "SX1280.h"
+#include <string.h>
 #if !defined(RADIOLIB_EXCLUDE_SX128X)
 
 SX1280::SX1280(Module* mod) : SX1281(mod) {
 
 }
 
-int16_t SX1280::range(bool master, uint32_t addr) {
+int16_t SX1280::range(bool master, uint32_t addr, uint16_t calTable[3][6]) {
   // start ranging
-  int16_t state = startRanging(master, addr);
+  int16_t state = startRanging(master, addr, calTable);
   RADIOLIB_ASSERT(state);
 
   // wait until ranging is finished
-  uint32_t start = _mod->millis();
-  while(!_mod->digitalRead(_mod->getIrq())) {
-    _mod->yield();
-    if(_mod->millis() - start > 10000) {
+  uint32_t start = this->mod->hal->millis();
+  while(!this->mod->hal->digitalRead(this->mod->getIrq())) {
+    this->mod->hal->yield();
+    if(this->mod->hal->millis() - start > 10000) {
       clearIrqStatus();
       standby();
       return(RADIOLIB_ERR_RANGING_TIMEOUT);
@@ -31,7 +32,7 @@ int16_t SX1280::range(bool master, uint32_t addr) {
   return(state);
 }
 
-int16_t SX1280::startRanging(bool master, uint32_t addr) {
+int16_t SX1280::startRanging(bool master, uint32_t addr, uint16_t calTable[3][6]) {
   // check active modem
   uint8_t modem = getPacketType();
   if(!((modem == RADIOLIB_SX128X_PACKET_TYPE_LORA) || (modem == RADIOLIB_SX128X_PACKET_TYPE_RANGING))) {
@@ -49,21 +50,23 @@ int16_t SX1280::startRanging(bool master, uint32_t addr) {
   }
 
   // set modulation parameters
-  state = setModulationParams(_sf, _bw, _cr);
+  state = setModulationParams(this->spreadingFactor, this->bandwidth, this->codingRateLoRa);
   RADIOLIB_ASSERT(state);
 
   // set packet parameters
-  state = setPacketParamsLoRa(_preambleLengthLoRa, _headerType, _payloadLen, _crcLoRa);
+  state = setPacketParamsLoRa(this->preambleLengthLoRa, this->headerType, this->payloadLen, this->crcLoRa);
   RADIOLIB_ASSERT(state);
 
   // check all address bits
-  uint8_t regValue;
-  state = readRegister(RADIOLIB_SX128X_REG_SLAVE_RANGING_ADDRESS_WIDTH, &regValue, 1);
-  RADIOLIB_ASSERT(state);
-  regValue &= 0b00111111;
-  regValue |= 0b11000000;
-  state = writeRegister(RADIOLIB_SX128X_REG_SLAVE_RANGING_ADDRESS_WIDTH, &regValue, 1);
-  RADIOLIB_ASSERT(state);
+  if(!master) {
+    uint8_t regValue;
+    state = readRegister(RADIOLIB_SX128X_REG_SLAVE_RANGING_ADDRESS_WIDTH, &regValue, 1);
+    RADIOLIB_ASSERT(state);
+    regValue &= 0b00111111;
+    regValue |= 0b11000000;
+    state = writeRegister(RADIOLIB_SX128X_REG_SLAVE_RANGING_ADDRESS_WIDTH, &regValue, 1);
+    RADIOLIB_ASSERT(state);
+  }
 
   // set remaining parameter values
   uint32_t addrReg = RADIOLIB_SX128X_REG_SLAVE_RANGING_ADDRESS_BYTE_3;
@@ -84,23 +87,30 @@ int16_t SX1280::startRanging(bool master, uint32_t addr) {
   state = setDioIrqParams(irqMask, irqDio1);
   RADIOLIB_ASSERT(state);
 
-  // set calibration values
-  uint8_t index = (_sf >> 4) - 5;
-  static const uint16_t calTable[3][6] = {
+  // this is the default calibration from AN1200.29
+  uint16_t calTbl[3][6] = {
     { 10299, 10271, 10244, 10242, 10230, 10246 },
     { 11486, 11474, 11453, 11426, 11417, 11401 },
     { 13308, 13493, 13528, 13515, 13430, 13376 }
   };
+
+  // check if user provided some custom calibration
+  if(calTable != NULL) {
+    memcpy(calTbl, calTable, sizeof(calTbl));
+  }
+
+  // set calibration values
+  uint8_t index = (this->spreadingFactor >> 4) - 5;
   uint16_t val = 0;
-  switch(_bw) {
+  switch(this->bandwidth) {
     case(RADIOLIB_SX128X_LORA_BW_406_25):
-      val = calTable[0][index];
+      val = calTbl[0][index];
       break;
     case(RADIOLIB_SX128X_LORA_BW_812_50):
-      val = calTable[1][index];
+      val = calTbl[1][index];
       break;
     case(RADIOLIB_SX128X_LORA_BW_1625_00):
-      val = calTable[2][index];
+      val = calTbl[2][index];
       break;
     default:
       return(RADIOLIB_ERR_INVALID_BANDWIDTH);
@@ -166,7 +176,7 @@ float SX1280::getRangingResult() {
 
   // calculate the real result
   uint32_t raw = ((uint32_t)data[0] << 16) | ((uint32_t)data[1] << 8) | data[2];
-  return((float)raw * 150.0 / (4.096 * _bwKhz));
+  return((float)raw * 150.0 / (4.096 * this->bandwidthKhz));
 }
 
 #endif

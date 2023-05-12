@@ -47,11 +47,11 @@ void setup() {
 
   // set the function that will be called
   // when LoRa preamble is not detected within CAD timeout period
-  radio.setDio0Action(setFlagTimeout);
+  radio.setDio0Action(setFlagTimeout, RISING);
 
   // set the function that will be called
   // when LoRa preamble is detected
-  radio.setDio1Action(setFlagDetected);
+  radio.setDio1Action(setFlagDetected, RISING);
 
   // start scanning the channel
   Serial.print(F("[SX1278] Starting scan for LoRa preamble ... "));
@@ -70,9 +70,6 @@ volatile bool timeoutFlag = false;
 // flag to indicate that a preamble was detected
 volatile bool detectedFlag = false;
 
-// disable interrupt when it's not needed
-volatile bool enableInterrupt = true;
-
 // this function is called when no preamble
 // is detected within timeout period
 // IMPORTANT: this function MUST be 'void' type
@@ -81,11 +78,6 @@ volatile bool enableInterrupt = true;
   ICACHE_RAM_ATTR
 #endif
 void setFlagTimeout(void) {
-  // check if the interrupt is enabled
-  if(!enableInterrupt) {
-    return;
-  }
-
   // we timed out, set the flag
   timeoutFlag = true;
 }
@@ -98,11 +90,6 @@ void setFlagTimeout(void) {
   ICACHE_RAM_ATTR
 #endif
 void setFlagDetected(void) {
-  // check if the interrupt is enabled
-  if(!enableInterrupt) {
-    return;
-  }
-
   // we got a preamble, set the flag
   detectedFlag = true;
 }
@@ -110,10 +97,6 @@ void setFlagDetected(void) {
 void loop() {
   // check if we need to restart channel activity detection
   if(detectedFlag || timeoutFlag) {
-    // disable the interrupt service routine while
-    // processing the data
-    enableInterrupt = false;
-
     // check if we got a preamble
     if(detectedFlag) {
       // LoRa preamble was detected
@@ -138,10 +121,5 @@ void loop() {
     // reset flags
     timeoutFlag = false;
     detectedFlag = false;
-
-    // enable interrupts again
-    enableInterrupt = true;
-  
   }
-  
 }

@@ -51,7 +51,7 @@ void setup() {
 
   // set the function that will be called
   // when new packet is received
-  radio.setDio0Action(setFlag);
+  radio.setDio0Action(setFlag, RISING);
 
   // start listening for LoRa packets
   Serial.print(F("[SX1278] Starting to listen ... "));
@@ -71,15 +71,11 @@ void setup() {
   // radio.sleep()
   // radio.transmit();
   // radio.receive();
-  // radio.readData();
   // radio.scanChannel();
 }
 
 // flag to indicate that a packet was received
 volatile bool receivedFlag = false;
-
-// disable interrupt when it's not needed
-volatile bool enableInterrupt = true;
 
 // this function is called when a complete packet
 // is received by the module
@@ -89,11 +85,6 @@ volatile bool enableInterrupt = true;
   ICACHE_RAM_ATTR
 #endif
 void setFlag(void) {
-  // check if the interrupt is enabled
-  if(!enableInterrupt) {
-    return;
-  }
-
   // we got a packet, set the flag
   receivedFlag = true;
 }
@@ -101,10 +92,6 @@ void setFlag(void) {
 void loop() {
   // check if the flag is set
   if(receivedFlag) {
-    // disable the interrupt service routine while
-    // processing the data
-    enableInterrupt = false;
-
     // reset flag
     receivedFlag = false;
 
@@ -151,13 +138,5 @@ void loop() {
       Serial.println(state);
 
     }
-
-    // put module back to listen mode
-    radio.startReceive();
-
-    // we're ready to receive more packets,
-    // enable interrupt service routine
-    enableInterrupt = true;
   }
-
 }

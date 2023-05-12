@@ -74,15 +74,11 @@ void setup() {
   // radio.sleep()
   // radio.transmit();
   // radio.receive();
-  // radio.readData();
   // radio.scanChannel();
 }
 
 // flag to indicate that a packet was received
 volatile bool receivedFlag = false;
-
-// disable interrupt when it's not needed
-volatile bool enableInterrupt = true;
 
 // this function is called when a complete packet
 // is received by the module
@@ -92,11 +88,6 @@ volatile bool enableInterrupt = true;
   ICACHE_RAM_ATTR
 #endif
 void setFlag(void) {
-  // check if the interrupt is enabled
-  if(!enableInterrupt) {
-    return;
-  }
-
   // we got a packet, set the flag
   receivedFlag = true;
 }
@@ -104,10 +95,6 @@ void setFlag(void) {
 void loop() {
   // check if the flag is set
   if(receivedFlag) {
-    // disable the interrupt service routine while
-    // processing the data
-    enableInterrupt = false;
-
     // reset flag
     receivedFlag = false;
 
@@ -139,6 +126,11 @@ void loop() {
       Serial.print(radio.getSNR());
       Serial.println(F(" dB"));
 
+      // print frequency error
+      Serial.print(F("[SX1262] Frequency error:\t"));
+      Serial.print(radio.getFrequencyError());
+      Serial.println(F(" Hz"));
+
     } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
       // packet was received, but is malformed
       Serial.println(F("CRC error!"));
@@ -149,13 +141,5 @@ void loop() {
       Serial.println(state);
 
     }
-
-    // put module back to listen mode
-    radio.startReceive();
-
-    // we're ready to receive more packets,
-    // enable interrupt service routine
-    enableInterrupt = true;
   }
-
 }

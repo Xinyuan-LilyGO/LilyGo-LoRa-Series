@@ -1,0 +1,208 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      id:
+        description: The ID of the platform on which the build is run
+        required: true
+        default: arduino:avr:uno
+        type: choice
+        options:
+          - all
+          - arduino:avr:uno
+          - arduino:avr:mega
+          - arduino:avr:leonardo
+          - arduino:mbed:nano33ble
+          - arduino:mbed:envie_m4
+          - arduino:megaavr:uno2018
+          - arduino:sam:arduino_due_x
+          - arduino:samd:arduino_zero_native
+          - adafruit:samd:adafruit_feather_m0
+          - adafruit:nrf52:feather52832
+          - esp32:esp32:esp32
+          - esp8266:esp8266:generic
+          - Intel:arc32:arduino_101
+          - SparkFun:apollo3:sfe_artemis
+          - STMicroelectronics:stm32:GenF3:pnum=BLACKPILL_F303CC
+          - STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_WL55JC1
+          - stm32duino:STM32F1:mapleMini
+          - MegaCoreX:megaavr:4809
+          - arduino:mbed_rp2040:pico
+          - rp2040:rp2040:rpipico
+          - CubeCell:CubeCell:CubeCell-Board
+          - MegaCore:avr:1281
+          - teensy:avr:teensy41
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        # platform-dependent settings - extra board options, board index URLs, skip patterns etc.
+        include:
+          - id: arduino:avr:uno
+            run: echo "skip-pattern=(STM32WL|SSTV)" >> $GITHUB_OUTPUT
+          - id: arduino:avr:mega
+            run: echo "options=':cpu=atmega2560'" >> $GITHUB_OUTPUT
+          - id: arduino:avr:leonardo
+          - id: arduino:mbed:nano33ble
+          - id: arduino:mbed:envie_m4
+          - id: arduino:megaavr:uno2018
+            run: echo "options=':mode=on'" >> $GITHUB_OUTPUT
+          - id: arduino:sam:arduino_due_x
+          - id: arduino:samd:arduino_zero_native
+          - id: adafruit:samd:adafruit_feather_m0
+            run: |
+              echo "options=':usbstack=arduino,debug=off'" >> $GITHUB_OUTPUT
+              echo "index-url=--additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" >> $GITHUB_OUTPUT
+          - id: adafruit:nrf52:feather52832
+            run: |
+              sudo apt-get update
+              sudo apt-get install -y python3 python3-pip python3-setuptools
+              pip3 install wheel
+              pip3 install --user adafruit-nrfutil
+              echo "/home/runner/.local/bin" >> $GITHUB_PATH
+              echo "options=':softdevice=s132v6,debug=l0'" >> $GITHUB_OUTPUT
+              echo "index-url=--additional-urls https://adafruit.github.io/arduino-board-index/package_adafruit_index.json" >> $GITHUB_OUTPUT
+          - id: esp32:esp32:esp32
+            run:
+              python -m pip install pyserial
+              echo "index-url=--additional-urls https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" >> $GITHUB_OUTPUT
+          - id: esp8266:esp8266:generic
+            run: |
+              echo "options=':xtal=80,ResetMethod=ck,CrystalFreq=26,FlashFreq=40,FlashMode=qio,eesz=512K'" >> $GITHUB_OUTPUT
+              echo "index-url=--additional-urls http://arduino.esp8266.com/stable/package_esp8266com_index.json" >> $GITHUB_OUTPUT
+          - id: Intel:arc32:arduino_101
+          - id: SparkFun:apollo3:sfe_artemis
+            run: |
+              echo "warnings='none'" >> $GITHUB_OUTPUT
+              echo "index-url=--additional-urls https://raw.githubusercontent.com/sparkfun/Arduino_Apollo3/master/package_sparkfun_apollo3_index.json" >> $GITHUB_OUTPUT
+          - id: STMicroelectronics:stm32:GenF3:pnum=BLACKPILL_F303CC
+            run: echo "index-url=--additional-urls https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json" >> $GITHUB_OUTPUT
+          - id: STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_WL55JC1
+            run: |
+              # Do *not* skip STM32WL examples
+              echo "skip-pattern=''" >> $GITHUB_OUTPUT
+              echo "index-url=--additional-urls https://raw.githubusercontent.com/stm32duino/BoardManagerFiles/main/package_stmicroelectronics_index.json" >> $GITHUB_OUTPUT
+          - id: stm32duino:STM32F1:mapleMini
+            run: |
+              echo "options=':bootloader_version=original,cpu_speed=speed_72mhz'" >> $GITHUB_OUTPUT
+              echo "index-url=--additional-urls http://dan.drown.org/stm32duino/package_STM32duino_index.json" >> $GITHUB_OUTPUT
+          - id: MegaCoreX:megaavr:4809
+            run: echo "index-url=--additional-urls https://mcudude.github.io/MegaCoreX/package_MCUdude_MegaCoreX_index.json" >> $GITHUB_OUTPUT
+          - id: arduino:mbed_rp2040:pico
+          - id: rp2040:rp2040:rpipico
+            run: echo "index-url=--additional-urls https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json" >> $GITHUB_OUTPUT
+          - id: CubeCell:CubeCell:CubeCell-Board
+            run: echo "index-url=--additional-urls https://resource.heltec.cn/download/package_CubeCell_index.json" >> $GITHUB_OUTPUT
+          - id: MegaCore:avr:1281
+            run: echo "index-url=--additional-urls https://mcudude.github.io/MegaCore/package_MCUdude_MegaCore_index.json" >> $GITHUB_OUTPUT
+          - id: teensy:avr:teensy41
+            run: echo "index-url=--additional-urls https://www.pjrc.com/teensy/td_156/package_teensy_index.json" >> $GITHUB_OUTPUT
+
+    runs-on: ubuntu-latest
+    name: ${{ matrix.id }}
+    env:
+      run-build: ${{ (matrix.id == 'arduino:avr:uno') || contains(github.event.head_commit.message, 'CI_BUILD_ALL') || contains(github.event.head_commit.message, 'Bump version to') || contains(github.event.head_commit.message, format('{0}', matrix.id)) || inputs.id == 'all' || inputs.id == matrix.id }}
+
+    steps:
+      - name: Install arduino-cli
+        if: ${{ env.run-build == 'true' }}
+        run:
+          |
+          mkdir -p ~/.local/bin
+          echo "~/.local/bin" >> $GITHUB_PATH
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=~/.local/bin sh
+
+      - name: Get platform name
+        if: ${{ env.run-build == 'true' }}
+        uses: jungwinter/split@v1
+        id: split
+        with:
+          msg: ${{ matrix.id }}
+          seperator: ':'
+
+      - name: Prepare platform-specific settings
+        if: ${{ env.run-build == 'true' }}
+        id: prep
+        run:
+          |
+          # common settings - no extra options, skip STM32WL examples, all warnings
+          echo "options=''" >> $GITHUB_OUTPUT
+          echo "skip-pattern=STM32WL" >> $GITHUB_OUTPUT
+          echo "warnings=all" >> $GITHUB_OUTPUT
+
+          # run platform-dependent scripts defined in matrix
+          ${{ matrix.run }}
+
+      - name: Install platform
+        if: ${{ env.run-build == 'true' }}
+        run:
+          |
+          arduino-cli core update-index ${{ format('{0}', steps.prep.outputs.index-url) }}
+          arduino-cli core install ${{ format('{0}:{1} {2}', steps.split.outputs._0, steps.split.outputs._1, steps.prep.outputs.index-url) }}
+
+      - name: Checkout repository
+        if: ${{ env.run-build == 'true' }}
+        uses: actions/checkout@v2
+
+      - name: Build examples
+        if: ${{ env.run-build == 'true' }}
+        run:
+          |
+          for example in $(find $PWD/examples -name '*.ino' | sort); do
+            # check whether to skip this sketch
+            if [ ! -z '${{ steps.prep.outputs.skip-pattern }}' ] && [[ ${example} =~ ${{ steps.prep.outputs.skip-pattern }} ]]; then
+              # skip sketch
+              echo -e "\n\033[1;33mSkipped ${example##*/} (matched with ${{ steps.prep.outputs.skip-pattern }})\033[0m";
+            else
+              # build sketch
+              echo -e "\n\033[1;33mBuilding ${example##*/} ... \033[0m";
+              arduino-cli compile --libraries /home/runner/work/RadioLib --fqbn ${{ matrix.id }}${{ steps.prep.outputs.options }} $example --warnings=${{ steps.prep.outputs.warnings }}
+              if [ $? -ne 0 ]; then
+                echo -e "\033[1;31m${example##*/} build FAILED\033[0m\n";
+                exit 1;
+              else
+                echo -e "\033[1;32m${example##*/} build PASSED\033[0m\n";
+              fi
+            fi
+          done
+
+  rpi-build:
+    runs-on: [self-hosted, ARM64]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pigpio cmake
+      
+      - name: Install the library
+        run: |
+          cd $PWD
+          mkdir build
+          cd build
+          cmake ..
+          sudo make install
+      
+      - name: Build the example
+        run: |
+          cd $PWD/examples/NonArduino/Raspberry
+          ./build.sh
+
+  rpi-test:
+    needs: rpi-build
+    runs-on: [self-hosted, ARM64]
+    steps:
+      - name: SX126x test
+        run: |
+          cd $PWD/extras/test/SX126x
+          ./clean.sh
+          ./build.sh
+          sudo ./build/rpi-sx1261

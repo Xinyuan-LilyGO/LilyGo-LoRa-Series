@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.13)
+
+project(radiolib)
+
+file(GLOB_RECURSE RADIOLIB_SOURCES
+  "src/*.cpp"
+)
+
+add_library(RadioLib ${RADIOLIB_SOURCES})
+
+target_include_directories(RadioLib
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
+include(GNUInstallDirs)
+
+install(TARGETS RadioLib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/RadioLib
+  FILES_MATCHING PATTERN "*.h"
+)
+
