@@ -318,7 +318,7 @@ void initBoard()
 #endif
 
 
-#ifdef LILYGO_T3_S3_V1_0
+#ifdef RADIO_TCXO_EN_PIN
     pinMode(RADIO_TCXO_EN_PIN, OUTPUT);
     digitalWrite(RADIO_TCXO_EN_PIN, HIGH);
 #endif
