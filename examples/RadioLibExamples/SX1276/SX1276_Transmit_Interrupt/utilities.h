@@ -197,8 +197,7 @@
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
-#elif defined(LILYGO_T3_S3_V1_X_SX1280)
-#error "Not supported, please use <SX1280 Example>"
+
 #else
 #error "For the first use, please define the board version and model in <utilities. h>"
 #endif

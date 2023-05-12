@@ -170,15 +170,16 @@
 #define RADIO_MISO_PIN              3
 #define RADIO_MOSI_PIN              6
 #define RADIO_CS_PIN                7
-// #define RADIO_DIO0_PIN              9
-#define RADIO_TCXO_EN_PIN           33
 #define RADIO_DIO1_PIN              33
-#define RADIO_BUSY_PIN              36
+#define RADIO_BUSY_PIN              34
 #define RADIO_RST_PIN               8
-#define RADIO_DIO2_PIN              34
+
+//!SX1276/78 module only
+#define RADIO_DIO0_PIN              9
+#define RADIO_DIO3_PIN              21
+#define RADIO_DIO4_PIN              10
 #define RADIO_DIO5_PIN              36
-#define RADIO_RX_PIN                21
-#define RADIO_TX_PIN                10
+//! end
 
 #define SDCARD_MOSI                 11
 #define SDCARD_MISO                 2
@@ -188,11 +189,13 @@
 #define BOARD_LED                   37
 #define LED_ON                      HIGH
 
-#define  BAT_ADC_PIN                1
-#define  BUTTON_PIN                 0
+#define BAT_ADC_PIN                1
+#define BUTTON_PIN                 0
 
 #define HAS_SDCARD
 #define HAS_DISPLAY
+
+
 #else
 #error "For the first use, please define the board version and model in <utilities. h>"
 #endif
