@@ -72,7 +72,7 @@ void setup()
 
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
-        radio.setOutputPower(20);
+        radio.setOutputPower(17);
         radio.setBandwidth(125);
         radio.setCurrentLimit(120);
     } else {
