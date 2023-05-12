@@ -75,7 +75,10 @@ void setup()
         while (true);
     }
 
-    // set output power to 3 dBm    !!Cannot be greater than 3dbm!!
+    //Set ANT Control pins
+    radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
+
+    // Set output power to 3 dBm    !!Cannot be greater than 3dbm!!
     if (radio.setOutputPower(3) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);

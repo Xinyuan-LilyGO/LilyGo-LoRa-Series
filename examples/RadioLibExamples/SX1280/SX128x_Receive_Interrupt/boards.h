@@ -103,13 +103,6 @@ void initBoard()
     Wire.begin(I2C_SDA, I2C_SCL);
 
 
-#ifdef LILYGO_T3_S3_V1_0
-    pinMode(RADIO_TX_PIN, OUTPUT);
-    pinMode(RADIO_RX_PIN, OUTPUT);
-    digitalWrite(RADIO_TX_PIN, LOW);
-    digitalWrite(RADIO_RX_PIN, HIGH);
-#endif
-
 #ifdef HAS_GPS
     Serial1.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 #endif
