@@ -318,11 +318,6 @@ void initBoard()
 #endif
 
 
-#ifdef LILYGO_T3_S3_V1_0
-    pinMode(RADIO_TCXO_EN_PIN, OUTPUT);
-    digitalWrite(RADIO_TCXO_EN_PIN, HIGH);
-#endif
-
 #ifdef HAS_GPS
     Serial1.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 #endif
