@@ -85,6 +85,7 @@ void u8g2_SetupBuffer(u8g2_t *u8g2, uint8_t *buf, uint8_t tile_buf_height, u8g2_
   u8g2->font_decode.is_transparent = 0; /* issue 443 */
   u8g2->bitmap_transparency = 0;
   
+  u8g2->font_height_mode = 0; /* issue 2046 */
   u8g2->draw_color = 1;
   u8g2->is_auto_page_clear = 1;
   
@@ -112,6 +113,16 @@ void u8g2_SetDisplayRotation(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb)
   u8g2->cb = u8g2_cb;
   u8g2->cb->update_dimension(u8g2);
   u8g2->cb->update_page_win(u8g2);
+}
+
+/*============================================*/
+
+void u8g2_SendF(u8g2_t * u8g2, const char *fmt, ...)
+{
+  va_list va;
+  va_start(va, fmt);
+  u8x8_cad_vsendf(u8g2_GetU8x8(u8g2), fmt, va);
+  va_end(va);
 }
 
 
@@ -318,6 +329,22 @@ void u8g2_draw_l90_mirrorr_r0(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_u
   u8g2_draw_hv_line_2dir(u8g2, xx, y, len, dir);
 }
 
+void u8g2_draw_mirror_vertical_r0(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
+{
+  u8g2_uint_t yy;
+  yy = u8g2->height;
+  yy -= y;
+  if ( (dir & 1) == 1 )
+  {
+    yy -= len;
+  }
+  else
+  {
+    yy--;
+  }
+  u8g2_draw_hv_line_2dir(u8g2, x, yy, len, dir);
+}
+
 /* dir = 0 or 1 */
 void u8g2_draw_l90_r1(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t len, uint8_t dir)
 {
@@ -424,6 +451,7 @@ const u8g2_cb_t u8g2_cb_r2 = { u8g2_update_dimension_r2, u8g2_update_page_win_r2
 const u8g2_cb_t u8g2_cb_r3 = { u8g2_update_dimension_r3, u8g2_update_page_win_r3, u8g2_draw_l90_r3 };
   
 const u8g2_cb_t u8g2_cb_mirror = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_draw_l90_mirrorr_r0 };
+const u8g2_cb_t u8g2_cb_mirror_vertical = { u8g2_update_dimension_r0, u8g2_update_page_win_r0, u8g2_draw_mirror_vertical_r0 };
   
 /*============================================*/
 /* setup for the null device */

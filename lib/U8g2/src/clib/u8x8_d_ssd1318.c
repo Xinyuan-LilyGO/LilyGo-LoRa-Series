@@ -82,7 +82,7 @@ static const uint8_t u8x8_d_ssd1318_128x96_icp_init_seq[] = {
   U8X8_CA(0x0db, 0x030), 		/* vcomh deselect level, value from issue 784 example code  */  
   
   
-  //U8X8_CA(0x020, 0x000),		/* page addressing mode */
+  //U8X8_CA(0x020, 0x000),		/* horizontal addressing mode */
   //U8X8_C(0x02e),				/* Deactivate scroll */ 
   
   U8X8_C(0x0a4),				/* output ram to display */
@@ -127,7 +127,7 @@ static const uint8_t u8x8_d_ssd1318_128x96_xcp_init_seq[] = {
   U8X8_CA(0x0db, 0x030), 		/* vcomh deselect level, value from issue 784 example code  */  
   
   
-  //U8X8_CA(0x020, 0x000),		/* page addressing mode */
+  //U8X8_CA(0x020, 0x000),		/* horizontal addressing mode */
   //U8X8_C(0x02e),				/* Deactivate scroll */ 
   
   U8X8_C(0x0a4),				/* output ram to display */
@@ -267,7 +267,7 @@ static const u8x8_display_info_t u8x8_ssd1318_128x96_display_info =
   /* data_setup_time_ns = */ 40,
   /* write_pulse_width_ns = */ 150,	/* SSD1306: cycle time is 300ns, so use 300/2 = 150 */
   /* tile_width = */ 16,
-  /* tile_hight = */ 12,
+  /* tile_height = */ 12,
   /* default_x_offset = */ 0,
   /* flipmode_x_offset = */ 0,
   /* pixel_width = */ 128,

@@ -38,12 +38,29 @@
 
 
 #include "U8x8lib.h"
+
+#ifdef ARDUINO
+
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif 
+
 #ifdef U8X8_HAVE_HW_I2C
-#include <Wire.h>
-#endif
+#  ifdef U8X8_HAVE_HW_I2C_TEENSY3
+#    include <i2c_t3.h>
+#  else
+#    include <Wire.h>
+#    ifdef U8X8_HAVE_2ND_HW_I2C
+#      if defined(MINICORE) && defined(__AVR_ATmega328PB__)
+#        include <Wire1.h>
+#      endif
+#    endif
+#  endif
+#endif /* U8X8_HAVE_HW_I2C */
+
+#endif /* ARDUINO */ 
+
+
 
 /*=============================================*/
 
@@ -70,6 +87,7 @@ size_t U8X8::write(uint8_t v)
 /*=============================================*/
 /*=== ARDUINO GPIO & DELAY ===*/
 
+#ifdef ARDUINO
 #ifdef U8X8_USE_PINS
 extern "C" uint8_t u8x8_gpio_and_delay_arduino(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, U8X8_UNUSED void *arg_ptr)
 {
@@ -197,9 +215,9 @@ extern "C" uint8_t u8x8_gpio_and_delay_arduino(u8x8_t *u8x8, uint8_t msg, uint8_
     return u8x8_byte_3wire_sw_spi(u8x8, msg,arg_int, arg_ptr);
   }
 
-#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6
+#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6 || __AVR_ARCH__ == 103
 
-/* this function completly replaces u8x8_byte_4wire_sw_spi*/
+/* this function completely replaces u8x8_byte_4wire_sw_spi*/
 extern "C" uint8_t u8x8_byte_arduino_3wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
   uint8_t i;
@@ -381,9 +399,9 @@ extern "C" uint8_t u8x8_byte_arduino_3wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
     return u8x8_byte_4wire_sw_spi(u8x8, msg,arg_int, arg_ptr);
   }
 
-#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6
+#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6 || __AVR_ARCH__ == 103
 
-/* this function completly replaces u8x8_byte_4wire_sw_spi*/
+/* this function completely replaces u8x8_byte_4wire_sw_spi*/
 extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
   uint8_t SREG_backup;
@@ -529,7 +547,7 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 
 #elif defined(__SAM3X8E__) 		/* Arduino DUE */
 
-/* this function completly replaces u8x8_byte_4wire_sw_spi*/
+/* this function completely replaces u8x8_byte_4wire_sw_spi*/
 extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
   uint8_t i, b;
@@ -687,6 +705,175 @@ extern "C" uint8_t u8x8_byte_arduino_4wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 
 
 /*=============================================*/
+/*=== 3 WIRE HARDWARE SPI with 8 bit HW SPI Subsystem ===*/
+/* 
+references: 
+  https://github.com/olikraus/ucglib/blob/master/cppsrc/Ucglib.cpp#L581	
+  https://github.com/olikraus/u8g2/issues/1041 
+*/
+
+static uint8_t arduino_hw_spi_3w_buffer[9];
+static uint8_t arduino_hw_spi_3w_bytepos;
+static uint16_t arduino_hw_spi_3w_dc; // 0 = dc==0, 256 = dc==1
+
+static void arduino_hw_spi_3w_init() 
+{
+    memset(arduino_hw_spi_3w_buffer, 0, 9);
+    arduino_hw_spi_3w_bytepos = 0;
+}
+
+static void arduino_hw_spi_3w_flush(void) 
+{
+#ifdef U8X8_HAVE_HW_SPI  
+  uint8_t i;
+  for(i = 0; i <= arduino_hw_spi_3w_bytepos; i++) 
+  {
+      SPI.transfer(arduino_hw_spi_3w_buffer[i]);
+  }
+#endif
+}
+
+static void arduino_hw_spi_3w_sendbyte(uint8_t data) 
+{
+  static union { uint16_t val; struct { uint8_t lsb; uint8_t msb; }; } data16;		// well well, not legal ISO 9899 code
+  
+  data16.val = (arduino_hw_spi_3w_dc + data) << (7 - arduino_hw_spi_3w_bytepos);
+#ifdef __BYTE_ORDER__ 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+  arduino_hw_spi_3w_buffer[arduino_hw_spi_3w_bytepos]   |= data16.msb;
+  ++arduino_hw_spi_3w_bytepos;
+  arduino_hw_spi_3w_buffer[arduino_hw_spi_3w_bytepos] |= data16.lsb;
+#else
+  arduino_hw_spi_3w_buffer[arduino_hw_spi_3w_bytepos]   |= data16.lsb;
+  ++arduino_hw_spi_3w_bytepos;
+  arduino_hw_spi_3w_buffer[arduino_hw_spi_3w_bytepos] |= data16.msb;
+#endif  
+#else // __BYTE_ORDER__  not defined (no gcc)
+  // assume little endian
+  arduino_hw_spi_3w_buffer[arduino_hw_spi_3w_bytepos]   |= data16.msb;
+  ++arduino_hw_spi_3w_bytepos;
+  arduino_hw_spi_3w_buffer[arduino_hw_spi_3w_bytepos] |= data16.lsb;
+#endif
+  
+  if (arduino_hw_spi_3w_bytepos == 8) 
+  {
+      arduino_hw_spi_3w_flush();
+      arduino_hw_spi_3w_init();
+  }
+}
+
+extern "C" uint8_t u8x8_byte_arduino_3wire_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr) 
+{
+#ifdef U8X8_HAVE_HW_SPI
+  
+  uint8_t *data;
+  uint8_t internal_spi_mode;
+
+  switch(msg) 
+  {
+    case U8X8_MSG_BYTE_SEND:
+	data = (uint8_t *)arg_ptr;
+	while(arg_int > 0) {
+	    arduino_hw_spi_3w_sendbyte((uint8_t)*data);
+	    data++;
+	    arg_int--;
+	}
+	break;
+
+    case U8X8_MSG_BYTE_INIT:
+	if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
+	  u8x8->bus_clock = u8x8->display_info->sck_clock_hz;
+	/* disable chipselect */
+	u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+      
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_ESP32)
+	/* ESP32 has the following begin: SPI.begin(int8_t sck=SCK, int8_t miso=MISO, int8_t mosi=MOSI, int8_t ss=-1); */
+	/* not sure about ESP8266 */
+        /* apply bugfix from PR 2123 */
+	//if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
+        if ( u8x8->pins[U8X8_PIN_SPI_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_SPI_DATA] != U8X8_PIN_NONE )
+        {
+	  /* SPI.begin(int8_t sck=SCK, int8_t miso=MISO, int8_t mosi=MOSI, int8_t ss=-1); */
+	  /* actually MISO is not used, but what else could be used here??? */
+	  //SPI.begin(u8x8->pins[U8X8_PIN_I2C_CLOCK], MISO, u8x8->pins[U8X8_PIN_I2C_DATA]);
+          SPI.begin(u8x8->pins[U8X8_PIN_SPI_CLOCK], MISO, u8x8->pins[U8X8_PIN_SPI_DATA]);
+	}
+	else
+	{
+	  SPI.begin();
+	}
+#else
+	SPI.begin();
+#endif 
+      break;
+      
+    case U8X8_MSG_BYTE_SET_DC:
+      arduino_hw_spi_3w_dc = arg_int ? 256 : 0;
+      break;
+      
+    case U8X8_MSG_BYTE_START_TRANSFER:
+            /* SPI mode has to be mapped to the mode of the current controller;
+               at least Uno, Due, 101 have different SPI_MODEx values */
+            internal_spi_mode =  0;
+            switch(u8x8->display_info->spi_mode) {
+                case 0: internal_spi_mode = SPI_MODE0; break;
+                case 1: internal_spi_mode = SPI_MODE1; break;
+                case 2: internal_spi_mode = SPI_MODE2; break;
+                case 3: internal_spi_mode = SPI_MODE3; break;
+            }
+      
+#if ARDUINO >= 10600
+            SPI.beginTransaction(
+                SPISettings(u8x8->bus_clock, MSBFIRST, internal_spi_mode));
+#else
+            SPI.begin();
+            if (u8x8->display_info->sck_pulse_width_ns < 70)
+                SPI.setClockDivider(SPI_CLOCK_DIV2);
+            else if (u8x8->display_info->sck_pulse_width_ns < 140)
+                SPI.setClockDivider(SPI_CLOCK_DIV4);
+            else
+                SPI.setClockDivider(SPI_CLOCK_DIV8);
+            SPI.setDataMode(internal_spi_mode);
+            SPI.setBitOrder(MSBFIRST);
+#endif
+            u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_enable_level);  
+            u8x8->gpio_and_delay_cb(
+                u8x8,
+                U8X8_MSG_DELAY_NANO,
+                u8x8->display_info->post_chip_enable_wait_ns,
+                NULL);
+            arduino_hw_spi_3w_init();
+        break;
+
+        case U8X8_MSG_BYTE_END_TRANSFER:      
+            u8x8->gpio_and_delay_cb(
+                u8x8,
+                U8X8_MSG_DELAY_NANO,
+                u8x8->display_info->pre_chip_disable_wait_ns,
+                NULL);
+            if (arduino_hw_spi_3w_bytepos)
+                arduino_hw_spi_3w_flush();
+            u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+
+#if ARDUINO >= 10600
+            SPI.endTransaction();
+#else
+            SPI.end();
+#endif
+        break;
+
+        default:
+            return 0;
+    }
+
+#endif // U8X8_HAVE_HW_SPI
+
+
+    return 1;
+}
+
+
+/*=============================================*/
 /*=== 4 WIRE HARDWARE SPI ===*/
 
 #ifdef U8X8_USE_PINS
@@ -701,6 +888,12 @@ extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t a
   {
     case U8X8_MSG_BYTE_SEND:
       
+
+
+#if defined(ESP_PLATFORM)
+      //T.M.L 2023-02-28: use the block transfer function on ESP, which does not overwrite the buffer.
+      SPI.writeBytes((uint8_t*)arg_ptr, arg_int);  
+#else    
       // 1.6.5 offers a block transfer, but the problem is, that the
       // buffer is overwritten with the incoming data
       // so it can not be used...
@@ -709,11 +902,12 @@ extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t a
       data = (uint8_t *)arg_ptr;
       while( arg_int > 0 )
       {
-	SPI.transfer((uint8_t)*data);
-	data++;
-	arg_int--;
+        SPI.transfer((uint8_t)*data);
+        data++;
+        arg_int--;
       }
-  
+#endif
+
       break;
     case U8X8_MSG_BYTE_INIT:
       if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
@@ -736,11 +930,11 @@ extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t a
 #if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_ESP32)
       /* ESP32 has the following begin: SPI.begin(int8_t sck=SCK, int8_t miso=MISO, int8_t mosi=MOSI, int8_t ss=-1); */
       /* not sure about ESP8266 */
-      if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
+      if ( u8x8->pins[U8X8_PIN_SPI_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_SPI_DATA] != U8X8_PIN_NONE )
       {
 	/* SPI.begin(int8_t sck=SCK, int8_t miso=MISO, int8_t mosi=MOSI, int8_t ss=-1); */
 	/* actually MISO is not used, but what else could be used here??? */
-	SPI.begin(u8x8->pins[U8X8_PIN_I2C_CLOCK], MISO, u8x8->pins[U8X8_PIN_I2C_DATA]);
+	SPI.begin(u8x8->pins[U8X8_PIN_SPI_CLOCK], MISO, u8x8->pins[U8X8_PIN_SPI_DATA]);
       }
       else
       {
@@ -924,7 +1118,7 @@ extern "C" uint8_t u8x8_byte_arduino_sw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
     return u8x8_byte_sw_i2c(u8x8, msg,arg_int, arg_ptr);
 }
 
-#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6
+#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6 || __AVR_ARCH__ == 103
 
 
 /* the following static vars are recalculated in U8X8_MSG_BYTE_START_TRANSFER */
@@ -1147,7 +1341,7 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
       if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
       {
 	// second argument for the wire lib is the clock pin. In u8g2, the first argument of the  clock pin in the clock/data pair
-	Wire.begin(u8x8->pins[U8X8_PIN_I2C_DATA] , u8x8->pins[U8X8_PIN_I2C_CLOCK]);
+	Wire.begin((int)u8x8->pins[U8X8_PIN_I2C_DATA] , u8x8->pins[U8X8_PIN_I2C_CLOCK]);
       }
       else
       {
@@ -1162,8 +1356,11 @@ extern "C" uint8_t u8x8_byte_arduino_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_UNUSE
     case U8X8_MSG_BYTE_START_TRANSFER:
 #if ARDUINO >= 10600
       /* not sure when the setClock function was introduced, but it is there since 1.6.0 */
-      /* if there is any error with Wire.setClock() just remove this function call */
-      Wire.setClock(u8x8->bus_clock); 
+      /* if there is any error with Wire.setClock() just remove this function call by */
+      /* defining U8X8_DO_NOT_SET_WIRE_CLOCK */
+#ifndef U8X8_DO_NOT_SET_WIRE_CLOCK
+      Wire.setClock(u8x8->bus_clock);
+#endif 
 #endif
       Wire.beginTransmission(u8x8_GetI2CAddress(u8x8)>>1);
       break;
@@ -1195,8 +1392,11 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
     case U8X8_MSG_BYTE_START_TRANSFER:
 #if ARDUINO >= 10600
       /* not sure when the setClock function was introduced, but it is there since 1.6.0 */
-      /* if there is any error with Wire.setClock() just remove this function call */
+      /* if there is any error with Wire.setClock() just remove this function call by */
+      /* defining U8X8_DO_NOT_SET_WIRE_CLOCK */
+#ifndef U8X8_DO_NOT_SET_WIRE_CLOCK
       Wire1.setClock(u8x8->bus_clock); 
+#endif
 #endif
       Wire1.beginTransmission(u8x8_GetI2CAddress(u8x8)>>1);
       break;
@@ -1238,7 +1438,7 @@ extern "C" uint8_t u8x8_byte_arduino_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, ui
   return u8x8_byte_8bit_8080mode(u8x8, msg,arg_int, arg_ptr);
 }
 
-#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6
+#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6 || __AVR_ARCH__ == 103
 
 /* this function completly replaces u8x8_byte_8bit_8080mode*/
 extern "C" uint8_t u8x8_byte_arduino_8bit_8080mode(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
@@ -1369,7 +1569,7 @@ extern "C" uint8_t u8x8_byte_arduino_ks0108(u8x8_t *u8x8, uint8_t msg, uint8_t a
   return u8x8_byte_ks0108(u8x8, msg,arg_int, arg_ptr);
 }
 
-#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6
+#elif __AVR_ARCH__ == 4 || __AVR_ARCH__ == 5 || __AVR_ARCH__ == 51 || __AVR_ARCH__ == 6 || __AVR_ARCH__ == 103
 
 /* this function completly replaces u8x8_byte_ks0108*/
 extern "C" uint8_t u8x8_byte_arduino_ks0108(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
@@ -1470,6 +1670,7 @@ extern "C" uint8_t u8x8_byte_arduino_ks0108(u8x8_t *u8x8, uint8_t msg, uint8_t a
 }
   
 #endif
+#endif /*ARDUINO*/
 
 
 
@@ -1527,6 +1728,15 @@ void u8x8_Setup_3Wire_SW_SPI(u8x8_t *u8x8, u8x8_msg_cb display_cb, uint8_t clock
   u8x8_SetPin(u8x8, U8X8_PIN_RESET, reset);
 }
 #endif /* obsolete com specific setup */
+
+/*
+  use U8X8_PIN_NONE as value for "reset", if there is no reset line
+*/
+void u8x8_SetPin_3Wire_HW_SPI(u8x8_t *u8x8, uint8_t cs, uint8_t reset)
+{
+  u8x8_SetPin(u8x8, U8X8_PIN_CS, cs);
+  u8x8_SetPin(u8x8, U8X8_PIN_RESET, reset);
+}
 
 /*
   use U8X8_PIN_NONE as value for "reset", if there is no reset line

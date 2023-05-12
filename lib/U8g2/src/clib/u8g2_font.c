@@ -293,8 +293,7 @@ int8_t u8g2_font_decode_get_signed_bits(u8g2_font_decode_t *f, uint8_t cnt)
 
 
 #ifdef U8G2_WITH_FONT_ROTATION
-static u8g2_uint_t u8g2_add_vector_y(u8g2_uint_t dy, int8_t x, int8_t y, uint8_t dir) U8G2_NOINLINE;
-static u8g2_uint_t u8g2_add_vector_y(u8g2_uint_t dy, int8_t x, int8_t y, uint8_t dir)
+u8g2_uint_t u8g2_add_vector_y(u8g2_uint_t dy, int8_t x, int8_t y, uint8_t dir)
 {
   switch(dir)
   {
@@ -314,8 +313,7 @@ static u8g2_uint_t u8g2_add_vector_y(u8g2_uint_t dy, int8_t x, int8_t y, uint8_t
   return dy;
 }
 
-static u8g2_uint_t u8g2_add_vector_x(u8g2_uint_t dx, int8_t x, int8_t y, uint8_t dir) U8G2_NOINLINE;
-static u8g2_uint_t u8g2_add_vector_x(u8g2_uint_t dx, int8_t x, int8_t y, uint8_t dir)
+u8g2_uint_t u8g2_add_vector_x(u8g2_uint_t dx, int8_t x, int8_t y, uint8_t dir)
 {
   switch(dir)
   {
@@ -334,6 +332,36 @@ static u8g2_uint_t u8g2_add_vector_x(u8g2_uint_t dx, int8_t x, int8_t y, uint8_t
   }
   return dx;
 }
+
+/*
+// does not make sense, 50 bytes more required on avr
+void u8g2_add_vector(u8g2_uint_t *xp, u8g2_uint_t *yp, int8_t x, int8_t y, uint8_t dir)
+{
+  u8g2_uint_t x_ = *xp;
+  u8g2_uint_t y_ = *yp;
+  switch(dir)
+  {
+    case 0:
+      y_ += y;
+      x_ += x;
+      break;
+    case 1:
+      y_ += x;
+      x_ -= y;
+      break;
+    case 2:
+      y_ -= y;
+      x_ -= x;
+      break;
+    default:
+      y_ -= x;
+      x_ += y;
+      break;      
+  }
+  *xp = x_;
+  *yp = y_;
+}
+*/
 #endif
 
 
@@ -399,8 +427,12 @@ void u8g2_font_decode_len(u8g2_t *u8g2, uint8_t len, uint8_t is_foreground)
 
     /* apply rotation */
 #ifdef U8G2_WITH_FONT_ROTATION
+    
     x = u8g2_add_vector_x(x, lx, ly, decode->dir);
     y = u8g2_add_vector_y(y, lx, ly, decode->dir);
+    
+    //u8g2_add_vector(&x, &y, lx, ly, decode->dir);
+    
 #else
     x += lx;
     y += ly;
@@ -446,9 +478,102 @@ void u8g2_font_decode_len(u8g2_t *u8g2, uint8_t len, uint8_t is_foreground)
   lx += cnt;
   
   decode->x = lx;
+  decode->y = ly;  
+}
+
+
+void u8g2_font_2x_decode_len(u8g2_t *u8g2, uint8_t len, uint8_t is_foreground)
+{
+  uint8_t cnt;	/* total number of remaining pixels, which have to be drawn */
+  uint8_t rem; 	/* remaining pixel to the right edge of the glyph */
+  uint8_t current;	/* number of pixels, which need to be drawn for the draw procedure */
+    /* current is either equal to cnt or equal to rem */
+  
+  /* local coordinates of the glyph */
+  uint8_t lx,ly;
+  
+  /* target position on the screen */
+  u8g2_uint_t x, y;
+  
+  u8g2_font_decode_t *decode = &(u8g2->font_decode);
+  
+  cnt = len;
+  
+  /* get the local position */
+  lx = decode->x;
+  ly = decode->y;
+  
+  for(;;)
+  {
+    /* calculate the number of pixel to the right edge of the glyph */
+    rem = decode->glyph_width;
+    rem -= lx;
+    
+    /* calculate how many pixel to draw. This is either to the right edge */
+    /* or lesser, if not enough pixel are left */
+    current = rem;
+    if ( cnt < rem )
+      current = cnt;
+    
+    
+    /* now draw the line, but apply the rotation around the glyph target position */
+    //u8g2_font_decode_draw_pixel(u8g2, lx,ly,current, is_foreground);
+
+    /* get target position */
+    x = decode->target_x;
+    y = decode->target_y;
+
+    x += lx*2;
+    y += ly*2;
+    
+    /* draw foreground and background (if required) */
+    if ( is_foreground )
+    {
+      u8g2->draw_color = decode->fg_color;			/* draw_color will be restored later */
+      u8g2_DrawHVLine(u8g2, 
+	x, 
+	y, 
+	current*2, 
+	0
+      );
+      u8g2_DrawHVLine(u8g2, 
+	x, 
+	y+1, 
+	current*2, 
+	0
+      );
+    }
+    else if ( decode->is_transparent == 0 )    
+    {
+      u8g2->draw_color = decode->bg_color;			/* draw_color will be restored later */
+      u8g2_DrawHVLine(u8g2, 
+	x, 
+	y, 
+	current*2, 
+	0
+      );   
+      u8g2_DrawHVLine(u8g2, 
+	x, 
+	y+1, 
+	current*2, 
+	0
+      );   
+    }
+    
+    /* check, whether the end of the run length code has been reached */
+    if ( cnt < rem )
+      break;
+    cnt -= rem;
+    lx = 0;
+    ly++;
+  }
+  lx += cnt;
+  
+  decode->x = lx;
   decode->y = ly;
   
 }
+
 
 static void u8g2_font_setup_decode(u8g2_t *u8g2, const uint8_t *glyph_data)
 {
@@ -492,7 +617,7 @@ int8_t u8g2_font_decode_glyph(u8g2_t *u8g2, const uint8_t *glyph_data)
   int8_t h;
   u8g2_font_decode_t *decode = &(u8g2->font_decode);
     
-  u8g2_font_setup_decode(u8g2, glyph_data);
+  u8g2_font_setup_decode(u8g2, glyph_data);     /* set values in u8g2->font_decode data structure */
   h = u8g2->font_decode.glyph_height;
   
   x = u8g2_font_decode_get_signed_bits(decode, u8g2->font_info.bits_per_char_x);
@@ -504,6 +629,9 @@ int8_t u8g2_font_decode_glyph(u8g2_t *u8g2, const uint8_t *glyph_data)
 #ifdef U8G2_WITH_FONT_ROTATION
     decode->target_x = u8g2_add_vector_x(decode->target_x, x, -(h+y), decode->dir);
     decode->target_y = u8g2_add_vector_y(decode->target_y, x, -(h+y), decode->dir);
+    
+    //u8g2_add_vector(&(decode->target_x), &(decode->target_y), x, -(h+y), decode->dir);
+
 #else
     decode->target_x += x;
     decode->target_y -= h+y;
@@ -579,6 +707,68 @@ int8_t u8g2_font_decode_glyph(u8g2_t *u8g2, const uint8_t *glyph_data)
     u8g2->draw_color = decode->fg_color;
   }
   return d;
+}
+
+
+int8_t u8g2_font_2x_decode_glyph(u8g2_t *u8g2, const uint8_t *glyph_data)
+{
+  uint8_t a, b;
+  int8_t x, y;
+  int8_t d;
+  int8_t h;
+  u8g2_font_decode_t *decode = &(u8g2->font_decode);
+    
+  u8g2_font_setup_decode(u8g2, glyph_data);     /* set values in u8g2->font_decode data structure */
+  h = u8g2->font_decode.glyph_height;
+  
+  x = u8g2_font_decode_get_signed_bits(decode, u8g2->font_info.bits_per_char_x);
+  y = u8g2_font_decode_get_signed_bits(decode, u8g2->font_info.bits_per_char_y);
+  d = u8g2_font_decode_get_signed_bits(decode, u8g2->font_info.bits_per_delta_x);
+  
+  if ( decode->glyph_width > 0 )
+  {
+    decode->target_x += x;
+    decode->target_y -= 2*h+y;
+
+#ifdef U8G2_WITH_INTERSECTION
+    {
+      u8g2_uint_t x0, x1, y0, y1;
+      x0 = decode->target_x;
+      y0 = decode->target_y;
+      x1 = x0;
+      y1 = y0;
+      
+      x1 += 2*decode->glyph_width;
+      y1 += 2*h;      
+      
+      if ( u8g2_IsIntersection(u8g2, x0, y0, x1, y1) == 0 ) 
+	return d;
+    }
+#endif /* U8G2_WITH_INTERSECTION */
+   
+    /* reset local x/y position */
+    decode->x = 0;
+    decode->y = 0;
+    
+    /* decode glyph */
+    for(;;)
+    {
+      a = u8g2_font_decode_get_unsigned_bits(decode, u8g2->font_info.bits_per_0);
+      b = u8g2_font_decode_get_unsigned_bits(decode, u8g2->font_info.bits_per_1);
+      do
+      {
+	u8g2_font_2x_decode_len(u8g2, a, 0);
+	u8g2_font_2x_decode_len(u8g2, b, 1);
+      } while( u8g2_font_decode_get_unsigned_bits(decode, 1) != 0 );
+
+      if ( decode->y >= h )
+	break;
+    }
+    
+    /* restore the u8g2 draw color, because this is modified by the decode algo */
+    u8g2->draw_color = decode->fg_color;
+  }
+  return d*2;
 }
 
 /*
@@ -691,6 +881,19 @@ static u8g2_uint_t u8g2_font_draw_glyph(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t
   return dx;
 }
 
+static u8g2_uint_t u8g2_font_2x_draw_glyph(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding)
+{
+  u8g2_uint_t dx = 0;
+  u8g2->font_decode.target_x = x;
+  u8g2->font_decode.target_y = y;
+  const uint8_t *glyph_data = u8g2_font_get_glyph_data(u8g2, encoding);
+  if ( glyph_data != NULL )
+  {
+    dx = u8g2_font_2x_decode_glyph(u8g2, glyph_data);
+  }
+  return dx;
+}
+
 
 
 uint8_t u8g2_IsGlyph(u8g2_t *u8g2, uint16_t requested_encoding)
@@ -754,6 +957,12 @@ u8g2_uint_t u8g2_DrawGlyph(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t 
   return u8g2_font_draw_glyph(u8g2, x, y, encoding);
 }
 
+u8g2_uint_t u8g2_DrawGlyphX2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding)
+{
+  y += 2*u8g2->font_calc_vref(u8g2);
+  return u8g2_font_2x_draw_glyph(u8g2, x, y, encoding);
+}
+
 static u8g2_uint_t u8g2_draw_string(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str) U8G2_NOINLINE;
 static u8g2_uint_t u8g2_draw_string(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str)
 {
@@ -787,6 +996,13 @@ static u8g2_uint_t u8g2_draw_string(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, 
 	  y -= delta;
 	  break;
       }
+      
+      /*
+      // requires 10 bytes more on avr
+      x = u8g2_add_vector_x(x, delta, 0, u8g2->font_decode.dir);
+      y = u8g2_add_vector_y(y, delta, 0, u8g2->font_decode.dir);
+      */
+
 #else
       x += delta;
 #endif
@@ -797,10 +1013,39 @@ static u8g2_uint_t u8g2_draw_string(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, 
   return sum;
 }
 
+static u8g2_uint_t u8g2_draw_string_2x(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str) U8G2_NOINLINE;
+static u8g2_uint_t u8g2_draw_string_2x(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str)
+{
+  uint16_t e;
+  u8g2_uint_t delta, sum;
+  u8x8_utf8_init(u8g2_GetU8x8(u8g2));
+  sum = 0;
+  for(;;)
+  {
+    e = u8g2->u8x8.next_cb(u8g2_GetU8x8(u8g2), (uint8_t)*str);
+    if ( e == 0x0ffff )
+      break;
+    str++;
+    if ( e != 0x0fffe )
+    {
+      delta = u8g2_DrawGlyphX2(u8g2, x, y, e);
+      x += delta;
+      sum += delta;    
+    }
+  }
+  return sum;
+}
+
 u8g2_uint_t u8g2_DrawStr(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str)
 {
   u8g2->u8x8.next_cb = u8x8_ascii_next;
   return u8g2_draw_string(u8g2, x, y, str);
+}
+
+u8g2_uint_t u8g2_DrawStrX2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str)
+{
+  u8g2->u8x8.next_cb = u8x8_ascii_next;
+  return u8g2_draw_string_2x(u8g2, x, y, str);
 }
 
 /*
@@ -819,6 +1064,11 @@ u8g2_uint_t u8g2_DrawUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char
   return u8g2_draw_string(u8g2, x, y, str);
 }
 
+u8g2_uint_t u8g2_DrawUTF8X2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str)
+{
+  u8g2->u8x8.next_cb = u8x8_utf8_next;
+  return u8g2_draw_string_2x(u8g2, x, y, str);
+}
 
 
 u8g2_uint_t u8g2_DrawExtendedUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t to_left, u8g2_kerning_t *kerning, const char *str)
@@ -1076,6 +1326,9 @@ static u8g2_uint_t u8g2_string_width(u8g2_t *u8g2, const char *str)
 {
   uint16_t e;
   u8g2_uint_t  w, dx;
+#ifdef U8G2_BALANCED_STR_WIDTH_CALCULATION
+  int8_t initial_x_offset = -64;
+#endif 
   
   u8g2->font_decode.glyph_width = 0;
   u8x8_utf8_init(u8g2_GetU8x8(u8g2));
@@ -1095,17 +1348,29 @@ static u8g2_uint_t u8g2_string_width(u8g2_t *u8g2, const char *str)
     if ( e != 0x0fffe )
     {
       dx = u8g2_GetGlyphWidth(u8g2, e);		/* delta x value of the glyph */
+#ifdef U8G2_BALANCED_STR_WIDTH_CALCULATION
+      if ( initial_x_offset == -64 )
+        initial_x_offset = u8g2->glyph_x_offset;
+#endif 
+      //printf("'%c' x=%d dx=%d w=%d io=%d ", e, u8g2->glyph_x_offset, dx, u8g2->font_decode.glyph_width, initial_x_offset);
       w += dx;
     }
   }
+  //printf("\n");
   
   /* adjust the last glyph, check for issue #16: do not adjust if width is 0 */
   if ( u8g2->font_decode.glyph_width != 0 )
   {
+    //printf("string width adjust dx=%d glyph_width=%d x-offset=%d\n", dx, u8g2->font_decode.glyph_width, u8g2->glyph_x_offset);
     w -= dx;
     w += u8g2->font_decode.glyph_width;  /* the real pixel width of the glyph, sideeffect of GetGlyphWidth */
     /* issue #46: we have to add the x offset also */
     w += u8g2->glyph_x_offset;	/* this value is set as a side effect of u8g2_GetGlyphWidth() */
+#ifdef U8G2_BALANCED_STR_WIDTH_CALCULATION
+    /* https://github.com/olikraus/u8g2/issues/1561 */
+    if ( initial_x_offset > 0 )
+      w+=initial_x_offset;
+#endif 
   }
   // printf("w=%d \n", w);
   
@@ -1129,18 +1394,31 @@ static void u8g2_GetGlyphHorizontalProperties(u8g2_t *u8g2, uint16_t requested_e
 int8_t u8g2_GetStrX(u8g2_t *u8g2, const char *s)
 {
   uint8_t w;
-  int8_t ox, dx;
+  int8_t dx;
+  int8_t ox = 0;
   u8g2_GetGlyphHorizontalProperties(u8g2, *s, &w, &ox, &dx);
   return ox;
 }
 
 
+/*
+Warning: This function needs to be fixed. I think it was taken over from u8glib, but not fixed as of now 
+The main difference for this procedure compared to the normal get width, should be, that the initial
+offset is removed
 
+Idea: for the user interface it probably would be better to add the xoffset of the first char to the end, so that the overall word looks better.
+Maybe then the procedure should be called differently, maybe balanced width instead of exact width
+
+u8g2_calculate_exact_string_width is now OBSOLETE, instead the above str width calculation has been updated:
+https://github.com/olikraus/u8g2/issues/1561
+*/
+#ifdef OBSOLETE
 static u8g2_uint_t u8g2_calculate_exact_string_width(u8g2_t *u8g2, const char *str)
 {
-
-  u8g2_uint_t  w;
+  const char *s = str;
   uint16_t enc;
+  u8g2_uint_t  w;
+  uint8_t cnt;
   uint8_t gw; 
   int8_t ox, dx;
   
@@ -1149,18 +1427,32 @@ static u8g2_uint_t u8g2_calculate_exact_string_width(u8g2_t *u8g2, const char *s
     
   
   /* check for empty string, width is already 0 */
-  do
+  cnt = 0;
+  
+  for(;;)
   {
-    enc = u8g2->u8x8.next_cb(u8g2_GetU8x8(u8g2), (uint8_t)*str);
-    str++;
-  } while( enc == 0x0fffe );
+    enc = u8g2->u8x8.next_cb(u8g2_GetU8x8(u8g2), (uint8_t)*s);
+    if ( enc == 0x0ffff )
+      break;    
+    s++;
+    if ( enc != 0x0fffe )
+    {
+      if ( cnt == 0 )
+      {
+        /* get glyph properties of the first char */
+        u8g2_GetGlyphHorizontalProperties(u8g2, enc, &gw, &ox, &dx);  
+      }        
+      cnt++;
+      if ( cnt > 2 )
+        break;
+    }
+  }
   
-  if ( enc== 0x0ffff )
-     return w;
-  
-  /* get the glyph information of the first char. This must be valid, because we already checked for the empty string */
-  /* if *s is not inside the font, then the cached parameters of the glyph are all zero */
-  u8g2_GetGlyphHorizontalProperties(u8g2, enc, &gw, &ox, &dx);  
+  if ( cnt == 0 )
+    return 0;
+   
+  if ( cnt == 1 )
+     return gw;
 
   /* strlen(s) == 1:       width = width(s[0]) */
   /* strlen(s) == 2:       width = - offx(s[0]) + deltax(s[0]) + offx(s[1]) + width(s[1]) */
@@ -1171,39 +1463,37 @@ static u8g2_uint_t u8g2_calculate_exact_string_width(u8g2_t *u8g2, const char *s
   w = -ox;  
   for(;;)
   {
-    
-    /* check and stop if the end of the string is reached */
-    do
-    {
-      enc = u8g2->u8x8.next_cb(u8g2_GetU8x8(u8g2), (uint8_t)*str);
-      str++;
-    } while( enc == 0x0fffe );
+    enc = u8g2->u8x8.next_cb(u8g2_GetU8x8(u8g2), (uint8_t)*str);
     if ( enc== 0x0ffff )
       break;
-
-    u8g2_GetGlyphHorizontalProperties(u8g2, enc, &gw, &ox, &dx);  
-    
-    /* if there are still more characters, add the delta to the next glyph */
-    w += dx;    
+    str++;
+    if ( enc != 0x0fffe )
+    {
+      u8g2_GetGlyphHorizontalProperties(u8g2, enc, &gw, &ox, &dx);        
+      /* if there are still more characters, add the delta to the next glyph */
+      w += dx;    
+    }
   }
   
   /* finally calculate the width of the last char */
-  /* here is another exception, if the last char is a black, use the dx value instead */
-  if ( enc != ' ' )
+  /* here is another exception, if the last char is a blank, use the dx value instead */
+  if ( gw != 0 )
   {
+    w -= dx;    /* remove the last dx */
     /* if g was not updated in the for loop (strlen() == 1), then the initial offset x gets removed */
     w += gw;
     w += ox;
   }
   else
   {
-    w += dx;
+    //w += dx;
   }
   
   
   return w;
 	
 }
+#endif
 
 
 
@@ -1215,11 +1505,13 @@ u8g2_uint_t u8g2_GetStrWidth(u8g2_t *u8g2, const char *s)
   return u8g2_string_width(u8g2, s);
 }
 
+/* OBSOLETE
 u8g2_uint_t u8g2_GetExactStrWidth(u8g2_t *u8g2, const char *s)
 {
   u8g2->u8x8.next_cb = u8x8_ascii_next;
   return u8g2_calculate_exact_string_width(u8g2, s);
 }
+*/
 
 /*
 source: https://en.wikipedia.org/wiki/UTF-8
@@ -1245,4 +1537,5 @@ void u8g2_SetFontDirection(u8g2_t *u8g2, uint8_t dir)
   u8g2->font_decode.dir = dir;
 #endif
 }
+
 

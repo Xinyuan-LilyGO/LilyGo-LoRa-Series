@@ -203,7 +203,7 @@ static const u8x8_display_info_t u8x8_lc7981_160x80_display_info =
   /* data_setup_time_ns = */ 220,	
   /* write_pulse_width_ns = */ 20,	
   /* tile_width = */ 20,		/* width of 20*8=160 pixel */
-  /* tile_hight = */ 10,
+  /* tile_height = */ 10,
   /* default_x_offset = */ 0,	
   /* flipmode_x_offset = */ 0,	
   /* pixel_width = */ 160,
@@ -275,7 +275,7 @@ static const u8x8_display_info_t u8x8_lc7981_160x160_display_info =
   /* data_setup_time_ns = */ 220,	
   /* write_pulse_width_ns = */ 20,	
   /* tile_width = */ 20,		/* width of 20*8=160 pixel */
-  /* tile_hight = */ 20,
+  /* tile_height = */ 20,
   /* default_x_offset = */ 0,	
   /* flipmode_x_offset = */ 0,	
   /* pixel_width = */ 160,
@@ -347,7 +347,7 @@ static const u8x8_display_info_t u8x8_lc7981_240x128_display_info =
   /* data_setup_time_ns = */ 220,	
   /* write_pulse_width_ns = */ 20,	
   /* tile_width = */ 30,		/* width of 30*8=240 pixel */
-  /* tile_hight = */ 16,
+  /* tile_height = */ 16,
   /* default_x_offset = */ 0,	
   /* flipmode_x_offset = */ 0,	
   /* pixel_width = */ 240,
@@ -363,7 +363,7 @@ static const uint8_t u8x8_d_lc7981_240x128_init_seq[] = {
   U8X8_CA(0x00, 0x32),			/* display on (bit 5), master mode on (bit 4), graphics mode on (bit 1) */
   U8X8_CA(0x01, 0x07),			/* character/bits per pixel pitch */
   U8X8_CA(0x02, 240/8-1),		/* number of chars/byte width of the screen */
-  U8X8_CA(0x03, 0x7f),			/* time division */
+  U8X8_CA(0x03, 128),			/* time division, issue https://github.com/olikraus/u8g2/issues/1581 */
   U8X8_CA(0x08, 0x00),			/* display start low */
   U8X8_CA(0x09, 0x00),			/* display start high */
 
@@ -420,7 +420,7 @@ static const u8x8_display_info_t u8x8_lc7981_240x64_display_info =
   /* data_setup_time_ns = */ 220,	
   /* write_pulse_width_ns = */ 20,	
   /* tile_width = */ 30,		/* width of 30*8=240 pixel */
-  /* tile_hight = */ 8,
+  /* tile_height = */ 8,
   /* default_x_offset = */ 0,	
   /* flipmode_x_offset = */ 0,	
   /* pixel_width = */ 240,
@@ -460,6 +460,78 @@ uint8_t u8x8_d_lc7981_240x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
       case U8X8_MSG_DISPLAY_INIT:
 	u8x8_d_helper_display_init(u8x8);
 	u8x8_cad_SendSequence(u8x8, u8x8_d_lc7981_240x64_init_seq);
+	break;
+      default:
+	return 0;		/* msg unknown */
+    }
+  }
+  return 1;
+}
+
+
+/*================================================*/
+/* LC7981 128x128 LCD, https://github.com/olikraus/u8g2/issues/1913*/
+
+static const u8x8_display_info_t u8x8_lc7981_128x128_display_info =
+{
+  /* chip_enable_level = */ 0,	/* LC7981 has a low active CS*/
+  /* chip_disable_level = */ 1,
+  
+  /* from here... */
+  /* post_chip_enable_wait_ns = */ 20,	
+  /* pre_chip_disable_wait_ns = */ 20,	
+  /* reset_pulse_width_ms = */ 1, 	
+  /* post_reset_wait_ms = */ 10, 	
+  /* sda_setup_time_ns = */ 30,		
+  /* sck_pulse_width_ns = */ 65,	/* half of cycle time  */
+  /* sck_clock_hz = */ 4000000UL,	/* since Arduino 1.6.0, the SPI bus speed in Hz. Should be  1000000000/sck_pulse_width_ns */
+  /* spi_mode = */ 0,		/* active high, rising edge */
+  /* i2c_bus_clock_100kHz = */ 4,
+  /* ... to here, values are ignored, because this is a parallel interface only */
+  
+  /* data_setup_time_ns = */ 220,	
+  /* write_pulse_width_ns = */ 20,	
+  /* tile_width = */ 16,		/* width of 16*8=128 pixel */
+  /* tile_height = */ 16,
+  /* default_x_offset = */ 0,	
+  /* flipmode_x_offset = */ 0,	
+  /* pixel_width = */ 128,
+  /* pixel_height = */ 128
+};
+
+static const uint8_t u8x8_d_lc7981_128x128_init_seq[] = {
+    
+  U8X8_START_TRANSFER(),             	/* enable chip, delay is part of the transfer start */
+  
+  U8X8_DLY(50),
+
+  U8X8_CA(0x00, 0x32),			/* display on (bit 5), master mode on (bit 4), graphics mode on (bit 1) */
+  U8X8_CA(0x01, 0x07),			/* character/bits per pixel pitch */
+  U8X8_CA(0x02, 128/8-1),		/* number of chars/byte width of the screen */
+  U8X8_CA(0x03, 128),			/* time division, issue https://github.com/olikraus/u8g2/issues/1581 */
+  U8X8_CA(0x08, 0x00),			/* display start low */
+  U8X8_CA(0x09, 0x00),			/* display start high */
+
+  U8X8_DLY(10),
+  
+  U8X8_END_TRANSFER(),             	/* disable chip */
+  U8X8_END()             			/* end of sequence */
+};
+
+uint8_t u8x8_d_lc7981_128x128(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+  /* call common procedure first and handle messages there */
+  if ( u8x8_d_lc7981_common(u8x8, msg, arg_int, arg_ptr) == 0 )
+  {
+    /* msg not handled, then try here */
+    switch(msg)
+    {
+      case U8X8_MSG_DISPLAY_SETUP_MEMORY:
+	u8x8_d_helper_display_setup_memory(u8x8, &u8x8_lc7981_128x128_display_info);
+	break;
+      case U8X8_MSG_DISPLAY_INIT:
+	u8x8_d_helper_display_init(u8x8);
+	u8x8_cad_SendSequence(u8x8, u8x8_d_lc7981_128x128_init_seq);
 	break;
       default:
 	return 0;		/* msg unknown */

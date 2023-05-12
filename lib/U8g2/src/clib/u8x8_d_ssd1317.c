@@ -55,7 +55,7 @@ static const uint8_t u8x8_d_ssd1317_96x96_init_seq[] = {
   U8X8_CA(0x0d3, 0x000),		/* display offset */
   U8X8_CA(0x0a2, 0x000),		/* set display start line to 0 */
   U8X8_CA(0x08d, 0x014),		/* [2] charge pump setting (p62): 0x014 enable, 0x010 disable, SSD1306 only, should be removed for SH1106 */
-  U8X8_CA(0x020, 0x000),		/* page addressing mode */
+  U8X8_CA(0x020, 0x000),		/* horizontal addressing mode */
   
   U8X8_C(0x0a0),			/* segment remap a0/a1*/
   U8X8_C(0x0c8),			/* c0: scan dir normal, c8: reverse */
@@ -212,7 +212,7 @@ static const u8x8_display_info_t u8x8_ssd1317_96x96_display_info =
   /* data_setup_time_ns = */ 40,
   /* write_pulse_width_ns = */ 150,	/* SSD1306: cycle time is 300ns, so use 300/2 = 150 */
   /* tile_width = */ 12,
-  /* tile_hight = */ 12,
+  /* tile_height = */ 12,
   /* default_x_offset = */ 16,
   /* flipmode_x_offset = */ 16,
   /* pixel_width = */ 96,

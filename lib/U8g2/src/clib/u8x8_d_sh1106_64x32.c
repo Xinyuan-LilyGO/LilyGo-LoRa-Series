@@ -51,7 +51,7 @@ static const uint8_t u8x8_d_sh1106_64x32_init_seq[] = {
   U8X8_C(0x040),		                /* set display start line to 0, 0.42 OLED */
   U8X8_CA(0xad, 0x8b),      	 	/* DC-DC ON/OFF Mode Set: Built-in DC-DC is used, Normal Display (POR = 0x8b) */
   U8X8_C(0x33),				/* set charge pump voltage 0x30 (POR) .. 0x33 */
-  U8X8_CA(0x020, 0x000),		/* page addressing mode */
+  U8X8_CA(0x020, 0x000),		/* horizontal addressing mode */
   
   U8X8_C(0x0a1),				/* segment remap a0/a1, 0.66 OLED  */
   U8X8_C(0x0c8),				/* c0: scan dir normal, c8: reverse, 0.66 OLED  */
@@ -189,7 +189,7 @@ static const u8x8_display_info_t u8x8_sh1106_64x32_display_info =
   /* data_setup_time_ns = */ 40,
   /* write_pulse_width_ns = */ 150,	/* SSD1306: cycle time is 300ns, so use 300/2 = 150 */
   /* tile_width = */ 8,
-  /* tile_hight = */ 4,
+  /* tile_height = */ 4,
   /* default_x_offset = */ 32,
   /* flipmode_x_offset = */ 36,
   /* pixel_width = */ 64,

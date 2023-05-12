@@ -158,7 +158,7 @@ static const u8x8_display_info_t u8x8_uc1610_display_info =
   /* data_setup_time_ns = */ 30,
   /* write_pulse_width_ns = */ 40,
   /* tile_width = */ 20,		
-  /* tile_hight = */ 13,		/* height of 13*8=104 pixel */
+  /* tile_height = */ 13,		/* height of 13*8=104 pixel */
   /* default_x_offset = */ 0,
   /* flipmode_x_offset = */ 0,
   /* pixel_width = */ 160,
@@ -273,16 +273,9 @@ uint8_t u8x8_d_uc1610_ea_dogxl160(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, vo
       {
 	c = ((u8x8_tile_t *)arg_ptr)->cnt;
 	ptr = ((u8x8_tile_t *)arg_ptr)->tile_ptr;
-	
-	
 	do
 	{
-	  
-	  
-	  
 	  u8x8_cad_SendData(u8x8, 16, u8x8_convert_tile_for_uc1610(ptr));
-
-	  
 	  ptr += 8;
 	  x += 8;
 	  c--;
