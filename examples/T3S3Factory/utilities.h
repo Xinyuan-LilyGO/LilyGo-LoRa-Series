@@ -28,8 +28,8 @@
 #define RADIO_MISO_PIN              3
 #define RADIO_MOSI_PIN              6
 #define RADIO_CS_PIN                7
-#define RADIO_DIO1_PIN              33
-#define RADIO_BUSY_PIN              34
+#define RADIO_DIO1_PIN              33      //SX1280 DIO1 = IO9
+#define RADIO_BUSY_PIN              34      //SX1280 BUSY = IO36
 #define RADIO_RST_PIN               8
 
 //!SX1276/78 module only

@@ -31,7 +31,7 @@ void setFlag(void);
 // #define USING_SX1268
 // #define USING_SX1276
 // #define USING_SX1278
-// #define USING_SX1280
+#define USING_SX1280
 
 
 #if     defined(USING_SX1262)
@@ -53,6 +53,8 @@ SX1278
 #elif   defined(USING_SX1280)
 #undef RADIO_DIO1_PIN
 #define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
+#undef RADIO_BUSY_PIN
+#define RADIO_BUSY_PIN              36      //SX1280 BUSY = IO36
 uint8_t txPower = 3;                        //The SX1280 PA version cannot set the power over 3dBm, otherwise it will burn the PA
 float radioFreq = 2400.0;
 SX1280
