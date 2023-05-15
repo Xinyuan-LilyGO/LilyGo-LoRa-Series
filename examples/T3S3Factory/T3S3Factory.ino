@@ -25,11 +25,9 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void setFlag(void);
-void msOverlay(OLEDDisplay *display, OLEDDisplayUiState *state);
-
 
 // ! Please select the corresponding RF module
-#define USING_SX1262
+// #define USING_SX1262
 // #define USING_SX1268
 // #define USING_SX1276
 // #define USING_SX1278
@@ -45,17 +43,17 @@ uint8_t txPower = 22;
 float radioFreq = 433.0;
 SX1268
 #elif   defined(USING_SX1276)
-uint8_t txPower = 20;
+uint8_t txPower = 17;
 float radioFreq = 868.0;
 SX1276
 #elif   defined(USING_SX1278)
-uint8_t txPower = 20;
+uint8_t txPower = 17;
 float radioFreq = 433.0;
 SX1278
 #elif   defined(USING_SX1280)
 #undef RADIO_DIO1_PIN
 #define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
-uint8_t txPower = 3;
+uint8_t txPower = 3;                        //The SX1280 PA version cannot set the power over 3dBm, otherwise it will burn the PA
 float radioFreq = 2400.0;
 SX1280
 #else
@@ -193,21 +191,19 @@ void setup()
     isRadioOnline = state == RADIOLIB_ERR_NONE;
 
 
-    // set output power to 10 dBm (accepted range is -3 - 17 dBm)
-    // NOTE: 20 dBm value allows high power operation, but transmission
-    //       duty cycle MUST NOT exceed 1%
+    // The SX1280 PA version cannot set the power over 3dBm, otherwise it will burn the PA
+    // Other types of modules are standard transmission power.
     if (radio.setOutputPower(txPower) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
     }
 
 #ifdef USING_SX1280
-    //Set ANT Control pins
+    //The SX1280 version needs to set RX, TX antenna switching pins
     radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
 #endif
 
 
 #ifndef USING_SX1280
-
     // set bandwidth to 250 kHz
     if (radio.setBandwidth(250.0) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
         Serial.println(F("Selected bandwidth is invalid for this module!"));
@@ -222,7 +218,12 @@ void setup()
 
     // set the function that will be called
     // when new packet is received
+#if defined(USING_SX1276) || defined(USING_SX1278)
+    radio.setDio1Action(setFlag, RISING);
+#else
     radio.setDio1Action(setFlag);
+#endif
+
 
     // start listening for LoRa packets
     Serial.print(F("[Radio] Starting to listen ... "));
