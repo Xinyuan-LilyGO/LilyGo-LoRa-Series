@@ -2,12 +2,12 @@ menu "XPowersLib Configuration"
 
     choice PMU_Type
         prompt "XPowers chip type"
-        default XPOWERS_CHIP_AXP2102 if IDF_TARGET_ESP32
+        default XPOWERS_CHIP_AXP2101 if IDF_TARGET_ESP32
         default XPOWERS_CHIP_AXP192
         help
             Defines the default peripheral for xpowers example
 
-        config XPOWERS_CHIP_AXP2102
+        config XPOWERS_CHIP_AXP2101
             bool "Xpowers AXP2101"
         config XPOWERS_CHIP_AXP192
             bool "Xpowers AXP192"

@@ -32,8 +32,7 @@ if there is any loss, please bear it by yourself
 #error "Running this example is known to not damage the device! Please go and uncomment this!"
 #endif
 
-// Defined using AXP192
-#define XPOWERS_CHIP_AXP192
+#define XPOWERS_CHIP_AXP202
 
 #include <Wire.h>
 #include <Arduino.h>
@@ -68,7 +67,7 @@ void setup()
 {
     Serial.begin(115200);
 
-    bool result = PMU.begin(Wire, AXP192_SLAVE_ADDRESS, i2c_sda, i2c_scl);
+    bool result = PMU.begin(Wire, AXP202_SLAVE_ADDRESS, i2c_sda, i2c_scl);
 
     if (result == false) {
         Serial.println("PMU is not online..."); while (1)delay(50);
@@ -84,64 +83,66 @@ void setup()
 
     // Set the minimum common working voltage of the PMU VBUS input,
     // below this value will turn off the PMU
-    PMU.setVbusVoltageLimit(XPOWERS_AXP192_VBUS_VOL_LIM_4V5);
+    PMU.setVbusVoltageLimit(XPOWERS_AXP202_VBUS_VOL_LIM_4V5);
 
     // Turn off USB input current limit
-    PMU.setVbusCurrentLimit(XPOWERS_AXP192_VBUS_CUR_LIM_OFF);
+    PMU.setVbusCurrentLimit(XPOWERS_AXP202_VBUS_CUR_LIM_OFF);
 
-    // DC1 700~3500mV, IMAX=1.2A
-    PMU.setDC1Voltage(3300);
-    Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "+" : "-", PMU.getDC1Voltage());
-
-    // DC2 700~2750 mV, IMAX=1.6A;
+    // DC2 700~3500 mV, IMAX=1.6A;
     PMU.setDC2Voltage(700);
-    Serial.printf("DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "+" : "-", PMU.getDC2Voltage());
 
     // DC3 700~3500 mV,IMAX=0.7A;
     PMU.setDC3Voltage(3300);
-    Serial.printf("DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "+" : "-", PMU.getDC3Voltage());
-
 
     //LDO2 1800~3300 mV, 100mV/step, IMAX=200mA
     PMU.setLDO2Voltage(1800);
 
-    //LDO3 1800~3300 mV, 100mV/step, IMAX=200mA
+    //LDO3 700~2275 mV, 100mV/step, IMAX=200mA
     PMU.setLDO3Voltage(1800);
+
+    /*  LDO4 Range:
+        1250, 1300, 1400, 1500, 1600, 1700, 1800, 1900,
+        2000, 2500, 2700, 2800, 3000, 3100, 3200, 3300
+    */
+    PMU.setLDO4Voltage(3300);
 
     //LDOio 1800~3300 mV, 100mV/step, IMAX=50mA
     PMU.setLDOioVoltage(3300);
 
 
     // Enable power output channel
-    // PMU.enableDC1();
+
     PMU.enableDC2();
-    PMU.enableDC3();
+
+    // PMU.enableDC3();
+
     PMU.enableLDO2();
     PMU.enableLDO3();
+    PMU.enableLDO4();
     PMU.enableLDOio();
 
     Serial.println("DCDC=======================================================================");
-    Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
     Serial.printf("DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
     Serial.printf("DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
     Serial.println("LDO=======================================================================");
     Serial.printf("LDO2: %s   Voltage:%u mV\n",  PMU.isEnableLDO2()  ? "ENABLE" : "DISABLE", PMU.getLDO2Voltage());
     Serial.printf("LDO3: %s   Voltage:%u mV\n",  PMU.isEnableLDO3()  ? "ENABLE" : "DISABLE", PMU.getLDO3Voltage());
+    Serial.printf("LDO4: %s   Voltage:%u mV\n",  PMU.isEnableLDO4()  ? "ENABLE" : "DISABLE", PMU.getLDO4Voltage());
     Serial.printf("LDOio: %s   Voltage:%u mV\n",  PMU.isEnableLDOio()  ? "ENABLE" : "DISABLE", PMU.getLDOioVoltage());
     Serial.println("==========================================================================");
 
     // Set the time of pressing the button to turn off
-    PMU.setPowerKeyPressOffTime(XPOWERS_AXP192_POWEROFF_4S);
+    PMU.setPowerKeyPressOffTime(XPOWERS_AXP202_POWEROFF_4S);
     uint8_t opt = PMU.getPowerKeyPressOffTime();
     Serial.print("PowerKeyPressOffTime:");
     switch (opt) {
-    case XPOWERS_AXP192_POWEROFF_4S: Serial.println("4 Second");
+    case XPOWERS_AXP202_POWEROFF_4S: Serial.println("4 Second");
         break;
-    case XPOWERS_AXP192_POWEROFF_65: Serial.println("6 Second");
+    case XPOWERS_AXP202_POWEROFF_65: Serial.println("6 Second");
         break;
-    case XPOWERS_AXP192_POWEROFF_8S: Serial.println("8 Second");
+    case XPOWERS_AXP202_POWEROFF_8S: Serial.println("8 Second");
         break;
-    case XPOWERS_AXP192_POWEROFF_10S: Serial.println("10 Second");
+    case XPOWERS_AXP202_POWEROFF_10S: Serial.println("10 Second");
         break;
     default:
         break;
@@ -193,36 +194,36 @@ void setup()
     attachInterrupt(pmu_irq_pin, setFlag, FALLING);
 
     // Disable all interrupts
-    PMU.disableIRQ(XPOWERS_AXP192_ALL_IRQ);
+    PMU.disableIRQ(XPOWERS_AXP202_ALL_IRQ);
     // Clear all interrupt flags
     PMU.clearIrqStatus();
     // Enable the required interrupt function
     PMU.enableIRQ(
-        XPOWERS_AXP192_BAT_INSERT_IRQ    | XPOWERS_AXP192_BAT_REMOVE_IRQ      |   //BATTERY
-        XPOWERS_AXP192_VBUS_INSERT_IRQ   | XPOWERS_AXP192_VBUS_REMOVE_IRQ     |   //VBUS
-        XPOWERS_AXP192_PKEY_SHORT_IRQ    | XPOWERS_AXP192_PKEY_LONG_IRQ       |   //POWER KEY
-        XPOWERS_AXP192_BAT_CHG_DONE_IRQ  | XPOWERS_AXP192_BAT_CHG_START_IRQ   |    //CHARGE
-        // XPOWERS_AXP192_PKEY_NEGATIVE_IRQ | XPOWERS_AXP192_PKEY_POSITIVE_IRQ   |   //POWER KEY
-        XPOWERS_AXP192_TIMER_TIMEOUT_IRQ               //Timer
+        XPOWERS_AXP202_BAT_INSERT_IRQ    | XPOWERS_AXP202_BAT_REMOVE_IRQ      |   //BATTERY
+        XPOWERS_AXP202_VBUS_INSERT_IRQ   | XPOWERS_AXP202_VBUS_REMOVE_IRQ     |   //VBUS
+        XPOWERS_AXP202_PKEY_SHORT_IRQ    | XPOWERS_AXP202_PKEY_LONG_IRQ       |   //POWER KEY
+        XPOWERS_AXP202_BAT_CHG_DONE_IRQ  | XPOWERS_AXP202_BAT_CHG_START_IRQ   |    //CHARGE
+        // XPOWERS_AXP202_PKEY_NEGATIVE_IRQ | XPOWERS_AXP202_PKEY_POSITIVE_IRQ   |   //POWER KEY
+        XPOWERS_AXP202_TIMER_TIMEOUT_IRQ               //Timer
     );
 
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_AXP192_CHG_CUR_280MA);
+    PMU.setChargerConstantCurr(XPOWERS_AXP202_CHG_CUR_280MA);
     // Set stop charging termination current
-    PMU.setChargerTerminationCurr(XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT);
+    PMU.setChargerTerminationCurr(XPOWERS_AXP202_CHG_ITERM_LESS_10_PERCENT);
 
     // Set charge cut-off voltage
-    PMU.setChargeTargetVoltage(XPOWERS_AXP192_CHG_VOL_4V2);
+    PMU.setChargeTargetVoltage(XPOWERS_AXP202_CHG_VOL_4V2);
 
     // Cache writes and reads, as long as the PMU remains powered, the data will always be stored inside the PMU
     Serial.println("Write pmu data buffer .");
-    uint8_t data[XPOWERS_AXP192_DATA_BUFFER_SIZE] = {1, 2, 3, 4, 5, 6};
-    PMU.writeDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
-    memset(data, 0, XPOWERS_AXP192_DATA_BUFFER_SIZE);
+    uint8_t data[XPOWERS_AXP202_DATA_BUFFER_SIZE] = {1, 2, 3, 4, 5, 6};
+    PMU.writeDataBuffer(data, XPOWERS_AXP202_DATA_BUFFER_SIZE);
+    memset(data, 0, XPOWERS_AXP202_DATA_BUFFER_SIZE);
 
     Serial.print("Read pmu data buffer :");
-    PMU.readDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
-    for (int i = 0; i < XPOWERS_AXP192_DATA_BUFFER_SIZE; ++i) {
+    PMU.readDataBuffer(data, XPOWERS_AXP202_DATA_BUFFER_SIZE);
+    for (int i = 0; i < XPOWERS_AXP202_DATA_BUFFER_SIZE; ++i) {
         Serial.print(data[i]);
         Serial.print(",");
     }
@@ -257,13 +258,12 @@ void enterPmuSleep(void)
     PMU.enableSleep();
 
     PMU.disableDC2();
-    PMU.disableDC3();
 
     PMU.disableLDO2();
     PMU.disableLDO3();
 
     // Finally, turn off the power of the control chip
-    PMU.disableDC1();
+    PMU.disableDC3();
 }
 
 void loop()

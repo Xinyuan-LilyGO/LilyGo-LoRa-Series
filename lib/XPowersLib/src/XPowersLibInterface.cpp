@@ -106,3 +106,68 @@ uint16_t XPowersLibInterface::getVbusVoltage()
 {
     return 0;
 }
+
+static uint64_t inline check_params(uint32_t opt, uint32_t params, uint64_t mask)
+{
+    return ((opt & params) == params) ? mask : 0;
+}
+
+bool XPowersLibInterface::enableInterrupt(uint32_t option)
+{
+    return setInterruptMask(option, true);
+}
+
+bool XPowersLibInterface::disableInterrupt(uint32_t option)
+{
+    return setInterruptMask(option, false);
+}
+
+bool XPowersLibInterface::setInterruptMask(uint32_t option, bool enable)
+{
+    uint64_t params = 0;
+    switch (__chipModel) {
+    case XPOWERS_AXP173:
+        break;
+    case XPOWERS_AXP192:
+        params |=  check_params(option, XPOWERS_USB_INSERT_INT, XPOWERS_AXP192_VBUS_INSERT_IRQ);
+        params |=  check_params(option, XPOWERS_USB_REMOVE_INT, XPOWERS_AXP192_VBUS_REMOVE_IRQ);
+        params |=  check_params(option, XPOWERS_BATTERY_INSERT_INT, XPOWERS_AXP192_BAT_INSERT_IRQ);
+        params |=  check_params(option, XPOWERS_BATTERY_REMOVE_INT, XPOWERS_AXP192_BAT_REMOVE_IRQ);
+        params |=  check_params(option, XPOWERS_CHARGE_START_INT, XPOWERS_AXP192_BAT_CHG_START_IRQ);
+        params |=  check_params(option, XPOWERS_CHARGE_DONE_INT, XPOWERS_AXP192_BAT_CHG_DONE_IRQ);
+        params |=  check_params(option, XPOWERS_PWR_BTN_CLICK_INT, XPOWERS_AXP192_PKEY_SHORT_IRQ);
+        params |=  check_params(option, XPOWERS_PWR_BTN_LONGPRESSED_INT, XPOWERS_AXP192_PKEY_LONG_IRQ);
+        params |=  check_params(option, XPOWERS_ALL_INT, XPOWERS_AXP192_ALL_IRQ);
+        return enable ? enableIRQ(params) : disableIRQ(params);
+        break;
+    case XPOWERS_AXP202:
+        params |=  check_params(option, XPOWERS_USB_INSERT_INT, XPOWERS_AXP202_VBUS_INSERT_IRQ);
+        params |=  check_params(option, XPOWERS_USB_REMOVE_INT, XPOWERS_AXP202_VBUS_REMOVE_IRQ);
+        params |=  check_params(option, XPOWERS_BATTERY_INSERT_INT, XPOWERS_AXP202_BAT_INSERT_IRQ);
+        params |=  check_params(option, XPOWERS_BATTERY_REMOVE_INT, XPOWERS_AXP202_BAT_REMOVE_IRQ);
+        params |=  check_params(option, XPOWERS_CHARGE_START_INT, XPOWERS_AXP202_BAT_CHG_START_IRQ);
+        params |=  check_params(option, XPOWERS_CHARGE_DONE_INT, XPOWERS_AXP202_BAT_CHG_DONE_IRQ);
+        params |=  check_params(option, XPOWERS_PWR_BTN_CLICK_INT, XPOWERS_AXP202_PKEY_SHORT_IRQ);
+        params |=  check_params(option, XPOWERS_PWR_BTN_LONGPRESSED_INT, XPOWERS_AXP202_PKEY_LONG_IRQ);
+        params |=  check_params(option, XPOWERS_ALL_INT, XPOWERS_AXP202_ALL_IRQ);
+        return enable ? enableIRQ(params) : disableIRQ(params);
+        break;
+    case XPOWERS_AXP216:
+        break;
+    case XPOWERS_AXP2101:
+        params |=  check_params(option, XPOWERS_USB_INSERT_INT, XPOWERS_AXP2101_VBUS_INSERT_IRQ);
+        params |=  check_params(option, XPOWERS_USB_REMOVE_INT, XPOWERS_AXP2101_VBUS_REMOVE_IRQ);
+        params |=  check_params(option, XPOWERS_BATTERY_INSERT_INT, XPOWERS_AXP2101_BAT_INSERT_IRQ);
+        params |=  check_params(option, XPOWERS_BATTERY_REMOVE_INT, XPOWERS_AXP2101_BAT_REMOVE_IRQ);
+        params |=  check_params(option, XPOWERS_CHARGE_START_INT, XPOWERS_AXP2101_BAT_CHG_START_IRQ);
+        params |=  check_params(option, XPOWERS_CHARGE_DONE_INT, XPOWERS_AXP2101_BAT_CHG_DONE_IRQ);
+        params |=  check_params(option, XPOWERS_PWR_BTN_CLICK_INT, XPOWERS_AXP2101_PKEY_SHORT_IRQ);
+        params |=  check_params(option, XPOWERS_PWR_BTN_LONGPRESSED_INT, XPOWERS_AXP2101_PKEY_LONG_IRQ);
+        params |=  check_params(option, XPOWERS_ALL_INT, XPOWERS_AXP2101_ALL_IRQ);
+        return enable ? enableIRQ(params) : disableIRQ(params);
+        break;
+    default:
+        break;
+    }
+    return false;
+}

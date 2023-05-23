@@ -28,10 +28,11 @@ Please do not run the example without knowing the external load voltage of the P
 it may burn your external load, please check the voltage setting before running the example,
 if there is any loss, please bear it by yourself
 */
+#ifndef XPOWERS_NO_ERROR
 #error "Running this example is known to not damage the device! Please go and uncomment this!"
-
+#endif
 // Defined using AXP2102
-#define XPOWERS_CHIP_AXP2102
+#define XPOWERS_CHIP_AXP2101
 
 #include <Wire.h>
 #include <Arduino.h>

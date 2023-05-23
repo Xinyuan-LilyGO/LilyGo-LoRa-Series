@@ -37,45 +37,19 @@
 #include "XPowersLibInterface.hpp"
 
 typedef enum {
-    MONITOR_TS_PIN      = _BV(0),
-    MONITOR_APS_VOLTAGE = _BV(1),
-    MONITOR_USB_CURRENT = _BV(2),
-    MONITOR_USB_VOLTAGE = _BV(3),
-    MONITOR_AC_CURRENT  = _BV(4),
-    MONITOR_AC_VOLTAGE  = _BV(5),
-    MONITOR_BAT_CURRENT = _BV(6),
-    MONITOR_BAT_VOLTAGE = _BV(7),
-    MONITOR_ADC_IO3     = _BV(8),
-    MONITOR_ADC_IO2     = _BV(9),
-    MONITOR_ADC_IO1     = _BV(10),
-    MONITOR_ADC_IO0     = _BV(11),
-    MONITOR_TEMPERATURE = _BV(16),
-} axp192_adc_func_t;
-
-
-typedef enum {
     XPOWERS_AXP192_BOOT_TIME_128MS,
     XPOWERS_AXP192_BOOT_TIME_512MS,
     XPOWERS_AXP192_BOOT_TIME_1S,
     XPOWERS_AXP192_BOOT_TIME_2S,
-} axp192_boot_time_t;
+} xpowers_axp192_boot_time_t;
 
 
-typedef enum {
-    PMU_GPIO0,
-    PMU_GPIO1,
-    PMU_GPIO2,
-    PMU_GPIO3,
-    PMU_GPIO4,
-    PMU_GPIO5,
-    PMU_TS_PIN
-} xpowers_num_t;
 
 
 typedef enum {
     XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT,
     XPOWERS_AXP192_CHG_ITERM_LESS_15_PERCENT,
-} xpowers_chg_iterm_t;
+} xpowers_axp192_chg_iterm_t;
 
 
 typedef enum {
@@ -83,14 +57,14 @@ typedef enum {
     XPOWERS_AXP192_PRECHG_TIMEOUT_40MIN,
     XPOWERS_AXP192_PRECHG_TIMEOUT_50MIN,
     XPOWERS_AXP192_PRECHG_TIMEOUT_60MIN,
-} xpoers_prechg_to_t;
+} xpoers_axp192_prechg_to_t;
 
 typedef enum {
     XPOWERS_AXP192_POWEROFF_4S,
     XPOWERS_AXP192_POWEROFF_65,
     XPOWERS_AXP192_POWEROFF_8S,
     XPOWERS_AXP192_POWEROFF_10S,
-} xpowers_pekey_poweroff_arg_t;
+} xpowers_axp192_pekey_poweroff_arg_t;
 
 
 typedef enum {
@@ -98,18 +72,7 @@ typedef enum {
     XPOWERS_AXP192_LONGPRESS_1500MS,
     XPOWERS_AXP192_LONGPRESS_2000MS,
     XPOWERS_AXP192_LONGPRESS_2500MS,
-} xpowers_pekey_long_press_t;
-
-
-
-
-typedef enum {
-    XPOWERS_AXP192_CHG_LED_DISABLE,
-    XPOWERS_AXP192_CHG_LED_FRE_1HZ,
-    XPOWERS_AXP192_CHG_LED_FRE_4HZ,
-    XPOWERS_AXP192_CHG_LED_LEVEL_LOW,
-    XPOWERS_AXP192_CHG_LED_CTRL_CHG,    // The charging indicator is controlled by the charger
-} xpowers_chgled_t;
+} xpowers_axp192_pekey_long_press_t;
 
 typedef enum {
     XPOWERS_AXP192_VBUS_VOL_LIM_4V,
@@ -122,17 +85,12 @@ typedef enum {
     XPOWERS_AXP192_VBUS_VOL_LIM_4V7,
 } xpowers_axp192_vbus_vol_limit_t;
 
-
-
-
-
-
 typedef enum {
     XPOWERS_AXP192_CHG_CONS_TIMEOUT_7H,
     XPOWERS_AXP192_CHG_CONS_TIMEOUT_8H,
     XPOWERS_AXP192_CHG_CONS_TIMEOUT_9H,
     XPOWERS_AXP192_CHG_CONS_TIMEOUT_10H,
-} xpowers_chg_cons_to_t;
+} xpowers_axp192_chg_cons_to_t;
 
 
 typedef enum {
@@ -140,24 +98,57 @@ typedef enum {
     XPOWERS_AXP192_BACKUP_BAT_VOL_3V,
     XPOWERS_AXP192_BACKUP_BAT_VOL_3V0, //!NEED FIX,DATASHEET ERROR!
     XPOWERS_AXP192_BACKUP_BAT_VOL_2V5,
-} xpowers_backup_batt_vol_t;
+} xpowers_axp192_backup_batt_vol_t;
 
 typedef enum {
     XPOWERS_AXP192_BACKUP_BAT_CUR_50UA,
     XPOWERS_AXP192_BACKUP_BAT_CUR_100UA,
     XPOWERS_AXP192_BACKUP_BAT_CUR_200UA,
     XPOWERS_AXP192_BACKUP_BAT_CUR_400UA,
-} xpowers_backup_batt_curr_t;
+} xpowers_axp192_backup_batt_curr_t;
 
 typedef struct {
     uint8_t mode;
-} xpowers_gpio_t;
+} xpowers_axp192_gpio_t;
 
 
 class XPowersAXP192 :
     public XPowersCommon<XPowersAXP192>, public XPowersLibInterface
 {
     friend class XPowersCommon<XPowersAXP192>;
+
+
+    typedef enum {
+        PMU_GPIO0,
+        PMU_GPIO1,
+        PMU_GPIO2,
+        PMU_GPIO3,
+        PMU_GPIO4,
+        PMU_GPIO5,
+        PMU_TS_PIN
+    } xpowers_axp192_num_t;
+
+    typedef enum {
+        MONITOR_TS_PIN      = _BV(0),
+        MONITOR_APS_VOLTAGE = _BV(1),
+        MONITOR_USB_CURRENT = _BV(2),
+        MONITOR_USB_VOLTAGE = _BV(3),
+        MONITOR_AC_CURRENT  = _BV(4),
+        MONITOR_AC_VOLTAGE  = _BV(5),
+        MONITOR_BAT_CURRENT = _BV(6),
+        MONITOR_BAT_VOLTAGE = _BV(7),
+        MONITOR_ADC_IO3     = _BV(8),
+        MONITOR_ADC_IO2     = _BV(9),
+        MONITOR_ADC_IO1     = _BV(10),
+        MONITOR_ADC_IO0     = _BV(11),
+        MONITOR_TEMPERATURE = _BV(16),
+    } axp192_adc_func_t;
+
+    typedef struct {
+        uint8_t mode;
+    } xpowers_gpio_t;
+
+
 public:
 
 
@@ -186,6 +177,17 @@ public:
         log_i("~XPowersAXP192");
         deinit();
     }
+
+#if defined(ARDUINO)
+    bool init(TwoWire &w, int sda = SDA, int scl = SCL, uint8_t addr = AXP192_SLAVE_ADDRESS)
+    {
+        __wire = &w;
+        __sda = sda;
+        __scl = scl;
+        __addr = addr;
+        return begin();
+    }
+#endif
 
     bool init()
     {
@@ -422,7 +424,7 @@ public:
         return val;
     }
 
-    void setChargerTerminationCurr(xpowers_chg_iterm_t opt)
+    void setChargerTerminationCurr(xpowers_axp192_chg_iterm_t opt)
     {
         switch (opt) {
         case XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT:
@@ -441,7 +443,7 @@ public:
         return getRegisterBit(XPOWERS_AXP192_CHARGE1, 4);
     }
 
-    bool setPrechargeTimeout(xpoers_prechg_to_t opt)
+    bool setPrechargeTimeout(xpoers_axp192_prechg_to_t opt)
     {
         int val = readRegister(XPOWERS_AXP192_CHARGE2);
         if (val == -1)return false;
@@ -481,7 +483,7 @@ public:
     }
 
     // Timeout setting in constant current mode
-    bool setChargerConstantTimeout(xpowers_chg_cons_to_t opt)
+    bool setChargerConstantTimeout(xpowers_axp192_chg_cons_to_t opt)
     {
         int val = readRegister(XPOWERS_AXP192_CHARGE2);
         if (val == -1)return false;
@@ -505,7 +507,7 @@ public:
         return getRegisterBit(XPOWERS_AXP192_BACKUP_CHG, 7);
     }
 
-    bool setBackupBattChargerVoltage(xpowers_backup_batt_vol_t opt)
+    bool setBackupBattChargerVoltage(xpowers_axp192_backup_batt_vol_t opt)
     {
         int val = readRegister(XPOWERS_AXP192_BACKUP_CHG);
         if (val == -1)return false;
@@ -513,7 +515,7 @@ public:
         return 0 == writeRegister(XPOWERS_AXP192_BACKUP_CHG, val | (opt << 5));
     }
 
-    bool setBackupBattChargerCurr(xpowers_backup_batt_curr_t opt)
+    bool setBackupBattChargerCurr(xpowers_axp192_backup_batt_curr_t opt)
     {
         int val = readRegister(XPOWERS_AXP192_BACKUP_CHG);
         if (val == -1)return false;
@@ -1836,7 +1838,7 @@ public:
     }
 
 
-    void setPowerKeyLongPressOnTime(xpowers_pekey_long_press_t opt)
+    void setPowerKeyLongPressOnTime(xpowers_axp192_pekey_long_press_t opt)
     {
         int val =  readRegister(XPOWERS_AXP192_POK_SET);
         if (val == -1)return;
@@ -2066,6 +2068,7 @@ protected:
     {
         return "AXP192";
     }
+
 
 private:
     const uint16_t chargeTargetVol[4] = {4100, 4150, 4200, 4360};

@@ -439,9 +439,33 @@ public:
      * @brief  Disable PMU interrupt control mask .
      * @param  opt: View the related chip type xpowers_axpxxx_irq_t enumeration
      *              parameters in "XPowersParams.hpp"
-     * @retval
+     * @retval true valid false invalid
      */
     virtual bool disableIRQ(uint64_t opt) = 0;
+
+    /**
+     * @brief   .
+     * @param  opt: View the related chip type xpowers_interrupt_enum_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     * @retval true valid false invalid
+     */
+    bool enableInterrupt(uint32_t opt);
+
+    /**
+     * @brief   .
+     * @param  opt: View the related chip type xpowers_interrupt_enum_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     * @retval true valid false invalid
+     */
+    bool disableInterrupt(uint32_t opt);
+
+    /**
+     * @brief   .
+     * @param  opt: View the related chip type xpowers_interrupt_enum_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     * @retval true valid false invalid
+     */
+    bool setInterruptMask(uint32_t option, bool enable);
 
     /**
      * @brief  Interrupt response when PMU PEKEY is short pressed

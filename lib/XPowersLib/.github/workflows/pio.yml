@@ -1,0 +1,31 @@
+name: PlatformIO CI
+
+on: [push,pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example: [examples/AXP192_Example/AXP192_Example.ino,examples/AXP202_Example/AXP202_Example.ino,examples/AXP2101_Charge_Example/AXP2101_Charge_Example.ino,examples/AXP2101_Example/AXP2101_Example.ino,examples/AXP2101_InterruptExample/AXP2101_InterruptExample.ino,examples/AXP2101_Voltage_Example/AXP2101_Voltage_Example.ino,examples/XPowersLibInterface_Example/XPowersLibInterface_Example.ino]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+
+      - name: Run PlatformIO
+        run: pio ci --lib="." --board=esp32dev --board=esp32-c3-devkitm-1
+        env:
+          PLATFORMIO_BUILD_FLAGS: -D XPOWERS_NO_ERROR
+          PLATFORMIO_CI_SRC: ${{ matrix.example }}

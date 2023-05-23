@@ -51,7 +51,7 @@
 #define XPOWERS_AXP202_VBUS_DET_SRP                     (0x8B)
 #define XPOWERS_AXP202_HOTOVER_CTL                      (0x8F)
 
-
+#define XPOWERS_AXP202_DATA_BUFFER_SIZE                 (12)
 #define XPOWERS_AXP202_GPIO0_CTL                        (0x90)
 #define XPOWERS_AXP202_GPIO0_VOL                        (0x91)
 #define XPOWERS_AXP202_GPIO1_CTL                        (0x92)
@@ -146,6 +146,47 @@
 #define XPOWERS_AXP202_INTERNAL_TEMP_STEP               (0.1F)
 #define XPOWERS_AXP202_APS_VOLTAGE_STEP                 (1.4F)
 #define XPOWERS_AXP202_TS_PIN_OUT_STEP                  (0.8F)
+
+#define XPOWERS_AXP202_LDO2_VOL_MIN                     (1800u)
+#define XPOWERS_AXP202_LDO2_VOL_MAX                     (3300u)
+#define XPOWERS_AXP202_LDO2_VOL_STEPS                   (100u)
+#define XPOWERS_AXP202_LDO2_VOL_BIT_MASK                (4u)
+
+#define XPOWERS_AXP202_LDO3_VOL_MIN                     (1800u)
+#define XPOWERS_AXP202_LDO3_VOL_MAX                     (3300u)
+#define XPOWERS_AXP202_LDO3_VOL_STEPS                   (100u)
+
+#define XPOWERS_AXP202_DC2_VOL_STEPS                    (25u)
+#define XPOWERS_AXP202_DC2_VOL_MIN                      (700u)
+#define XPOWERS_AXP202_DC2_VOL_MAX                      (3500u)
+
+#define XPOWERS_AXP202_DC3_VOL_STEPS                    (25u)
+#define XPOWERS_AXP202_DC3_VOL_MIN                      (700u)
+#define XPOWERS_AXP202_DC3_VOL_MAX                      (3500u)
+
+#define XPOWERS_AXP202_LDOIO_VOL_STEPS                  (100)
+#define XPOWERS_AXP202_LDOIO_VOL_MIN                    (1800)
+#define XPOWERS_AXP202_LDOIO_VOL_MAX                    (3300)
+
+
+#define XPOWERS_AXP202_SYS_VOL_STEPS                    (100)
+#define XPOWERS_AXP202_VOFF_VOL_MIN                     (2600)
+#define XPOWERS_AXP202_VOFF_VOL_MAX                     (3300)
+
+#define XPOWERS_AXP202_CHG_EXT_CURR_MIN                 (300)
+#define XPOWERS_AXP202_CHG_EXT_CURR_MAX                 (1000)
+#define XPOWERS_AXP202_CHG_EXT_CURR_STEP                (100)
+
+#define XPOWERS_AXP202_INERNAL_TEMP_OFFSET              (144.7)
+
+
+
+
+
+
+
+
+
 
 
 

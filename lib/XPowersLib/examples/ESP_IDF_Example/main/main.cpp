@@ -17,8 +17,9 @@ Please do not run the example without knowing the external load voltage of the P
 it may burn your external load, please check the voltage setting before running the example,
 if there is any loss, please bear it by yourself
 */
-// #error "Running this example is known to not damage the device! Please go and uncomment this!"
-
+#ifndef XPOWERS_NO_ERROR
+#error "Running this example is known to not damage the device! Please go and uncomment this!"
+#endif
 
 static const char *TAG = "mian";
 

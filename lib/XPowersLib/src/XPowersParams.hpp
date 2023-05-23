@@ -115,6 +115,17 @@ typedef enum __xpowers_axp192_chg_vol {
 } xpowers_axp192_chg_vol_t;
 
 /**
+ * @brief axp202 charge target voltage parameters.
+ */
+typedef enum __xpowers_axp202_chg_vol {
+    XPOWERS_AXP202_CHG_VOL_4V1,
+    XPOWERS_AXP202_CHG_VOL_4V15,
+    XPOWERS_AXP202_CHG_VOL_4V2,
+    XPOWERS_AXP202_CHG_VOL_4V36,
+    XPOWERS_AXP202_CHG_VOL_MAX,
+} xpowers_axp202_chg_vol_t;
+
+/**
  * @brief axp192 charge currnet voltage parameters.
  */
 typedef enum __xpowers_axp192_chg_curr {
@@ -136,7 +147,27 @@ typedef enum __xpowers_axp192_chg_curr {
     XPOWERS_AXP192_CHG_CUR_1320MA,
 } xpowers_axp192_chg_curr_t;
 
-
+/**
+ * @brief axp202 charge currnet voltage parameters.
+ */
+typedef enum __xpowers_axp202_chg_curr {
+    XPOWERS_AXP202_CHG_CUR_100MA,
+    XPOWERS_AXP202_CHG_CUR_190MA,
+    XPOWERS_AXP202_CHG_CUR_280MA,
+    XPOWERS_AXP202_CHG_CUR_360MA,
+    XPOWERS_AXP202_CHG_CUR_450MA,
+    XPOWERS_AXP202_CHG_CUR_550MA,
+    XPOWERS_AXP202_CHG_CUR_630MA,
+    XPOWERS_AXP202_CHG_CUR_700MA,
+    XPOWERS_AXP202_CHG_CUR_780MA,
+    XPOWERS_AXP202_CHG_CUR_880MA,
+    XPOWERS_AXP202_CHG_CUR_960MA,
+    XPOWERS_AXP202_CHG_CUR_1000MA,
+    XPOWERS_AXP202_CHG_CUR_1080MA,
+    XPOWERS_AXP202_CHG_CUR_1160MA,
+    XPOWERS_AXP202_CHG_CUR_1240MA,
+    XPOWERS_AXP202_CHG_CUR_1320MA,
+} xpowers_axp202_chg_curr_t;
 
 
 /**
@@ -159,6 +190,35 @@ typedef enum {
     XPOWERS_AXP192_VBUS_CUR_LIM_100MA,
     XPOWERS_AXP192_VBUS_CUR_LIM_OFF,
 } xpowers_axp192_vbus_cur_limit_t;
+
+
+/**
+ * @brief axp202 vbus currnet limit parameters.
+ */
+typedef enum {
+    XPOWERS_AXP202_VBUS_CUR_LIM_900MA,
+    XPOWERS_AXP202_VBUS_CUR_LIM_500MA,
+    XPOWERS_AXP202_VBUS_CUR_LIM_100MA,
+    XPOWERS_AXP202_VBUS_CUR_LIM_OFF,
+} xpowers_axp202_vbus_cur_limit_t;
+
+/**
+ * @brief XPowersLibInterface interrupt control mask parameters.
+ *          Common interrupt interfaces
+ * @Example: enableInterrupt(XPOWERS_USB_INSERT_INT|XPOWERS_USB_REMOVE_INT);
+ *           disableInterrupt(XPOWERS_CHARGE_START_INT|XPOWERS_PWR_BTN_CLICK_INT);
+ */
+typedef enum __xpowers_interrupt_enum {
+    XPOWERS_USB_INSERT_INT          = _BV(0),
+    XPOWERS_USB_REMOVE_INT          = _BV(1),
+    XPOWERS_BATTERY_INSERT_INT      = _BV(2),
+    XPOWERS_BATTERY_REMOVE_INT      = _BV(3),
+    XPOWERS_CHARGE_START_INT        = _BV(4),
+    XPOWERS_CHARGE_DONE_INT         = _BV(5),
+    XPOWERS_PWR_BTN_CLICK_INT       = _BV(6),
+    XPOWERS_PWR_BTN_LONGPRESSED_INT = _BV(7),
+    XPOWERS_ALL_INT                 = _BV(8),
+} xpowers_interrupt_enum_t;
 
 
 /**
@@ -257,8 +317,61 @@ typedef enum __xpowers_axp2101_irq {
 } xpowers_axp2101_irq_t;
 
 
+/**
+ * @brief axp202 interrupt control mask parameters.
+ */
+typedef enum __xpowers_axp202_irq {
+    //! IRQ1 REG 40H
+    XPOWERS_AXP202_VBUS_VHOLD_LOW_IRQ       = _BV(1),   //VBUS is available, but lower than V HOLD, IRQ enable
+    XPOWERS_AXP202_VBUS_REMOVE_IRQ          = _BV(2),   //VBUS removed, IRQ enable
+    XPOWERS_AXP202_VBUS_INSERT_IRQ          = _BV(3),   //VBUS connected, IRQ enable
+    XPOWERS_AXP202_VBUS_OVER_VOL_IRQ        = _BV(4),   //VBUS over-voltage, IRQ enable
+    XPOWERS_AXP202_ACIN_REMOVED_IRQ         = _BV(5),   //ACIN removed, IRQ enable
+    XPOWERS_AXP202_ACIN_CONNECT_IRQ         = _BV(6),   //ACIN connected, IRQ enable
+    XPOWERS_AXP202_ACIN_OVER_VOL_IRQ        = _BV(7),   //ACIN over-voltage, IRQ enable
 
+    //! IRQ2 REG 41H
+    XPOWERS_AXP202_BATT_LOW_TEMP_IRQ        = _BV(8),   //Battery low-temperature, IRQ enable
+    XPOWERS_AXP202_BATT_OVER_TEMP_IRQ       = _BV(9),   //Battery over-temperature, IRQ enable
+    XPOWERS_AXP202_BAT_CHG_DONE_IRQ         = _BV(10),  //Charge finished, IRQ enable
+    XPOWERS_AXP202_BAT_CHG_START_IRQ        = _BV(11),  //Be charging, IRQ enable
+    XPOWERS_AXP202_BATT_EXIT_ACTIVATE_IRQ   = _BV(12),  //Exit battery activate mode, IRQ enable
+    XPOWERS_AXP202_BATT_ACTIVATE_IRQ        = _BV(13),  //Battery activate mode, IRQ enable
+    XPOWERS_AXP202_BAT_REMOVE_IRQ           = _BV(14),  //Battery removed, IRQ enable
+    XPOWERS_AXP202_BAT_INSERT_IRQ           = _BV(15),  //Battery connected, IRQ enable
 
+    //! IRQ3 REG 42H
+    XPOWERS_AXP202_PKEY_LONG_IRQ            = _BV(16),  //PEK long press, IRQ enable
+    XPOWERS_AXP202_PKEY_SHORT_IRQ           = _BV(17),  //PEK short press, IRQ enable
+    XPOWERS_AXP202_LDO3_LOW_VOL_IRQ         = _BV(18),  //LDO3output voltage is lower than the set value, IRQ enable
+    XPOWERS_AXP202_DC3_LOW_VOL_IRQ          = _BV(19),  //DC-DC3output voltage is lower than the set value, IRQ enable
+    XPOWERS_AXP202_DC2_LOW_VOL_IRQ          = _BV(20),  //DC-DC2 output voltage is lower than the set value, IRQ enable
+    //**Reserved and unchangeable BIT 5
+    XPOWERS_AXP202_CHARGE_LOW_CUR_IRQ       = _BV(22),  //Charge current is lower than the set current, IRQ enable
+    XPOWERS_AXP202_CHIP_TEMP_HIGH_IRQ       = _BV(23),  //AXP202 internal over-temperature, IRQ enable
+
+    //! IRQ4 REG 43H
+    XPOWERS_AXP202_APS_LOW_VOL_LEVEL2_IRQ   = _BV(24),  //APS low-voltage, IRQ enable（LEVEL2）
+    XPOWERS_APX202_APS_LOW_VOL_LEVEL1_IRQ   = _BV(25),  //APS low-voltage, IRQ enable（LEVEL1）
+    XPOWERS_AXP202_VBUS_SESSION_END_IRQ     = _BV(26),  //VBUS Session End IRQ enable
+    XPOWERS_AXP202_VBUS_SESSION_AB_IRQ      = _BV(27),  //VBUS Session A/B IRQ enable
+    XPOWERS_AXP202_VBUS_INVALID_IRQ         = _BV(28),  //VBUS invalid, IRQ enable
+    XPOWERS_AXP202_VBUS_VAILD_IRQ           = _BV(29),  //VBUS valid, IRQ enable
+    XPOWERS_AXP202_NOE_OFF_IRQ              = _BV(30),  //N_OE shutdown, IRQ enable
+    XPOWERS_AXP202_NOE_ON_IRQ               = _BV(31),  //N_OE startup, IRQ enable
+
+    //! IRQ5 REG 44H
+    XPOWERS_AXP202_GPIO0_EDGE_TRIGGER_IRQ   = _BV(32),  //GPIO0 input edge trigger, IRQ enable
+    XPOWERS_AXP202_GPIO1_EDGE_TRIGGER_IRQ   = _BV(33),  //GPIO1input edge trigger or ADC input, IRQ enable
+    XPOWERS_AXP202_GPIO2_EDGE_TRIGGER_IRQ   = _BV(34),  //GPIO2input edge trigger, IRQ enable
+    XPOWERS_AXP202_GPIO3_EDGE_TRIGGER_IRQ   = _BV(35),  //GPIO3 input edge trigger, IRQ enable
+    //**Reserved and unchangeable BIT 4
+    XPOWERS_AXP202_PKEY_NEGATIVE_IRQ        = _BV(37),  //PEK press falling edge, IRQ enable
+    XPOWERS_AXP202_PKEY_POSITIVE_IRQ        = _BV(38),  //PEK press rising edge, IRQ enable
+    XPOWERS_AXP202_TIMER_TIMEOUT_IRQ        = _BV(39),  //Timer timeout, IRQ enable
+
+    XPOWERS_AXP202_ALL_IRQ                  = (0xFFFFFFFFFFULL)
+} xpowers_axp202_irq_t;
 
 
 

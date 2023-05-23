@@ -4,9 +4,9 @@
 #include "esp_log.h"
 #include "esp_err.h"
 
-#ifdef CONFIG_XPOWERS_CHIP_AXP2102
+#ifdef CONFIG_XPOWERS_CHIP_AXP2101
 
-#define XPOWERS_CHIP_AXP2102
+#define XPOWERS_CHIP_AXP2101
 #include "XPowersLib.h"
 static const char *TAG = "AXP2101";
 
