@@ -7,3 +7,5 @@
 test
 .gitignore
 .travis.yml
+script
+build
