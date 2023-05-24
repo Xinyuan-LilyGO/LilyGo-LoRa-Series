@@ -121,6 +121,9 @@ int16_t SX1280::startRanging(bool master, uint32_t addr, uint16_t calTable[3][6]
 
   // set role and start ranging
   if(master) {
+
+    mod->setRfSwitchState(Module::MODE_TX);
+
     state = setRangingRole(RADIOLIB_SX128X_RANGING_ROLE_MASTER);
     RADIOLIB_ASSERT(state);
 
@@ -128,6 +131,9 @@ int16_t SX1280::startRanging(bool master, uint32_t addr, uint16_t calTable[3][6]
     RADIOLIB_ASSERT(state);
 
   } else {
+
+    mod->setRfSwitchState(Module::MODE_RX);
+
     state = setRangingRole(RADIOLIB_SX128X_RANGING_ROLE_SLAVE);
     RADIOLIB_ASSERT(state);
 
