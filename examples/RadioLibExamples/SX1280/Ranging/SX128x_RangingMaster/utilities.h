@@ -11,8 +11,9 @@
 // #define LILYGO_T3_V1_6       //NO SUPPOTR
 // #define LILYGO_T3_V2_0       //NO SUPPOTR
 // #define LILYGO_T3_V1_8
-// #define LILYGO_T3_S3_V1_0
-
+#ifndef LILYGO_T3_S3_V1_0
+#define LILYGO_T3_S3_V1_0
+#endif
 
 #define UNUSE_PIN                   (0)
 
