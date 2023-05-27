@@ -31,7 +31,7 @@ void setFlag(void);
 // #define USING_SX1268
 // #define USING_SX1276
 // #define USING_SX1278
-#define USING_SX1280
+// #define USING_SX1280
 
 
 #if     defined(USING_SX1262)
@@ -43,10 +43,14 @@ uint8_t txPower = 22;
 float radioFreq = 433.0;
 SX1268
 #elif   defined(USING_SX1276)
+#undef RADIO_DIO1_PIN
+#define RADIO_DIO1_PIN              9       //SX1276 DIO1 = IO9
 uint8_t txPower = 17;
 float radioFreq = 868.0;
 SX1276
 #elif   defined(USING_SX1278)
+#undef RADIO_DIO1_PIN
+#define RADIO_DIO1_PIN              9       //SX1278 DIO1 = IO9
 uint8_t txPower = 17;
 float radioFreq = 433.0;
 SX1278
@@ -99,24 +103,35 @@ void setFlag(void)
 
 void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
 {
-    static uint8_t framCounter;
+    int state ;
+    static uint8_t framCounter = 1;
     switch (eventType) {
     case AceButton::kEventClicked:
-        switch (framCounter++) {
+        Serial.printf("framCounter : %d\n", framCounter);
+        switch (framCounter) {
         case 0:
             enableInterrupt = false;
             break;
         case 1:
             enableInterrupt = true;
-            radio.transmit((uint8_t *)&transmissionCounter, 4);
+            Serial.println("Start transmit");
+            state = radio.transmit((uint8_t *)&transmissionCounter, 4);
+            if (state != RADIOLIB_ERR_NONE) {
+                Serial.println(F("[Radio] transmit packet failed!"));
+            }
             break;
         case 2:
             enableInterrupt = true;
-            radio.startReceive();
+            Serial.println("Start receive");
+            state = radio.startReceive();
+            if (state != RADIOLIB_ERR_NONE) {
+                Serial.println(F("[Radio] Received packet failed!"));
+            }
             break;
         default:
             break;
         }
+        framCounter++;
         ui.nextFrame();
         framCounter %= 3;
         break;
@@ -135,9 +150,6 @@ void setup()
     digitalWrite(BOARD_LED, LED_ON);
 
     Wire.begin(I2C_SDA, I2C_SCL);
-
-
-
 
     SDSPI.begin(SDCARD_SCLK, SDCARD_MISO, SDCARD_MOSI, SDCARD_CS);
     isSdCardOnline = SD.begin(SDCARD_CS, SDSPI);
@@ -191,7 +203,7 @@ void setup()
         Serial.println(F("failed!"));
     }
     isRadioOnline = state == RADIOLIB_ERR_NONE;
-
+    enableInterrupt = false;
 
     // The SX1280 PA version cannot set the power over 3dBm, otherwise it will burn the PA
     // Other types of modules are standard transmission power.
@@ -221,7 +233,7 @@ void setup()
     // set the function that will be called
     // when new packet is received
 #if defined(USING_SX1276) || defined(USING_SX1278)
-    radio.setDio1Action(setFlag, RISING);
+    radio.setDio0Action(setFlag, RISING);
 #else
     radio.setDio1Action(setFlag);
 #endif
@@ -230,7 +242,9 @@ void setup()
     // start listening for LoRa packets
     Serial.print(F("[Radio] Starting to listen ... "));
     state = radio.startReceive();
-
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.println(F("[Radio] Received packet failed!"));
+    }
 }
 
 void loop()
@@ -247,10 +261,49 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 {
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     if (millis() - radioRunInterval > 1000) {
-        radio.transmit((uint8_t *)&transmissionCounter, 4);
-        transmissionCounter++;
-        radioRunInterval = millis();
-        digitalWrite(BOARD_LED, 1 - digitalRead(BOARD_LED));
+
+        if (transmittedFlag) {
+            // reset flag
+            transmittedFlag = false;
+            if (transmissionState == RADIOLIB_ERR_NONE) {
+                // packet was successfully sent
+                Serial.println(F("transmission finished!"));
+
+                // NOTE: when using interrupt-driven transmit method,
+                //       it is not possible to automatically measure
+                //       transmission data rate using getDataRate()
+
+            } else {
+                Serial.print(F("failed, code "));
+                Serial.println(transmissionState);
+
+            }
+
+            // clean up after transmission is finished
+            // this will ensure transmitter is disabled,
+            // RF switch is powered down etc.
+            radio.finishTransmit();
+
+            // send another one
+            Serial.print(F("[Radio] Sending another packet ... "));
+
+            // you can transmit C-string or Arduino string up to
+            // 256 characters long
+            // transmissionState = radio.startTransmit("Hello World!");
+            radio.transmit((uint8_t *)&transmissionCounter, 4);
+            transmissionCounter++;
+            radioRunInterval = millis();
+
+            // you can also transmit byte array up to 256 bytes long
+            /*
+              byte byteArr[] = {0x01, 0x23, 0x45, 0x67,
+                                0x89, 0xAB, 0xCD, 0xEF};
+              int state = radio.startTransmit(byteArr, 8);
+            */
+            digitalWrite(BOARD_LED, 1 - digitalRead(BOARD_LED));
+        }
+
+        Serial.println("Radio TX done !");
     }
 
     display->drawString(0 + x, 0 + y, "Radio Tx");
@@ -266,6 +319,7 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 
     // check if the flag is set
     if (transmittedFlag) {
+        Serial.println("Radio RX done !");
 
         digitalWrite(BOARD_LED, 1 - digitalRead(BOARD_LED));
 
