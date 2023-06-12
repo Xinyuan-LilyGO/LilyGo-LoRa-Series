@@ -19,7 +19,7 @@
 
 ## ⚠ Cautions ⚠ 
 
-1. When using the SX1280 PA, it is recommended that the software control 1280 chip output 2 to 5 dbm, so that the entire module will output 20 dbm of power;
+1. When using the SX1280 PA T3S3 V1.1 (V1.2 does not have this issue), it is recommended that the software control 1280 chip output 2 to 5 dbm, so that the entire module will output 20 dbm of power;
 When the output of 1280 chip is higher than 2 dbm, the output power of the entire module is only 20 dbm;
 When the output of 1280 chip is higher than 5 dbm, the output power of the entire module is only 20 dbm, but if 5 dbm is given to the FEM, it will damage the FEM chip (the maximum allowable input for the FEM is 5 dbm)
 If the output of the 1280 chip is lower than 2 dbm, the output power of the entire module is within 20 dbm.
@@ -213,4 +213,6 @@ To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Se
     }
 ```
 
+# FAQ
 
+- `LILYGO_TBeamS3_SUPREME_V3_0`  The GPS backup power comes from the 18650 battery. If you remove the 18650 battery, you will not be able to get the GPS hot start. If you need to use the GPS hot start, please connect the 18650 battery
