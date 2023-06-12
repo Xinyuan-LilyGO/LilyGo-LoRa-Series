@@ -164,7 +164,7 @@
 #define HAS_DISPLAY
 #define HAS_SDCARD
 
-#elif defined(LILYGO_T3_S3_V1_0)
+#elif defined(LILYGO_T3_S3_V1_0) || defined(LILYGO_T3_S3_V1_2)
 
 #define I2C_SDA                     18
 #define I2C_SCL                     17

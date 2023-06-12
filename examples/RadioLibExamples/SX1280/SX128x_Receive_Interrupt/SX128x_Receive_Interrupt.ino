@@ -75,18 +75,45 @@ void setup()
         while (true);
     }
 
+#if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
     //Set ANT Control pins
     radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
+#endif
 
-    // set output power to 3 dBm    !!Cannot be greater than 3dbm!!
-    if (radio.setOutputPower(3) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+
+#ifdef LILYGO_T3_S3_V1_0
+    // T3 S3 V1.1 with PA Version Set output power to 3 dBm    !!Cannot be greater than 3dbm!!
+    int8_t TX_Power = 3;
+#else
+    // T3 S3 V1.2 (No PA) Version Set output power to 3 dBm    !!Cannot be greater than 3dbm!!
+    int8_t TX_Power = 13;
+#endif
+    if (radio.setOutputPower(TX_Power) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
+        while (true);
+    }
+
+    // set carrier frequency to 2410.5 MHz
+    if (radio.setFrequency(2400.0) == RADIOLIB_ERR_INVALID_FREQUENCY) {
+        Serial.println(F("Selected frequency is invalid for this module!"));
+        while (true);
+    }
+
+    // set bandwidth to 203.125 kHz
+    if (radio.setBandwidth(203.125) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
+        Serial.println(F("Selected bandwidth is invalid for this module!"));
         while (true);
     }
 
     // set spreading factor to 10
     if (radio.setSpreadingFactor(10) == RADIOLIB_ERR_INVALID_SPREADING_FACTOR) {
         Serial.println(F("Selected spreading factor is invalid for this module!"));
+        while (true);
+    }
+
+    // set coding rate to 6
+    if (radio.setCodingRate(6) == RADIOLIB_ERR_INVALID_CODING_RATE) {
+        Serial.println(F("Selected coding rate is invalid for this module!"));
         while (true);
     }
     // set the function that will be called
@@ -104,15 +131,6 @@ void setup()
         while (true);
     }
 
-    // if needed, 'listen' mode can be disabled by calling
-    // any of the following methods:
-    //
-    // radio.standby()
-    // radio.sleep()
-    // radio.transmit();
-    // radio.receive();
-    // radio.readData();
-    // radio.scanChannel();
 }
 
 

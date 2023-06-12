@@ -59,7 +59,15 @@ SX1278
 #define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
 #undef RADIO_BUSY_PIN
 #define RADIO_BUSY_PIN              36      //SX1280 BUSY = IO36
+
+#ifdef LILYGO_T3_S3_V1_0
 uint8_t txPower = 3;                        //The SX1280 PA version cannot set the power over 3dBm, otherwise it will burn the PA
+#else
+//T3 S3 V1.2 No PA Version
+uint8_t txPower = 13;
+#undef RADIO_RX_PIN
+#undef RADIO_TX_PIN
+#endif
 float radioFreq = 2400.0;
 SX1280
 #else
@@ -211,7 +219,7 @@ void setup()
         Serial.println(F("Selected output power is invalid for this module!"));
     }
 
-#ifdef USING_SX1280
+#if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
     //The SX1280 version needs to set RX, TX antenna switching pins
     radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
 #endif

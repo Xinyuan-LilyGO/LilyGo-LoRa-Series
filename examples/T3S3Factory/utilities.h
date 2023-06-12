@@ -12,9 +12,8 @@
 /*
 * This sample program only supports T3 S3
 * */
-#ifndef LILYGO_T3_S3_V1_0
-#define LILYGO_T3_S3_V1_0
-#endif
+// #define LILYGO_T3_S3_V1_0    //SUPPORT
+// #define LILYGO_T3_S3_V1_2    //SUPPORT
 
 
 #define UNUSE_PIN                   (0)
@@ -59,6 +58,9 @@
 #define HAS_DISPLAY
 
 
+#if !defined(LILYGO_T3_S3_V1_0) && !defined(LILYGO_T3_S3_V1_2)
+#error "For the first use, please define the board version and model in <utilities. h>"
+#endif
 
 
 

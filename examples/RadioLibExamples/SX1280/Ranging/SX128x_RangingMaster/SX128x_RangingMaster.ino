@@ -50,11 +50,20 @@ void setup()
         while (true);
     }
 
+#if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
     //Set ANT Control pins
     radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
+#endif
 
-    // Set output power to 3 dBm    !!Cannot be greater than 3dbm!!
-    if (radio.setOutputPower(3) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+
+#ifdef LILYGO_T3_S3_V1_0
+    // T3 S3 V1.1 with PA Version Set output power to 3 dBm    !!Cannot be greater than 3dbm!!
+    int8_t TX_Power = 3;
+#else
+    // T3 S3 V1.2 (No PA) Version Set output power to 3 dBm    !!Cannot be greater than 3dbm!!
+    int8_t TX_Power = 13;
+#endif
+    if (radio.setOutputPower(TX_Power) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
     }

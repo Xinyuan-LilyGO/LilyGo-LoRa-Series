@@ -13,6 +13,7 @@
 //connected and should be included and be set to -1.
 
 
+
 #define I2C_SDA                     18
 #define I2C_SCL                     17
 #define RADIO_SCLK_PIN              5
@@ -26,8 +27,16 @@
 #define DIO1                        9
 #define DIO2                        -1//33
 #define DIO3                        -1//34
+
+#ifdef LILYGO_T3_S3_V1_0
 #define RX_EN                       21
 #define TX_EN                       10
+#define TX_POWER                    3
+#else
+#define RX_EN                       -1
+#define TX_EN                       -1
+#define TX_POWER                    13
+#endif
 
 #define LORA_DEVICE DEVICE_SX1280                //we need to define the device we are using
 
@@ -41,7 +50,7 @@ const uint8_t SpreadingFactor = LORA_SF8;        //LoRa spreading factor
 const uint8_t CodeRate = LORA_CR_4_5;            //LoRa coding rate
 const uint16_t Calibration = 11350;              //Manual Ranging calibration value
 
-const int8_t TXpower = 3;                       //Transmit power used
+const int8_t TXpower = TX_POWER;                       //Transmit power used
 const uint32_t RangingAddress = 16;              //must match address in master
 
 const uint16_t  rangingRXTimeoutmS = 0xFFFF;     //ranging RX timeout in mS
