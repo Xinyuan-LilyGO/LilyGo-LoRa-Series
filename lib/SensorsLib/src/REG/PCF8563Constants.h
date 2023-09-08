@@ -68,18 +68,3 @@
 #define PCF8563_ALARM_ENABLE    (0x80)
 #define PCF8563_CLK_ENABLE      (0x80)
 
-
-#define RTC_DAYS_IN_JANUARY     (31u)
-#define RTC_DAYS_IN_FEBRUARY    (28u)
-#define RTC_DAYS_IN_MARCH       (31u)
-#define RTC_DAYS_IN_APRIL       (30u)
-#define RTC_DAYS_IN_MAY         (31u)
-#define RTC_DAYS_IN_JUNE        (30u)
-#define RTC_DAYS_IN_JULY        (31u)
-#define RTC_DAYS_IN_AUGUST      (31u)
-#define RTC_DAYS_IN_SEPTEMBER   (30u)
-#define RTC_DAYS_IN_OCTOBER     (31u)
-#define RTC_DAYS_IN_NOVEMBER    (30u)
-#define RTC_DAYS_IN_DECEMBER    (31u)
-
-

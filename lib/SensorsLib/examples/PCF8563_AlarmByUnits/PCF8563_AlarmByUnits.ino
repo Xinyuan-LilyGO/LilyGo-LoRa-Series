@@ -31,7 +31,7 @@
 #include <SPI.h>
 #include <Arduino.h>
 #include <time.h>
-#include "SensorPCF8563.tpp"
+#include "SensorPCF8563.hpp"
 
 #ifdef ESP32
 #define I2C_SDA                     42

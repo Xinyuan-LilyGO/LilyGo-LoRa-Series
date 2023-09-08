@@ -157,7 +157,6 @@ void setup()
 }
 
 
-
 void loop()
 {
     // Get IMU status
@@ -165,25 +164,25 @@ void loop()
     Serial.printf("STATUS:0x%x BIN:", status);
     Serial.println(status, BIN);
 
-    if (status & SensorQMI8658::EVENT_TAP_MOITON) {
+    if (status & SensorQMI8658::EVENT_TAP_MOTION) {
         Serial.println("Detected TAP event");
         qmi.getTapStatus();
     }
-    if (status & SensorQMI8658::EVENT_WOM_MOITON) {
+    if (status & SensorQMI8658::EVENT_WOM_MOTION) {
         Serial.println("Detected Wom event");
     }
-    if (status & SensorQMI8658::EVENT_PEDOMETER_MOITON) {
+    if (status & SensorQMI8658::EVENT_PEDOMETER_MOTION) {
         Serial.println("Detected Pedometer event");
         uint32_t val = qmi.getPedometerCounter();
         Serial.println(val);
     }
-    if (status & SensorQMI8658::EVENT_ANY_MOITON) {
+    if (status & SensorQMI8658::EVENT_ANY_MOTION) {
         Serial.println("Detected Any Motion event");
     }
-    if (status & SensorQMI8658::EVENT_NO_MOITON) {
+    if (status & SensorQMI8658::EVENT_NO_MOTION) {
         Serial.println("Detected No Motion event");
     }
-    if (status & SensorQMI8658::EVENT_SIGNIFICANT_MOITON) {
+    if (status & SensorQMI8658::EVENT_SIGNIFICANT_MOTION) {
         Serial.println("Detected Significant Motion event");
     }
 

@@ -33,7 +33,7 @@
 #include <time.h>
 #include <WiFi.h>
 #include <sntp.h>
-#include "SensorPCF8563.tpp"
+#include "SensorPCF8563.hpp"
 
 // lilygo t-beam-s3-core pin
 #define I2C_SDA                     42

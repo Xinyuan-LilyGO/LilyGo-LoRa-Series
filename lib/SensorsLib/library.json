@@ -1,8 +1,8 @@
 {
     "name": "SensorLib",
     "version": "0.1.0",
-    "description": "Arduino library for QMI8658 Inertial measurement,QMC6310 Magnetometer",
-    "keywords": "QMC6310 QMI8658 IMU Sensor",
+    "description": "Arduino library written for PCF8563, QMI8658, QMC6310, XL9555",
+    "keywords": "QMC6310 QMI8658 IMU Sensor,PCF8563,XL9555",
     "authors": [{
         "name": "LewisHe",
         "url": "https://github.com/lewisxhe",

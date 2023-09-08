@@ -30,7 +30,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Arduino.h>
-#include "SensorPCF8563.tpp"
+#include "SensorPCF8563.hpp"
 #include <time.h>
 
 // lilygo t-beam-s3-core pin
