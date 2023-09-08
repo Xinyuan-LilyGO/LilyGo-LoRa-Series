@@ -46,14 +46,15 @@ void setup(void)
     touch.setHomeButtonCallback([](void *user_data) {
         Serial.println("Home key pressed!");
         static uint32_t checkMs = 0;
+
         if (millis() > checkMs) {
-            checkMs = millis() + 200;
             if (digitalRead(TFT_BL)) {
                 digitalWrite(TFT_BL, LOW);
             } else {
                 digitalWrite(TFT_BL, HIGH);
             }
         }
+        checkMs = millis() + 200;
 
     }, NULL);
 
