@@ -317,7 +317,14 @@ void initBoard()
     Wire1.begin(I2C1_SDA, I2C1_SCL);
 #endif
 
-
+#ifdef RADIO_TXCO_ENABLE
+    /*
+    * In the T3 V1.6.1 TXCO version, Radio DIO1 is connected to Radio’s
+    * internal temperature-compensated crystal oscillator enable
+    * */
+    pinMode(RADIO_TXCO_ENABLE, OUTPUT);
+    digitalWrite(RADIO_TXCO_ENABLE, HIGH);
+#endif
 
 
 #ifdef HAS_GPS
