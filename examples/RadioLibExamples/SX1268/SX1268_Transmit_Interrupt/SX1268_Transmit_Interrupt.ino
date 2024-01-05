@@ -61,7 +61,7 @@ void setup()
     // initialize SX1268 with default settings
     Serial.print(F("[SX1268] Initializing ... "));
 #ifndef LoRa_frequency
-    int state = radio.begin(433.0);
+    int state = radio.begin();
 #else
     int state = radio.begin(LoRa_frequency);
 #endif
@@ -86,6 +86,36 @@ void setup()
     // when packet transmission is finished
     radio.setDio1Action(setFlag);
 
+
+    if (radio.setDio2AsRfSwitch() != RADIOLIB_ERR_NONE) {
+        Serial.println(F("Failed to set DIO2 as RF switch!"));
+        while (true);
+    }
+    // set carrier frequency to 433.5 MHz
+    if (radio.setFrequency(433.5) == RADIOLIB_ERR_INVALID_FREQUENCY) {
+        Serial.println(F("Selected frequency is invalid for this module!"));
+        while (true);
+    }
+
+    // set bandwidth to 250 kHz
+    if (radio.setBandwidth(250.0) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
+        Serial.println(F("Selected bandwidth is invalid for this module!"));
+        while (true);
+    }
+
+    // set output power to 10 dBm (accepted range is -17 - 22 dBm)
+    if (radio.setOutputPower(22) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.println(F("Selected output power is invalid for this module!"));
+        while (true);
+    }
+
+    // set over current protection limit to 80 mA (accepted range is 45 - 140 mA)
+    // NOTE: set value to 0 to disable overcurrent protection
+    if (radio.setCurrentLimit(140) == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
+        Serial.println(F("Selected current limit is invalid for this module!"));
+        while (true);
+    }
+
     // start transmitting the first packet
     Serial.print(F("[SX1268] Sending first packet ... "));
 
@@ -99,6 +129,7 @@ void setup()
                         0x89, 0xAB, 0xCD, 0xEF};
       state = radio.startTransmit(byteArr, 8);
     */
+
 }
 
 
