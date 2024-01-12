@@ -59,6 +59,7 @@ void setup()
     // initialize SX1280 with default settings
     Serial.print(F("[SX1280] Initializing ... "));
     int state = radio.begin();
+#ifdef HAS_DISPLAY
     if (u8g2) {
         if (state != RADIOLIB_ERR_NONE) {
             u8g2->clearBuffer();
@@ -66,6 +67,19 @@ void setup()
             u8g2->sendBuffer();
         }
     }
+#endif
+#ifdef EDP_DISPLAY
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        display.setRotation(1);
+        display.fillScreen(GxEPD_WHITE);
+        display.setTextColor(GxEPD_BLACK);
+        display.setFont(&FreeMonoBold9pt7b);
+        display.setCursor(0, 15);
+        display.println("Initializing: FAIL!");
+        display.update();
+    }
+#endif  
 
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
@@ -177,11 +191,12 @@ void loop()
             Serial.println(F(" dB"));
 
 #ifdef HAS_DISPLAY
-            if (u8g2) {
+            if (u8g2)
+            {
                 u8g2->clearBuffer();
                 char buf[256];
                 u8g2->drawStr(0, 12, "Received OK!");
-                snprintf(buf, sizeof(buf), "RX:%u", counter);
+                snprintf(buf, sizeof(buf), "RX:%s", str);
                 u8g2->drawStr(0, 26, buf);
                 snprintf(buf, sizeof(buf), "RSSI:%.2f", radio.getRSSI());
                 u8g2->drawStr(0, 40, buf);
@@ -189,6 +204,27 @@ void loop()
                 u8g2->drawStr(0, 54, buf);
                 u8g2->sendBuffer();
             }
+#endif
+#ifdef EDP_DISPLAY
+            display.setRotation(1);
+            display.fillScreen(GxEPD_WHITE);
+            display.setTextColor(GxEPD_BLACK);
+            display.setFont(&FreeMonoBold9pt7b);
+            display.setCursor(0, 15);
+            display.println("[SX1262] Received:");
+            display.setCursor(0, 35);
+            display.println("DATA:"); 
+            display.setCursor(55, 35);
+            display.println(counter); 
+            display.setCursor(0, 55);
+            display.println("RSSI:"); 
+            display.setCursor(55, 55);
+            display.println(radio.getRSSI());
+            display.setCursor(0, 75);
+            display.println("SNR :"); 
+            display.setCursor(55, 75);
+            display.println(radio.getSNR());  
+            display.update();
 #endif
 
         } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {

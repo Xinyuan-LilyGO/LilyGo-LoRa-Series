@@ -7,8 +7,8 @@
 #include <SD.h>
 #include <FS.h>
 #endif
-
-#ifdef HAS_DISPLAY
+SPIClass SDSPI(HSPI);
+#if  defined(HAS_DISPLAY) && !defined(EDP_DISPLAY)
 #include <U8g2lib.h>
 
 #ifndef DISPLAY_MODEL
@@ -16,6 +16,19 @@
 #endif
 
 DISPLAY_MODEL *u8g2 = nullptr;
+#elif defined(EDP_DISPLAY)
+#include "Adafruit_GFX.h"
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMonoBold24pt7b.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <GxEPD.h>
+#include <GxIO/GxIO_SPI/GxIO_SPI.h>
+#include <GxDEPG0213BN/GxDEPG0213BN.h> // 2.13" b/w  form DKE GROUP
+
+#include GxEPD_BitmapExamples
+GxIO_Class io(SDSPI,  EDP_CS_PIN, EDP_DC_PIN,  EDP_RSET_PIN);
+GxEPD_Class display(io, EDP_RSET_PIN, EDP_BUSY_PIN);
 #endif
 
 #ifndef OLED_WIRE_PORT
@@ -300,8 +313,6 @@ void disablePeripherals()
 #define disablePeripherals()
 #endif
 
-SPIClass SDSPI(HSPI);
-
 
 void initBoard()
 {
@@ -309,9 +320,9 @@ void initBoard()
     Serial.println("initBoard");
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
 
-
+#if defined(HAS_DISPLAY)
     Wire.begin(I2C_SDA, I2C_SCL);
-
+#endif
 
 #ifdef I2C1_SDA
     Wire1.begin(I2C1_SDA, I2C1_SCL);
@@ -377,27 +388,48 @@ void initBoard()
 
 
 #ifdef HAS_SDCARD
+
+#ifdef HAS_DISPLAY
     if (u8g2) {
         u8g2->setFont(u8g2_font_ncenB08_tr);
     }
+#endif
     pinMode(SDCARD_MISO, INPUT_PULLUP);
     SDSPI.begin(SDCARD_SCLK, SDCARD_MISO, SDCARD_MOSI, SDCARD_CS);
+#ifdef EDP_DISPLAY
+    display.init();
+    display.setTextColor(GxEPD_BLACK);
+    delay(10);
+    display.setRotation(0);
+    delay(10);
+    display.fillScreen(GxEPD_WHITE);
+    delay(10);
+    display.drawExampleBitmap(BitmapExample1, 0, 0, GxEPD_WIDTH, GxEPD_HEIGHT, GxEPD_BLACK);
+    display.update();
+    Serial.println("EDP_MODE");
+#endif
+#ifdef HAS_DISPLAY
     if (u8g2) {
         u8g2->clearBuffer();
     }
-
+#endif
     if (!SD.begin(SDCARD_CS, SDSPI)) {
 
         Serial.println("setupSDCard FAIL");
+#ifdef HAS_DISPLAY
         if (u8g2) {
             do {
                 u8g2->setCursor(0, 16);
                 u8g2->println( "SDCard FAILED");;
             } while ( u8g2->nextPage() );
         }
-
-    } else {
+#endif
+} else {
         uint32_t cardSize = SD.cardSize() / (1024 * 1024);
+        Serial.print("setupSDCard PASS . SIZE = ");
+        Serial.print(cardSize / 1024.0);
+        Serial.println(" GB");
+#ifdef HAS_DISPLAY 
         if (u8g2) {
             do {
                 u8g2->setCursor(0, 16);
@@ -406,14 +438,11 @@ void initBoard()
                 u8g2->println(" GB");;
             } while ( u8g2->nextPage() );
         }
-
-        Serial.print("setupSDCard PASS . SIZE = ");
-        Serial.print(cardSize / 1024.0);
-        Serial.println(" GB");
     }
     if (u8g2) {
         u8g2->sendBuffer();
     }
+#endif
     delay(3000);
 #endif
 

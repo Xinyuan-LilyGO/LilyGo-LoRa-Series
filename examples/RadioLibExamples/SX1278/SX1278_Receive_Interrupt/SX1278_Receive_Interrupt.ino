@@ -62,6 +62,8 @@ void setup()
 #else
     int state = radio.begin(LoRa_frequency);
 #endif
+
+#ifdef HAS_DISPLAY
     if (u8g2) {
         if (state != RADIOLIB_ERR_NONE) {
             u8g2->clearBuffer();
@@ -69,7 +71,19 @@ void setup()
             u8g2->sendBuffer();
         }
     }
-
+#endif
+#ifdef EDP_DISPLAY
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        display.setRotation(1);
+        display.fillScreen(GxEPD_WHITE);
+        display.setTextColor(GxEPD_BLACK);
+        display.setFont(&FreeMonoBold9pt7b);
+        display.setCursor(0, 15);
+        display.println("Initializing: FAIL!");
+        display.update();
+    }
+#endif
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
         radio.setOutputPower(17);
@@ -165,7 +179,27 @@ void loop()
                 u8g2->sendBuffer();
             }
 #endif
-
+#ifdef EDP_DISPLAY
+            display.setRotation(1);
+            display.fillScreen(GxEPD_WHITE);
+            display.setTextColor(GxEPD_BLACK);
+            display.setFont(&FreeMonoBold9pt7b);
+            display.setCursor(0, 15);
+            display.println("[SX1262] Received:");
+            display.setCursor(0, 35);
+            display.println("DATA:"); 
+            display.setCursor(55, 35);
+            display.println(str); 
+            display.setCursor(0, 55);
+            display.println("RSSI:"); 
+            display.setCursor(55, 55);
+            display.println(radio.getRSSI());
+            display.setCursor(0, 75);
+            display.println("SNR :"); 
+            display.setCursor(55, 75);
+            display.println(radio.getSNR());  
+            display.update();
+#endif
         } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
             // packet was received, but is malformed
             Serial.println(F("[SX1278] CRC error!"));

@@ -27,7 +27,7 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 int transmissionState = RADIOLIB_ERR_NONE;
 // flag to indicate that a packet was sent
 volatile bool transmittedFlag = false;
-
+int count = 0;
 // disable interrupt when it's not needed
 volatile bool enableInterrupt = true;
 
@@ -66,6 +66,17 @@ void setup()
         }
     }
 #endif
+#ifdef EDP_DISPLAY
+if (state != RADIOLIB_ERR_NONE) {
+    display.setRotation(1);
+    display.fillScreen(GxEPD_WHITE);
+    display.setTextColor(GxEPD_BLACK);
+    display.setFont(&FreeMonoBold9pt7b);
+    display.setCursor(0, 15);
+    display.println("Initializing: FAIL!");
+    display.update();
+}
+#endif
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
     } else {
@@ -93,7 +104,6 @@ void setup()
     */
 }
 
-
 void loop()
 {
     // check if the previous transmission finished
@@ -120,6 +130,15 @@ void loop()
                 u8g2->sendBuffer();
             }
 #endif
+#ifdef EDP_DISPLAY
+            display.setRotation(1);
+            display.fillScreen(GxEPD_WHITE);
+            display.setTextColor(GxEPD_BLACK);
+            display.setFont(&FreeMonoBold9pt7b);
+            display.setCursor(0, 15);
+            display.println("Transmitting: OK!");
+            display.update();
+#endif
         } else {
             Serial.print(F("failed, code "));
             Serial.println(transmissionState);
@@ -134,7 +153,8 @@ void loop()
 
         // you can transmit C-string or Arduino string up to
         // 256 characters long
-        transmissionState = radio.startTransmit("Hello World!");
+        String str = "Hello ! #" + String(count++);
+        transmissionState = radio.startTransmit(str);
         // you can also transmit byte array up to 256 bytes long
         /*
           byte byteArr[] = {0x01, 0x23, 0x45, 0x67,

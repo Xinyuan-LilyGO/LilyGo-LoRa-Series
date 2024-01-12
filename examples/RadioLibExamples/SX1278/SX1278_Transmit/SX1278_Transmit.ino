@@ -44,6 +44,18 @@ void setup()
         }
     }
 #endif
+#ifdef EDP_DISPLAY
+    if (state != RADIOLIB_ERR_NONE)
+    {
+        display.setRotation(1);
+        display.fillScreen(GxEPD_WHITE);
+        display.setTextColor(GxEPD_BLACK);
+        display.setFont(&FreeMonoBold9pt7b);
+        display.setCursor(0, 15);
+        display.println("Initializing: FAIL!");
+        display.update();
+    }
+#endif
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
         radio.setOutputPower(17);
@@ -91,6 +103,15 @@ void loop()
             u8g2->drawStr(5, 30, buf);
             u8g2->sendBuffer();
         }
+#endif
+#ifdef EDP_DISPLAY
+            display.setRotation(1);
+            display.fillScreen(GxEPD_WHITE);
+            display.setTextColor(GxEPD_BLACK);
+            display.setFont(&FreeMonoBold9pt7b);
+            display.setCursor(0, 15);
+            display.println("Transmitting: OK!");
+            display.update();
 #endif
     } else if (state == RADIOLIB_ERR_PACKET_TOO_LONG) {
         // the supplied packet was longer than 256 bytes
