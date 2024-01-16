@@ -41,7 +41,6 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 // or using RadioShield
 // https://github.com/jgromes/RadioShield
 //SX1262 radio = RadioShield.ModuleA;
-
 // or using CubeCell
 //SX1262 radio = new Module(RADIOLIB_BUILTIN_MODULE);
 
