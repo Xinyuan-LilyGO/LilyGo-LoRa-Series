@@ -88,6 +88,7 @@ The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise 
 │  └─LoRaSender
 ├── Display         # Only supports TBeam TFT Shield
 │   ├── Free_Font_Demo
+│   ├── GxEPD_U8G2_Fonts_Demo
 │   ├── TBeam_TFT_Shield
 │   ├── TFT_Char_times
 │   └── UTFT_demo
@@ -108,6 +109,8 @@ The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise 
 │  └─SSD1306UiDemo
 ├─RadioLibExamples              # RadioLib examples,Support SX1276/78/62/80
 │  ├─SX1262
+│  │  ├─SX1262_C6_Receive_interrupt
+│  │  ├─SX1262_C6_Transmit_Interrupt
 │  │  ├─SX1262_Receive_Interrupt
 │  │  └─SX1262_Transmit_Interrupt
 │  ├─SX1268
