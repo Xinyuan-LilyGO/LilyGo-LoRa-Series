@@ -27,7 +27,6 @@
 #define RADIO_DIO1_PIN          2
 #define RADIO_BUSY_PIN          3
 #define RADIO_RST_PIN           4
-
 // SX1262 has the following connections:
 // NSS pin:   10
 // DIO1 pin:  2
