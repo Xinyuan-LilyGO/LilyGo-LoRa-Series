@@ -196,7 +196,7 @@ void loop()
                 u8g2->clearBuffer();
                 char buf[256];
                 u8g2->drawStr(0, 12, "Received OK!");
-                snprintf(buf, sizeof(buf), "RX:%s", str);
+                snprintf(buf, sizeof(buf), "Data:%s", counter);
                 u8g2->drawStr(0, 26, buf);
                 snprintf(buf, sizeof(buf), "RSSI:%.2f", radio.getRSSI());
                 u8g2->drawStr(0, 40, buf);
@@ -205,13 +205,14 @@ void loop()
                 u8g2->sendBuffer();
             }
 #endif
+
 #ifdef EDP_DISPLAY
             display.setRotation(1);
             display.fillScreen(GxEPD_WHITE);
             display.setTextColor(GxEPD_BLACK);
             display.setFont(&FreeMonoBold9pt7b);
             display.setCursor(0, 15);
-            display.println("[SX1262] Received:");
+            display.println("[SX128x] Received:");
             display.setCursor(0, 35);
             display.println("DATA:"); 
             display.setCursor(55, 35);
