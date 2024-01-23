@@ -184,7 +184,7 @@ void initBoard()
 #endif
 
 
-#
+
 #ifdef HAS_SDCARD
 
 #ifdef HAS_DISPLAY
@@ -236,7 +236,9 @@ void initBoard()
                 u8g2->println(" GB");;
             } while ( u8g2->nextPage() );
         }
+#endif        
     }
+#ifdef HAS_DISPLAY     
     if (u8g2) {
         u8g2->sendBuffer();
     }
