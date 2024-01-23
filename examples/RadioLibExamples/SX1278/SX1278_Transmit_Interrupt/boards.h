@@ -314,7 +314,7 @@ void disablePeripherals()
 #define disablePeripherals()
 #endif
 
-SPIClass SDSPI(HSPI);
+
 
 
 void initBoard()
@@ -330,7 +330,6 @@ void initBoard()
 #ifdef I2C1_SDA
     Wire1.begin(I2C1_SDA, I2C1_SCL);
 #endif
-
 
 
 #ifdef HAS_GPS

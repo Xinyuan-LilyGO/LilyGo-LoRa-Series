@@ -315,7 +315,6 @@ void disablePeripherals()
 #define disablePeripherals()
 #endif
 
-SPIClass SDSPI(HSPI);
 
 
 void initBoard()

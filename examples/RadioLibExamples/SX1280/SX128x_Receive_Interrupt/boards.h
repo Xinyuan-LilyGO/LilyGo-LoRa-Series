@@ -8,6 +8,7 @@
 #include <SD.h>
 #include <FS.h>
 #endif
+
 SPIClass SDSPI(HSPI);
 #ifdef HAS_DISPLAY
 #include <U8g2lib.h>
@@ -33,7 +34,6 @@ GxIO_Class io(SDSPI, EDP_CS_PIN, EDP_DC_PIN, EDP_RSET_PIN);
 GxEPD_Class display(io, EDP_RSET_PIN, EDP_BUSY_PIN);
 
 #endif
-
 
 Ticker ledTicker;
 #if defined(LILYGO_TBeam_V1_X)
@@ -113,7 +113,6 @@ void disablePeripherals()
 #define disablePeripherals()
 #endif
 
-SPIClass SDSPI(HSPI);
 
 
 void initBoard()
