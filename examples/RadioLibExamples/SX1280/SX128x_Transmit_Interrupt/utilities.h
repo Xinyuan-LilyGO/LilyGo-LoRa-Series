@@ -13,7 +13,7 @@
 // #define LILYGO_T3_V1_8
 // #define LILYGO_T3_S3_V1_0    //SUPPORT
 // #define LILYGO_T3_S3_V1_2    //SUPPORT
-#define LILYGO_T3_S3_E_PAPER_V_1_0
+// #define LILYGO_T3_S3_E_PAPER_V_1_0
 
 #define UNUSE_PIN                   (0)
 

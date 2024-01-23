@@ -12,7 +12,7 @@
 // #define LILYGO_T3_V1_6
 // #define LILYGO_T3_V2_0
 // #define LILYGO_T3_S3_V1_0
-#define LILYGO_T3_S3_E_PAPER_V_1_0
+// #define LILYGO_T3_S3_E_PAPER_V_1_0
 /*
 * The default program uses 868MHz,
 * if you need to change it,
