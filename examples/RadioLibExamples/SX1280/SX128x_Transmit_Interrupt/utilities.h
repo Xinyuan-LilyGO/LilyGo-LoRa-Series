@@ -224,6 +224,9 @@
 #define RADIO_RST_PIN               8
 #define RADIO_BUSY_PIN              36
 
+#define RADIO_RX_PIN                21
+#define RADIO_TX_PIN                10
+
 #define SDCARD_MOSI                 11
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
