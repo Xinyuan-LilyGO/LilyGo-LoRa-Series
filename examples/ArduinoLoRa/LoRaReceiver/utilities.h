@@ -139,7 +139,7 @@
 #define HAS_DISPLAY
 
 
-#elif defined(LILYGO_T3_V1_6_TXCO)
+#elif defined(LILYGO_T3_V1_6_TCXO)
 
 
 #define I2C_SDA                     21
@@ -154,10 +154,10 @@
 #define RADIO_RST_PIN               23
 // #define RADIO_DIO1_PIN              33
 /*
-* In the T3 V1.6.1 TXCO version, Radio DIO1 is connected to Radio’s
+* In the T3 V1.6.1 TCXO version, Radio DIO1 is connected to Radio’s
 * internal temperature-compensated crystal oscillator enable
 * */
-#define RADIO_TXCO_ENABLE           33
+#define RADIO_TCXO_ENABLE           33
 #define RADIO_BUSY_PIN              32
 
 #define SDCARD_MOSI                 15

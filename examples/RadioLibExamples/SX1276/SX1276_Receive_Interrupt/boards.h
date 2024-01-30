@@ -333,13 +333,13 @@ void initBoard()
 #endif
 
 
-#ifdef RADIO_TXCO_ENABLE
+#ifdef RADIO_TCXO_ENABLE
     /*
-    * In the T3 V1.6.1 TXCO version, Radio DIO1 is connected to Radio’s
+    * In the T3 V1.6.1 TCXO version, Radio DIO1 is connected to Radio’s
     * internal temperature-compensated crystal oscillator enable
     * */
-    pinMode(RADIO_TXCO_ENABLE, OUTPUT);
-    digitalWrite(RADIO_TXCO_ENABLE, HIGH);
+    pinMode(RADIO_TCXO_ENABLE, OUTPUT);
+    digitalWrite(RADIO_TCXO_ENABLE, HIGH);
 #endif
 
 
