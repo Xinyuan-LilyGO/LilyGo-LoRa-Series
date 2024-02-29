@@ -169,6 +169,15 @@ If the label says SX1262 then it is SX1262
 1. If there is no data output from GPS, [see Restoring factory defaults ](firmware/NMEA_Reset/README.MD)
 2. [GNSS troubleshooting from SoftRF](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-GNSS-troubleshooting)
 
+## Antenna signal quality
+
+### 1. t-beams3-supreme-ant-868M
+
+![t-beams3-supreme-ant-868M](./images/t-beams3-supreme-ant-868M.jpg)
+
+### 2. t-beams3-supreme-ant-915M
+
+![t-beams3-supreme-ant-915M](./images/t-beams3-supreme-ant-915M.jpg)
 
 
 ## PinOut
