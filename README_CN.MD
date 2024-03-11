@@ -375,7 +375,16 @@ N.A
    -  Arduino -> Tools -> USB CDC On Boot -> Enable
 
 
+9. T-Beam-s3-supreme 天线信号质量
+     <details>
+     <summary>
+     Click to view detailed
+     </summary>
 
+     ![t-beams3-supreme-ant-868M](./images/t-beams3-supreme-ant-868M.jpg)
+     ![t-beams3-supreme-ant-915M](./images/t-beams3-supreme-ant-915M.jpg)
+
+     </details>
 
 
 

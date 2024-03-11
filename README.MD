@@ -306,7 +306,7 @@ N.A.
 3. How to find the pin definition?
      <details>
      <summary>
-     Click to view detailed steps
+     Click to view detailed
      </summary>
 
      - Each sketch contains <utilities.h>, and all board pins are written in this file
@@ -316,7 +316,7 @@ N.A.
 4. Can’t upload sketches?
      <details>
      <summary>
-     Click to view detailed steps
+     Click to view detailed
      </summary>
 
     1. Connect the board USB to the computer
@@ -330,7 +330,7 @@ N.A.
 5. After setting the output power of LoRa, you need to set the minimum current. Set up sx1262 as follows:
      <details>
      <summary>
-     Click to view detailed steps
+     Click to view detailed
      </summary>
 
      ```c
@@ -351,7 +351,7 @@ N.A.
 6. Precautions for using SX1280 PA version
      <details>
      <summary>
-     Click to view detailed steps
+     Click to view detailed
      </summary>
 
     - When using the SX1280 PA module, it is recommended that the software controls the 1280 chip to output 2~5dbm, so that the entire module will output 20dbm power;
@@ -364,7 +364,7 @@ N.A.
 7. How to identify the LoRa model?
      <details>
      <summary>
-     Click to view detailed steps
+     Click to view detailed
      </summary>
 
      - To identify the LoRa model, you only need to check the sticker on the board. 433MHz is SX1278, 868MHz is SX1276, and if the label says SX1262, it is SX1262.
@@ -372,3 +372,14 @@ N.A.
      </details>
 8. Why does Serial not have any output?
     - Arduino -> Tools -> USB CDC On Boot -> Enable
+
+9. T-Beam-s3-supreme antenna signal quality
+     <details>
+     <summary>
+     Click to view detailed
+     </summary>
+
+     ![t-beams3-supreme-ant-868M](./images/t-beams3-supreme-ant-868M.jpg)
+     ![t-beams3-supreme-ant-915M](./images/t-beams3-supreme-ant-915M.jpg)
+
+     </details>
