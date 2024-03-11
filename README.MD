@@ -1,236 +1,374 @@
 <h1 align = "center">🌟LilyGo LoRa Series🌟</h1>
 
-## **English | [中文](./README_CN.MD)**
+## **[中文](./README_CN.MD) | English**
 
-## USE Arduino IDE
+## 1️⃣Product
 
-1. Install the current upstream Arduino IDE at the 1.8 level or later. The current version is at the [Arduino website](http://www.arduino.cc/en/main/software). (NOTE: MacOS may require that you install separate drivers to interact with your board. You will get error messages that occur when the IDE attempts to upload code. You should consider running the Arduino IDE in a Virtual Machine on Linux. Installing other drivers on your Mac is out of scope for this document.)
-2. Start Arduino and open Preferences window. In additional board manager add url: `https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json` If you have multiple URLs (e.g., for other boards), just add previously mentioned URL, separated by a comma.
-3. Copy all folders in the `lib` directory to your Arduino Libraries Directory,
-- in MacOS, it is `~/Documents/Arduino/libraries`
-- in Linux, it is `~/Arduino/libraries` 
-- in Windows, it is `Documents/Arduino/libraries` 
-4. Open the corresponding example
-5. In the Arduino Application, navigate to the Board Manager menu ("Tools => Board => Board Manager"), search for `esp32`, and make sure that you install the latest version. After you do this, you can select the board you have from the list of boards in the "ESP32 Arduino" menu ("Tools=> Board => ESP32 Arduino"). It's very important to note that the list of boards is NOT in alphabetical order. Look for the board you are working with carefully in the list. 
-6. `T-Beam` users can choose `TTGO T-Beam`, `lora32(T3)` users can choose `ESP32 Dev Module` , `T-Motion` users choose `Nucleo_l073RZ`,`T3-S3-V1.0`and `T-BeamS3 Supreme` users can selected `ESP32S3 Dev Module`
-7. Select the port of the board in the port
-8. Please uncomment the `utility.h` file above each sketch based on your board model, otherwise compilation will report an error
-9. Upload
+| Product                            | SOC             | Flash         | PSRAM          |
+| ---------------------------------- | --------------- | ------------- | -------------- |
+| [T-Beam Supreme L76K][1]           | ESP32-S3FN8     | 8MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T-Beam Supreme Ublox][2]          | ESP32-S3FN8     | 8MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T-Beam Meshtastic][3]             | ESP32-D0WDQ6-V3 | 4MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T-Beam SoftRF][4]                 | ESP32-D0WDQ6-V3 | 4MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T3-S3 SX1280 2.4G With out PA][5] | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
+| [T3-S3 SX1280 2.4G With PA][6]     | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
+| [T3-S3 SX1276][7]                  | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
+| [T3-S3 SX1262][8]                  | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
+| [LoRa32][8]                        | ESP32-PICO-D4   | 4MB(Quad-SPI) | ❌              |
+| [T-Motion][9]                      | STM32L073RZ     | 192 Kbyte     | (20-Kbyte RAM) |
 
-## ⚠ Cautions ⚠ 
+[1]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905052341 "T-Beam Supreme L76K"
+[2]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905281717 "T-Beam Supreme Ublox"
+[3]: https://www.lilygo.cc/products/t-beam-v1-1-esp32-lora-module "T-Beam Meshtastic"
+[4]: https://www.lilygo.cc/products/t-beam-softrf "T-Beam SoftRF"
+[5]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879656117 "T3-S3 SX1280 2.4G With out PA"
+[6]: https://www.lilygo.cc/products/t3s3-v1-0?variant=43043715678389 "T3-S3 SX1280 2.4G With PA"
+[7]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879688885 "T3-S3 SX1276"
+[8]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879721653 "T3-S3 SX1262"
+[9]: https://www.lilygo.cc/products/t-motion-s76g-stm32-lora "T-Motion"
 
-1. When using the SX1280 PA T3S3 V1.1 (V1.2 does not have this issue), it is recommended that the software control 1280 chip output 2 to 5 dbm, so that the entire module will output 20 dbm of power;
-When the output of 1280 chip is higher than 2 dbm, the output power of the entire module is only 20 dbm;
-When the output of 1280 chip is higher than 5 dbm, the output power of the entire module is only 20 dbm, but if 5 dbm is given to the FEM, it will damage the FEM chip (the maximum allowable input for the FEM is 5 dbm)
-If the output of the 1280 chip is lower than 2 dbm, the output power of the entire module is within 20 dbm.
-The output power setting of the SX1280 cannot be greater than 2-5dbm, otherwise damage to the FEM chip may occur. Set 3dBM to have an output power of 20dmb
-
-## Product 📷
-
-|                    Product                    |          Product Link           |                                 Schematic                                 | Corresponding example macro definition |
-| :-------------------------------------------: | :-----------------------------: | :-----------------------------------------------------------------------: | :------------------------------------: |
-|            [T-Beam SX1278/76][1-4]            |         [AliExpress][1]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] / [TBeamV1.2][1-5] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_X  |
-|             [T-Beam SX1262][1-4]              |         [AliExpress][2]         | [TBeamV0.7][1-1] / [TBeamV1.0][1-2] / [TBeamV1.1][1-3] / [TBeamV1.2][1-5] | LILYGO_TBeam_V0_7 / LILYGO_TBeam_V1_X  |
-|           [LoRa32 V1.0 SX1276][3-1]           |         [AliExpress][3]         |                                     ❌                                     |             LILYGO_T3_V1_0             |
-|           [LoRa32 V1.0 SX1278][3-1]           |         [AliExpress][4]         |                                     ❌                                     |             LILYGO_T3_V1_0             |
-|           [LoRa32 V1.3 SX1276][5-2]           |         [AliExpress][5]         |                            [LoRa32 V1.3][5-1]                             |             LILYGO_T3_V1_3             |
-|              [LoRa32 V2.0][6-2]               |         [AliExpress][6]         |                            [LoRa32 V2.0][6-1]                             |             LILYGO_T3_V2_0             |
-|           [LoRa32 V2.1 & 1.6][7-4]            | [AliExpress][7-1]/[Amazon][7-2] |                          [LoRa32 V2.1_1.6][7-3]                           |             LILYGO_T3_V1_6             |
-|             [T-Motion S76G][8-2]              |         [AliExpress][8]         |                              [T-Motion][8-1]                              |          LILYGO_T_MOTION_S76G          |
-|            [LoRa32 V1.8 2.4G][9-2]            |         [lilygo.cc][9]          |                          [LoRa32 V1.8 2.4G][9-1]                          |             LILYGO_T3_V1_8             |
-|             [LoRa T3 S3 V1.0][10]             |         [lilygo.cc][10]         |                          [LoRa T3 S3 V1.0][10-1]                          |           LILYGO_T3_S3_V1_0            |
-|             [LoRa T3 S3 V1.1][11]             |         [lilygo.cc][11]         |                          [LoRa T3 S3 V1.1][11-1]                          |    LILYGO_T3_S3_V1_0  (Same as 1.0)    |
-| [T-Beam S3 Supreme][12]/[T-BeamS3 Core][12-3] |        [lilygo.cc][12-1]        |                [T-Beam S3 Supreme & T-Beam S3 Core][12-2]                 |      LILYGO_TBeamS3_SUPREME_V3_0       |
-
-
-[1]: https://pt.aliexpress.com/item/32967228739.html "T-Beam SX1278/76"
-[1-1]: schematic/LilyGo_TBeam_V0.7.pdf
-[1-2]: schematic/LilyGo_TBeam_V1.0.pdf
-[1-3]: schematic/LilyGo_TBeam_V1.1.pdf
-[1-4]: assets/image/t-beam_v1.1_pinmap.jpg
-[1-5]: schematic/LilyGo_TBeam_V1.2.pdf
-[2]: https://pt.aliexpress.com/item/4001287221970.html "T-Beam SX1262"
-[3]: https://pt.aliexpress.com/item/32842155838.html "LoRa32 V1.0 SX1276"
-[3-1]: assets/image/lora32_v1.0_pinmap.jpg
-[4]: https://pt.aliexpress.com/item/32842155838.html "LoRa32 V1.0 SX1278"
-[5]: https://pt.aliexpress.com/item/4000628100802.html "LoRa32 V1.3 SX1276"
-[5-1]: schematic/T3_V1.3.pdf
-[5-2]: assets/image/lora32_v1.3_pinmap.jpg
-[6]: https://pt.aliexpress.com/item/32847443952.html "LoRa32 V2.0"
-[6-1]: schematic/T3_V2.0.pdf
-[6-2]: assets/image/lora32_v2.0_pinmap.jpg
-[7-1]: https://pt.aliexpress.com/item/32872078587.html "AliExpress"
-[7-2]: https://www.amazon.com/dp/B09SHRWVNB?ref=myi_title_dp "Amazon"
-[7-3]: schematic/T3_V1.6.pdf
-[7-4]: assets/image/lora32_v1.6.1_pinmap.jpg
-[8]: https://www.aliexpress.com/item/4000571051141.html "T-Motion S76G"
-[8-1]: schematic/T-Motion.pdf
-[8-2]: assets/image/t-motion_v1.0_pinmap.jpg
-[9]: https://www.lilygo.cc/products/lora-v1-8-esp32 "LoRa32 V1.8 2.4G"
-[9-1]: schematic/T3_V1.8.pdf
-[9-2]: assets/image/lora32_v1.8_pinmap.jpg
-[10]: https://pt.aliexpress.com/item/1005004627139838.html "LoRa T3 S3 V1.0"
-[10-1]: schematic/T3_S3_V1.0.pdf
-[11]: NULL
-[11-1]: schematic/T3_S3_V1.1.pdf
-[12]: assets/image/T-BEAM-S3-Supreme.jpg
-[12-3]:assets/image/T-BEAM-S3Core.jpg
-[12-1]: https://www.aliexpress.com/item/1005005418286231.html
-[12-2]: schematic/LilyGo_TBeam_S3_Core_V3.0.pdf
-
-
-
-## Example description
+## 2️⃣Example description
 
 ```
-├─ArduinoLoRa       # Only support SX1276/SX1278 radio module
-│  ├─LoRaReceiver
-│  └─LoRaSender
-├── Display         # Only supports TBeam TFT Shield
-│   ├── Free_Font_Demo
-│   ├── GxEPD_U8G2_Fonts_Demo
-│   ├── TBeam_TFT_Shield
-│   ├── TFT_Char_times
-│   └── UTFT_demo
-├─GPS                           # T-Beam GPS demo examples
-│  ├─TinyGPS_Example
-│  ├─TinyGPS_FullExample
-│  ├─TinyGPS_KitchenSink
-│  ├─UBlox_BasicNMEARead        # Only support Ublox GNSS Module 
-│  ├─UBlox_Recovery             # Only support Ublox GNSS Module 
-│  ├─UBlox_OutputRate           # Only support Ublox GNSS Module 
-│  └─UBlox_NMEAParsing          # Only support Ublox GNSS Module 
-├─OLED                          # OLED demo examples
-│  ├─SH1106FontUsage
-│  ├─SH1106GraphicsTest
-│  ├─SH1106IconMenu
-│  ├─SH1106PrintUTF8
-│  ├─SSD1306SimpleDemo
-│  └─SSD1306UiDemo
-├─RadioLibExamples              # RadioLib examples,Support SX1276/78/62/80
-│  ├─SX1262
-│  │  ├─SX1262_C6_Receive_interrupt
-│  │  ├─SX1262_C6_Transmit_Interrupt
-│  │  ├─SX1262_Receive_Interrupt
-│  │  └─SX1262_Transmit_Interrupt
-│  ├─SX1268
-│  │  ├─SX1268_Receive_Interrupt
-│  │  └─SX1268_Transmit_Interrupt
-│  ├─SX1276
-│  │  ├─SX1276_Receive_Interrupt
-│  │  └─SX1276_Transmit_Interrupt
-│  ├─SX1278
-│  │  ├─SX1278_Receive
-│  │  ├─SX1278_Receive_Interrupt
-│  │  ├─SX1278_Transmit
-│  │  └─SX1278_Transmit_Interrupt
-│  ├─SX1280
-│  │  ├─Ranging
-│  │  │  ├─Ranging_Master
-│  │  │  └─Ranging_Slave
-│  │  ├─SX128x_Receive_Interrupt
-│  │  └─SX128x_Transmit_Interrupt
-│  └─TBeamAllFunction   # T-Beam all function example,Only tbeamv1.x is supported temporarily
-├── Sensor            # Sensor examples , just support t-beams3-supreme
-│   ├── BME280_AdvancedsettingsExample
-│   ├── BME280_TestExample
-│   ├── BME280_UnifiedExample
-│   ├── PCF8563_AlarmByUnits
-│   ├── PCF8563_SimpleTime
-│   ├── PCF8563_TimeLib
-│   ├── PCF8563_TimeSynchronization
-│   ├── QMC6310_CalibrateExample
-│   ├── QMC6310_CompassExample
-│   ├── QMC6310_GetDataExample
-│   ├── QMC6310_GetPolarExample
-│   ├── QMI8658_BlockExample
-│   ├── QMI8658_GetDataExample
-│   ├── QMI8658_InterruptBlockExample
-│   ├── QMI8658_InterruptExample
-│   ├── QMI8658_LockingMechanismExample
-│   ├── QMI8658_MadgwickAHRS
-│   ├── QMI8658_PedometerExample
-│   ├── QMI8658_ReadFromFifoExample
-│   └── QMI8658_WakeOnMotion
+├─ArduinoLoRa                 # Only support SX1276/SX1278 radio module
+│ ├─LoRaReceiver
+│ └─LoRaSender
+├── Display                   # Only supports TBeam TFT Shield
+│ ├── Free_Font_Demo
+│ ├── GxEPD_U8G2_Fonts_Demo
+│ ├── TBeam_TFT_Shield
+│ ├── TFT_Char_times
+│ └── UTFT_demo
+├─GPS                         # T-Beam GPS demo examples
+│ ├─TinyGPS_Example
+│ ├─TinyGPS_FullExample
+│ ├─TinyGPS_KitchenSink
+│ ├─UBlox_BasicNMEARead       # Only support Ublox GNSS Module
+│ ├─UBlox_Recovery            # Only support Ublox GNSS Module
+│ ├─UBlox_OutputRate          # Only support Ublox GNSS Module
+│ └─UBlox_NMEAParsing         # Only support Ublox GNSS Module
+├─OLED                        #OLED demo examples
+│ ├─SH1106FontUsage
+│ ├─SH1106GraphicsTest
+│ ├─SH1106IconMenu
+│ ├─SH1106PrintUTF8
+│ ├─SSD1306SimpleDemo
+│ └─SSD1306UiDemo
+├─RadioLibExamples            # RadioLib examples,Support SX1276/78/62/80
+│ ├─SX1262
+│ │ ├─SX1262_C6_Receive_interrupt
+│ │ ├─SX1262_C6_Transmit_Interrupt
+│ │ ├─SX1262_Receive_Interrupt
+│ │ └─SX1262_Transmit_Interrupt
+│ ├─SX1268
+│ │ ├─SX1268_Receive_Interrupt
+│ │ └─SX1268_Transmit_Interrupt
+│ ├─SX1276
+│ │ ├─SX1276_Receive_Interrupt
+│ │ └─SX1276_Transmit_Interrupt
+│ ├─SX1278
+│ │ ├─SX1278_Receive
+│ │ ├─SX1278_Receive_Interrupt
+│ │ ├─SX1278_Transmit
+│ │ └─SX1278_Transmit_Interrupt
+│ ├─SX1280
+│ │ ├─Ranging
+│ │ │ ├─Ranging_Master
+│ │ │ └─Ranging_Slave
+│ │ ├─SX128x_Receive_Interrupt
+│ │ └─SX128x_Transmit_Interrupt
+│ └─TBeamAllFunction          # T-Beam all function example,Only tbeamv1.x is supported temporarily
+├── Sensor                    # Sensor examples , just support t-beams3-supreme
+│ ├── BME280_AdvancedsettingsExample
+│ ├── BME280_TestExample
+│ ├── BME280_UnifiedExample
+│ ├── PCF8563_AlarmByUnits
+│ ├── PCF8563_SimpleTime
+│ ├── PCF8563_TimeLib
+│ ├── PCF8563_TimeSynchronization
+│ ├── QMC6310_CalibrateExample
+│ ├── QMC6310_CompassExample
+│ ├── QMC6310_GetDataExample
+│ ├── QMC6310_GetPolarExample
+│ ├── QMI8658_BlockExample
+│ ├── QMI8658_GetDataExample
+│ ├── QMI8658_InterruptBlockExample
+│ ├── QMI8658_InterruptExample
+│ ├── QMI8658_LockingMechanismExample
+│ ├── QMI8658_MadgwickAHRS
+│ ├── QMI8658_PedometerExample
+│ ├── QMI8658_ReadFromFifoExample
+│ └── QMI8658_WakeOnMotion
 ├─SleepTest
-└─LoRaWAN                           # OTAA method Join TTN example
-    └─OTTA
+└─LoRaWAN                # OTAA method Join TTN example
+     └─OTTA
+
 ```
 
-## Radio resolution
+## 3️⃣Arduino IDE quick start:
 
-How to distinguish the model of Radio just need to look at the sticker on the board, 
-433MHz is SX1278,
-868MHz is SX1276,
-If the label says SX1262 then it is SX1262
+1. Install [Arduino IDE](https://www.arduino.cc/en/software)
+2. Install [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
+3. Copy all folders in the `lib` directory to the `Sketchbook location` directory. How to find the location of your own libraries, [please see here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer)
+     - Windows: `C:\Users\{username}\Documents\Arduino`
+     - macOS: `/Users/{username}/Documents/Arduino`
+     - Linux: `/home/{username}/Arduino`
+4. Open the corresponding example
+    - Open the downloaded `LilyGo-LoRa-Series`
+    - Open `examples`
+    - Select the sample file and open the file ending with `ino`
+5. On Arduino ISelect the corresponding board in the DE tool project and click on the corresponding option in the list below to select
+     <details>
+     <summary>Click to view T-Beam S3 Supreme Arduino IDE options</summary>
 
-## Precautions
+     | T-Beam S3 Supreme                    | Value                             |
+     | ------------------------------------ | --------------------------------- |
+     | Board                                | **ESP32S3 Dev Module**            |
+     | Port                                 | Your port                         |
+     | USB CDC On Boot                      | Enable                            |
+     | CPU Frequency                        | 240MHZ(WiFi)                      |
+     | Core Debug Level                     | None                              |
+     | USB DFU On Boot                      | Disable                           |
+     | Erase All Flash Before Sketch Upload | Disable                           |
+     | Events Run On                        | Core1                             |
+     | Flash Mode                           | QIO 80MHZ                         |
+     | Flash Size                           | **8MB(64Mb)**                     |
+     | Arduino Runs On                      | Core1                             |
+     | USB Firmware MSC On Boot             | Disable                           |
+     | Partition Scheme                     | **8M Flash(3M APP/1.5MB SPIFFS)** |
+     | PSRAM                                | **QSPI PSRAM**                    |
+     | Upload Mode                          | **UART0/Hardware CDC**            |
+     | Upload Speed                         | 921600                            |
+     | USB Mode                             | **CDC and JTAG**                  |
+     | Programmer                           | **Esptool**                       |
 
-1. If there is no data output from GPS, [see Restoring factory defaults ](firmware/NMEA_Reset/README.MD)
-2. [GNSS troubleshooting from SoftRF](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII.-GNSS-troubleshooting)
-
-## Antenna signal quality
-
-### 1. t-beams3-supreme-ant-868M
-
-![t-beams3-supreme-ant-868M](./images/t-beams3-supreme-ant-868M.jpg)
-
-### 2. t-beams3-supreme-ant-915M
-
-![t-beams3-supreme-ant-915M](./images/t-beams3-supreme-ant-915M.jpg)
+     </details>
 
 
-## PinOut
+     <details>
+     <summary>Click to view T-Beam-V1.X Arduino IDE options</summary>
 
-- See [utilities.h](examples/ArduinoLoRa/LoRaReceiver/utilities.h)
+     | T-Beam-V1.X                          | Value                                                   |
+     | ------------------------------------ | ------------------------------------------------------- |
+     | Board                                | **ESP32 Dev Module**                                    |
+     | Port                                 | Your port                                               |
+     | CPU Frequency                        | 240MHZ(WiFi/BT)                                         |
+     | Core Debug Level                     | None                                                    |
+     | Erase All Flash Before Sketch Upload | Disable                                                 |
+     | Events Run On                        | Core1                                                   |
+     | Flash Frequency                      | 80MHZ                                                   |
+     | Flash Mode                           | QIO                                                     |
+     | Flash Size                           | **4MB(32Mb)**                                           |
+     | JTAG Adapter                         | Disabled                                                |
+     | Arduino Runs On                      | Core1                                                   |
+     | Partition Scheme                     | **Default 4M Flash with spiffs(1.2M APP/1.5MB SPIFFS)** |
+     | PSRAM                                | **Enable**                                              |
+     | Upload Speed                         | 921600                                                  |
+     | Programmer                           | **Esptool**                                             |
 
-## Application
+     </details>
+
+     <details>
+     <summary>Click to view LoRa32 V1.x Arduino IDE options</summary>
+
+     | T-Beam-V1.X                          | Value                                                   |
+     | ------------------------------------ | ------------------------------------------------------- |
+     | Board                                | **ESP32 Dev Module**                                    |
+     | Port                                 | Your port                                               |
+     | CPU Frequency                        | 240MHZ(WiFi/BT)                                         |
+     | Core Debug Level                     | None                                                    |
+     | Erase All Flash Before Sketch Upload | Disable                                                 |
+     | Events Run On                        | Core1                                                   |
+     | Flash Frequency                      | 80MHZ                                                   |
+     | Flash Mode                           | QIO                                                     |
+     | Flash Size                           | **4MB(32Mb)**                                           |
+     | JTAG Adapter                         | Disabled                                                |
+     | Arduino Runs On                      | Core1                                                   |
+     | Partition Scheme                     | **Default 4M Flash with spiffs(1.2M APP/1.5MB SPIFFS)** |
+     | PSRAM                                | **Disable**                                             |
+     | Upload Speed                         | 921600                                                  |
+     | Programmer                           | **Esptool**                                             |
+
+     </details>
+
+     <details>
+     <summary>Click to view T3-S3 Arduino IDE options</summary>
+
+     | T3-S3                                | Value                                                   |
+     | ------------------------------------ | ------------------------------------------------------- |
+     | Board                                | **ESP32S3 Dev Module**                                  |
+     | Port                                 | Your port                                               |
+     | USB CDC On Boot                      | Enable                                                  |
+     | CPU Frequency                        | 240MHZ(WiFi)                                            |
+     | Core Debug Level                     | None                                                    |
+     | USB DFU On Boot                      | Disable                                                 |
+     | Erase All Flash Before Sketch Upload | Disable                                                 |
+     | Events Run On                        | Core1                                                   |
+     | Flash Mode                           | QIO 80MHZ                                               |
+     | Flash Size                           | **4MB(32Mb)**                                           |
+     | Arduino Runs On                      | Core1                                                   |
+     | USB Firmware MSC On Boot             | Disable                                                 |
+     | Partition Scheme                     | **Default 4M Flash with spiffs(1.2M APP/1.5MB SPIFFS)** |
+     | PSRAM                                | **QSPI PSRAM**                                          |
+     | Upload Mode                          | **UART0/Hardware CDC**                                  |
+     | Upload Speed                         | 921600                                                  |
+     | USB Mode                             | **CDC and JTAG**                                        |
+     | Programmer                           | **Esptool**                                             |
+
+     </details>
+
+     <details>
+     <summary>Click to view T-Motion Arduino IDE options</summary>
+
+     | T-Motion                    | Value                                    |
+     | --------------------------- | ---------------------------------------- |
+     | Board                       | **Nucleo-64**                            |
+     | Port                        | Your port                                |
+     | Debug symbols and core logs | None                                     |
+     | Optimize                    | Smallest (-Os default)                   |
+     | Board part number           | Nucleo L073RZ                            |
+     | C Runtime Library           | Newlib Nano (default)                    |
+     | Upload method               | STM32CubeProgrammer (DFU)                |
+     | USB support (if available)  | CDC (generic 'Serial' supersede U(S)ART) |
+     | U(S)ART support             | Enabled (generic 'Serial')               |
+     | USB speed (if available)    | Low/Full Speed                           |
+    
+     - To upload a sketch, you need to hold down the BOOT button on the board and then plug in the USB. At this time, it will enter the DFU mode to allow program writing.
+    
+     </details>
+
+
+4. Please uncomment the `utilities.h` file of each sketch according to your board model, otherwise the compilation will report an error.
+5. Upload sketch
+
+## 4️⃣ TTN
+
+To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_Start](./docs/zh/LilyGo_LoRa_Series_Quick_Start_On_TTN_zh.md)
+
+
+## 5️⃣ Application
 
 - [T-Beam SoftRF](https://github.com/lyusupov/SoftRF)
 - [T-Beam Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter)
 - [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
 
-## TTN
+# 6️⃣ Datasheet
 
-To quickly start using TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_Start](./docs/en/LilyGo_LoRa_Series_Quick_Start_On_TTN.md)
+##### T-Beam S3 Supreme datasheet
 
-<h3 align = "left">Datasheet :</h3>
+- [T-Beam Supreme schematic](schematic/LilyGo_T-BeamS3Supreme.pdf)
+- [AXP2101 datasheet](./lib/XPowersLib/datasheet/AXP2101_Datasheet_V1.0_en.pdf)
+- [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
+- [GSP MAX-M10 datasheet](https://www.u-blox.com/zh/product/max-m10-series)
+- [PCF8563 datasheet](./lib/SensorsLib/datasheet/PCF8563%20Datasheet%20Rev.11.pdf)
+- [QMI8658 datasheet](./lib/SensorsLib/datasheet/QMI8658A%20Datasheet%20Rev1.0.pdf)
+- [QMC6310 datasheet](./lib/SensorsLib/datasheet/QMC6310%20Datasheet%20Rev.C.pdf)
+- [BME280 datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/)
 
-- [AXP192](http://www.x-powers.com/en.php/Info/product_detail/article_id/29)
-- [AXP2101](./lib/XPowersLib/datasheet/AXP2101_Datasheet_V1.0_en.pdf)
-- [SX1262](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
-- [SX1278](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
-- [SX1276](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
-- [SX1280](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
-- [GSP NEO-6/NEO-8](https://www.u-blox.com/en/product/neo-6-series)
-- [GSP MAX-M10](https://www.u-blox.com/zh/product/max-m10-series)
-- [PCF8563](./lib/SensorsLib/datasheet/PCF8563%20Datasheet%20Rev.11.pdf)
-- [QMI8658](./lib/SensorsLib/datasheet/QMI8658A%20Datasheet%20Rev1.0.pdf)
-- [QMC6310](./lib/SensorsLib/datasheet/QMC6310%20Datasheet%20Rev.C.pdf)
-- [BME280](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/)
+##### T-Beam ESP32 datasheet
+
+- [T-Beam_V1.2 schematic](schematic/LilyGo_TBeam_V1.2.pdf)
+- [T-Beam_V1.1 schematic](schematic/LilyGo_TBeam_V1.1.pdf)
+- [T-Beam_V1.0 schematic](schematic/LilyGo_TBeam_V1.0.pdf)
+-[T-Beam_V0.7 schematic](schematic/LilyGo_TBeam_V0.7.pdf)
+- [AXP192 datasheet](http://www.x-powers.com/en.php/Info/product_detail/article_id/29)
+- [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
+- [GSP NEO-6/NEO-8 datasheet](https://www.u-blox.com/en/product/neo-6-series)
+
+##### T3-S3 (ESP32S3) datasheet
+
+- [T3_S3_V1.2 schematic](schematic/T3_S3_V1.2.pdf)
+- [T3_S3_V1.1 schematic](schematic/T3_S3_V1.1.pdf)
+- [T3_S3_V1.1 schematic](schematic/T3_S3_V1.0.pdf)
+- [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
+- [SX1278 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
+- [SX1276 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
+- [SX1280 datasheet](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
+
+##### LoRa32(ESP32) datasheet
+
+[T3_V1.6.1 schematic](schematic/T3_V1.6.1.pdf)
+
+##### LoRa32(V1.0) datasheet
+
+N.A.
+
+##### T-Motion datasheet
+
+[T-Motion schematic](schematic/T-Motion.pdf)
 
 
-## Announcements
 
-1. After setting the LoRa output power, set the lowest current. Set sx1262 as follows :
+# 7️⃣ FAQ
 
-```
-    // digitalWrite(LoRa_Busy, LOW);
-    // set output power to 10 dBm (accepted range is -17 - 22 dBm)
-    if (radio.setOutputPower(22) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
-        Serial.println(F("Selected output power is invalid for this module!"));
-        while (true);
-    }
+1. T-Beam Supreme GPS backup power comes from 18650 battery. If you remove the 18650 battery, you will not be able to get GPS hot start. If you need to use GPS hot start, please connect the 18650 battery.
+2. There is no data output from the GPS. [Refer to GPS factory reset] (firmware/NMEA_Reset/README.MD)
+3. How to find the pin definition?
+     <details>
+     <summary>
+     Click to view detailed steps
+     </summary>
 
+     - Each sketch contains <utilities.h>, and all board pins are written in this file
+  
+     </details>
 
-    // set over current protection limit to 80 mA (accepted range is 45 - 240 mA)
-    // NOTE: set value to 0 to disable overcurrent protection
-    if (radio.setCurrentLimit(80) == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
-        Serial.println(F("Selected current limit is invalid for this module!"));
-        while (true);
-    }
-```
+4. Can’t upload sketches?
+     <details>
+     <summary>
+     Click to view detailed steps
+     </summary>
 
-# FAQ
+    1. Connect the board USB to the computer
+    2. Press the BOOT button and hold
+    3. Press the RST button
+    4. Release the RST button
+    5. Finally release the BOOT button
+    6. Click to upload the program
 
-- `LILYGO_TBeamS3_SUPREME_V3_0`  The GPS backup power comes from the 18650 battery. If you remove the 18650 battery, you will not be able to get the GPS hot start. If you need to use the GPS hot start, please connect the 18650 battery
+     </details>
+5. After setting the output power of LoRa, you need to set the minimum current. Set up sx1262 as follows:
+     <details>
+     <summary>
+     Click to view detailed steps
+     </summary>
+
+     ```c
+     // set output power to 10 dBm (accepted range is -17 - 22 dBm)
+     if (radio.setOutputPower(22) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+         Serial.println(F("Selected output power is invalid for this module!"));
+         while (true);
+     }
+     // set over current protection limit to 80 mA (accepted range is 45 - 240 mA)
+     // NOTE: set value to 0 to disable overcurrent protection
+     if (radio.setCurrentLimit(80) == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
+         Serial.println(F("Selected current limit is invalid for this module!"));
+         while (true);
+     }
+     ```
+
+     </details>
+6. Precautions for using SX1280 PA version
+     <details>
+     <summary>
+     Click to view detailed steps
+     </summary>
+
+    - When using the SX1280 PA module, it is recommended that the software controls the 1280 chip to output 2~5dbm, so that the entire module will output 20dbm power;
+    When the output of the 1280 chip is higher than 2dbm, the output power of the entire module is only 20dbm;
+    When the output of the 1280 chip is higher than 5dbm, the output power of the entire module is only 20dbm, but if 5dbm is given to the FEM, it will damage the FEM chip (the maximum input allowed by the FEM is 5dbm)
+    If the output of the 1280 chip is lower than 2dbm, the output power of the entire module is within 20dbm.
+    - T3-S3 PA version SX1280 output power setting cannot be greater than 2~5dbm, otherwise the FEM chip may be damaged. Setting 3dbm already has 20dmb output power
+  
+     </details>
+7. How to identify the LoRa model?
+     <details>
+     <summary>
+     Click to view detailed steps
+     </summary>
+
+     - To identify the LoRa model, you only need to check the sticker on the board. 433MHz is SX1278, 868MHz is SX1276, and if the label says SX1262, it is SX1262.
+
+     </details>
+8. Why does Serial not have any output?
+    - Arduino -> Tools -> USB CDC On Boot -> Enable
