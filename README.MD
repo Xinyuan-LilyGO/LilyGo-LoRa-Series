@@ -302,7 +302,7 @@ N.A.
 # 7️⃣ FAQ
 
 1. T-Beam Supreme GPS backup power comes from 18650 battery. If you remove the 18650 battery, you will not be able to get GPS hot start. If you need to use GPS hot start, please connect the 18650 battery.
-2. There is no data output from the GPS. [Refer to GPS factory reset] (firmware/NMEA_Reset/README.MD)
+2. There is no data output from the GPS. [Refer to GPS factory reset](firmware/NMEA_Reset/README.MD)
 3. How to find the pin definition?
      <details>
      <summary>
@@ -320,10 +320,10 @@ N.A.
      </summary>
 
     1. Connect the board USB to the computer
-    2. Press the BOOT button and hold
+    2. Press the BOOT button and hold (If there is no BOOT button, you need to keep **GPIO0** connected to **GND**.)
     3. Press the RST button
     4. Release the RST button
-    5. Finally release the BOOT button
+    5. Finally release the BOOT button(If there is no BOOT button, you need to disconnect GPIO0 from GND.)
     6. Click to upload the program
 
      </details>

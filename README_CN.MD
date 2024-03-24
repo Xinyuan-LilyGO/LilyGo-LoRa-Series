@@ -320,10 +320,10 @@ N.A
     </summary>
 
    1. 连接板子USB到电脑
-   2. 按压BOOT按键，并且保持
+   2. 按压BOOT按键，并且保持按压(如果没有BOOT按键,需要将GPIO0与GND连接)
    3. 按压 RST 按键
    4. 放开 RST 按键
-   5. 最后松开BOOT按键
+   5. 最后松开BOOT按键(如果没有BOOT按键,需要将GPIO0与GND断开连接)
    6. 点击上传程序
 
     </details>
