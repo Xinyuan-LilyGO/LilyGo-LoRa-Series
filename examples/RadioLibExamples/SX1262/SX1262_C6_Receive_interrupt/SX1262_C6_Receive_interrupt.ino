@@ -243,10 +243,6 @@ void loop() {
         Serial.print(radio.getSNR());
         Serial.println(F(" dB"));
 
-      // print frequency error
-        Serial.print(F("[SX1262] Frequency error:\t"));
-        Serial.print(radio.getFrequencyError());
-        Serial.println(F(" Hz"));
         if (u8g2)
         {
             u8g2->clearBuffer();
