@@ -34,9 +34,9 @@
 #define RADIO_DIO1_PIN          23
 #define RADIO_BUSY_PIN          22
 #define RADIO_RST_PIN           21
-#define I2C_SDA                     8
-#define I2C_SCL                     9
-#define LED_PIN           7
+#define I2C_SDA                 8
+#define I2C_SCL                 9
+#define LED_PIN                 7
 
 #ifndef DISPLAY_MODEL
 #define DISPLAY_MODEL U8G2_SSD1306_128X64_NONAME_F_HW_I2C
@@ -98,6 +98,8 @@ void setup() {
     delay(100);
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, 0);
+    
+    //Scannig WiFi
     Serial.println("Scannig WiFi...");
     if (u8g2) {
         u8g2->clearBuffer();
@@ -133,7 +135,9 @@ void setup() {
     // SPI.begin(5, 3, 6);
     // initialize SX1262 with default settings
     Serial.print(F("[SX1262] Initializing ... "));
-    int state = radio.begin(868);
+
+    int state = radio.begin(850);//
+
     if (state == RADIOLIB_ERR_NONE) {
         radio.setBandwidth(125);
         radio.setOutputPower(22);

@@ -33,9 +33,9 @@
 #define RADIO_DIO1_PIN          23
 #define RADIO_BUSY_PIN          22
 #define RADIO_RST_PIN           21
-#define I2C_SDA                     8
-#define I2C_SCL                     9
-#define LED_PIN    7
+#define I2C_SDA                 8
+#define I2C_SCL                 9
+#define LED_PIN                 7
 
 // SSD1306Wire display(0x3c, I2C_SDA, I2C_SCL);
 #ifndef DISPLAY_MODEL
@@ -91,14 +91,14 @@ void setup() {
         delay(3000);
     }
     radio.setRfSwitchPins(15, 14);
-    Serial.println("0000");
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
-    Serial.println("1111");
     delay(100);
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, 0);
+    
+    //Scannig WiFi
     Serial.println("Scannig WiFi...");
     if (u8g2) {
         u8g2->clearBuffer();
@@ -134,7 +134,7 @@ void setup() {
     }
 //   initialize SX1262 with default settings
     Serial.print(F("[SX1262] Initializing ... "));
-    int state = radio.begin(868.0);
+    int state = radio.begin(850);
     if (state == RADIOLIB_ERR_NONE) {
         radio.setBandwidth(125);
         radio.setOutputPower(22);
