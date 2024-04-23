@@ -3,7 +3,7 @@
 
 - If the GPS is set to unknown parameters by mistake, causing the GPS to fail to operate normally, you can try to reset the GPS firmware.
 - [T-Beam V1.x version record Video](https://youtu.be/Otu5d0fB6HU)
-
+- [T-Beam Supreme GPS record Video](https://youtu.be/yYLgRMr5WDY)
 
 
 ## How to Flash ?
