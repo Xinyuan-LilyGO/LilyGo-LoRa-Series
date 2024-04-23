@@ -1,62 +1,77 @@
 
+# GPS Reset firmware
 
-README:
-
-[Record Video](https://youtu.be/Otu5d0fB6HU)
-
-Please use [Flash Download Tools](https://www.espressif.com.cn/sites/default/files/tools/flash_download_tool_3.9.3_0.zip), the configuration is consistent with the screenshot for burning.
-
-![](setting.jpg)
+- If the GPS is set to unknown parameters by mistake, causing the GPS to fail to operate normally, you can try to reset the GPS firmware.
+- [T-Beam V1.x version record Video](https://youtu.be/Otu5d0fB6HU)
 
 
-After writing, open the serial monitor to check whether the GPS module is working normally. The following is an example of normal working:
 
-```
-rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
-configsip: 0, SPIWP:0xee
-clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
-mode:DIO, clock div:2
-load:0x3fff0030,len:1184
-load:0x40078000,len:12784
-load:0x40080400,len:3032
-entry 0x400805e4
-Find AXP192/AXP2101 PMU!
-Find SSD1306/SH1106 dispaly!
-setupPower
-Warning: Failed to find AXP2101 power management
-AXP192 PMU init succeeded, using AXP192 PMU
-=========================================
-DC1  : +   Voltage: 3300 mV
-DC2  : -   Voltage: 1800 mV
-DC3  : +   Voltage: 3300 mV
-LDO2 : +   Voltage: 3300 mV
-LDO3 : +   Voltage: 3300 mV
-=========================================
-PowerKeyPressOffTime:4 Second
-setupGPS
-Get ack successed!
-Get ack successed!
+## How to Flash ?
 
 
-Module Info :
-Soft version: .03 (45969)
-Hard version: 0040007
-Extensions:0
+### Before burning firmware, please put the board into download mode and follow the steps below
 
------------debugNMEA-----------
-�$GPRMC,,V,,,,,,,,,,N*53
-$GPVTG,,,,,,,,,N*30
-$GPGGA,,,,,,0,00,99.99,,,,,,*48
-$GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
-$GPGSV,1,1,00*79
-$GPGLL,,,,,,V,N*64
-$GPTXT,01,01,02,ANTSTATUS=INIT*25
-$GPRMC,,V,,,,,,,,,,N*53
-$GPVTG,,,,,,,,,N*30
-$GPGGA,,,,,,0,00,99.99,,,,,,*48
-$GPGSA,A,1,,,,,,,,,,,,,99.99,99.99,99.99*30
-$GPGSV,1,1,00*79
-$GPGLL,,,,,,V,N*64
-$GPTXT,01,01,02,ANTSTATUS=OK*3B
+ 1. Connect the board via the USB cable
+ 2. Press and hold the **BOOT** button , While still pressing the **BOOT** button (If there is no **BOOT** button, you need to use wires to connect **GND** and **IO0** together.)
+ 3. Press **RST** button
+ 4. Release the **RST** button
+ 5. Release the **BOOT** button (If there is no **BOOT** button, disconnect IO0 from GND.)
+ 6. Upload sketch
+ 7. Press the **RST** button to exit download mode
+
+
+
+### Use ESP Download Tool
+
+- Download [Flash_download_tool](https://www.espressif.com.cn/sites/default/files/tools/flash_download_tool_3.9.6_0.zip)
+
+![web_flasher](../images/esp_downloader.gif)
+
+* **Note that after writing is completed, you need to press RST to reset**.
+
+### Use Web Flasher
+
+- [ESP Web Flasher Online](https://espressif.github.io/esptool-js/)
+
+![web_flasher](../images/web_flasher.gif)
+
+* **Note that after writing is completed, you need to press RST to reset**.
+
+### Use command line
+
+
+If system asks about install Developer Tools, do it.
 
 ```
+python3 -m pip install --upgrade pip
+python3 -m pip install esptool
+```
+
+In order to launch esptool.py, exec directly with this:
+
+```
+python3 -m esptool
+```
+
+For ESP32 use the following command to write
+
+```
+esptool --chip esp32  --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m 0x0 firmware.bin
+
+```
+
+
+For ESP32-S3 use the following command to write
+
+```
+esptool --chip esp32s3  --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m 0x0 firmware.bin
+
+```
+
+## How to check GPS data ?
+
+1. Download [u-center2](https://www.u-blox.com/en/product/u-center)
+2. Check the GPS data according to the guide below
+   ![](../images/u-center2.gif)
+
+
