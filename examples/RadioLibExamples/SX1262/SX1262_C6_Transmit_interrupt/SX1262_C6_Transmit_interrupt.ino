@@ -24,8 +24,6 @@
 #include <U8g2lib.h>
 #include "SSD1306Wire.h"        // legacy: #include "SSD1306.h"
 
-
-
 #define RADIO_SCLK_PIN          6
 #define RADIO_MISO_PIN          1
 #define RADIO_MOSI_PIN          0
@@ -41,6 +39,13 @@
 #ifndef DISPLAY_MODEL
 #define DISPLAY_MODEL U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 #endif
+
+#define LoRa_frequency    868
+#define Bandwidth         125
+#define OutputPower       22 
+#define Currentlimit      140
+#define SpreadingFactor   8
+
 
 DISPLAY_MODEL *u8g2 = nullptr;
 
@@ -106,10 +111,11 @@ void setup() {
     if (u8g2) {
       u8g2->setFont(u8g2_font_ncenB08_tr);
     }
-    u8g2->setCursor(0, 16);
-    u8g2->print("Scannig WiFi...");
+
     if (u8g2) {
         u8g2->sendBuffer();
+        u8g2->setCursor(0, 16);
+        u8g2->print("Scannig WiFi...");
     }
     int network = WiFi.scanNetworks();
     if(network == 0) {
@@ -134,12 +140,24 @@ void setup() {
     }
 //   initialize SX1262 with default settings
     Serial.print(F("[SX1262] Initializing ... "));
-    int state = radio.begin(850);
+    int state = radio.begin(LoRa_frequency);
     if (state == RADIOLIB_ERR_NONE) {
-        radio.setBandwidth(125);
-        radio.setOutputPower(22);
-        radio.setCurrentLimit(140);
-        radio.setSpreadingFactor(8);
+       radio.setBandwidth(Bandwidth);
+        radio.setOutputPower(OutputPower);
+        radio.setCurrentLimit(Currentlimit);
+        radio.setSpreadingFactor(SpreadingFactor);
+
+        Serial.print("LoRa_frequency:");
+        Serial.println(LoRa_frequency);
+        Serial.print("Bandwidth:");
+        Serial.println(Bandwidth);
+        Serial.print("OutputPower:");
+        Serial.println(OutputPower);
+        Serial.print("Currentlimit:");
+        Serial.println(Currentlimit);                
+        Serial.print("SpreadingFactor:");
+        Serial.println(SpreadingFactor); 
+
         Serial.println(F("success!"));
 
     } else {
