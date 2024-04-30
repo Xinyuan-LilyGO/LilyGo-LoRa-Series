@@ -7,7 +7,8 @@
 
 ├─GPS_ reset_test       # GPS reset procedure for t-beam-v1.x
 ├─NMEA_Reset            # GPS reset procedure for t-beam-v1.x
-├─T3_SleepTest          
+├─T3_SleepTest
+├─LORA_C6_test          # LORA C6 SX1262       
 ├─hardware_test         # Used to detect whether the hardware is normal
 │  ├─H594_LoRaS3_1.0
 │  ├─lora32_v1.0_433
