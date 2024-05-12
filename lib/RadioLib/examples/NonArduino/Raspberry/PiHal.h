@@ -2,7 +2,7 @@
 #define PI_HAL_H
 
 // include RadioLib
-#include <RadioLib/RadioLib.h>
+#include <RadioLib.h>
 
 // include the library for Raspberry GPIO pins
 #include "pigpio.h"
@@ -107,17 +107,17 @@ class PiHal : public RadioLibHal {
         return(0);
       }
 
-      gpioSetMode(pin, PI_INPUT);
-      uint32_t start = gpioTick();
-      uint32_t curtick = gpioTick();
+      this->pinMode(pin, PI_INPUT);
+      uint32_t start = this->micros();
+      uint32_t curtick = this->micros();
 
-      while(gpioRead(pin) == state) {
-        if((gpioTick() - curtick) > timeout) {
+      while(this->digitalRead(pin) == state) {
+        if((this->micros() - curtick) > timeout) {
           return(0);
         }
       }
 
-      return(gpioTick() - start);
+      return(this->micros() - start);
     }
 
    void spiBegin() {
@@ -128,10 +128,8 @@ class PiHal : public RadioLibHal {
 
     void spiBeginTransaction() {}
 
-    uint8_t spiTransfer(uint8_t b) {
-      char ret;
-      spiXfer(_spiHandle, (char*)&b, &ret, 1);
-      return(ret);
+    void spiTransfer(uint8_t* out, size_t len, uint8_t* in) {
+      spiXfer(_spiHandle, (char*)out, (char*)in, len);
     }
 
     void spiEndTransaction() {}

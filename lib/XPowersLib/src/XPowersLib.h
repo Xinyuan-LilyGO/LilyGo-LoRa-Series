@@ -24,6 +24,7 @@ typedef XPowersAXP2101 XPowersPMU;
 #include "XPowersAXP192.tpp"
 #include "XPowersAXP202.tpp"
 #include "XPowersAXP2101.tpp"
+#include "PowersSY6970.tpp"
 #endif
 
 

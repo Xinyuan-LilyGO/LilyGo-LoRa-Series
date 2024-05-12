@@ -329,6 +329,12 @@ void setup()
 
     // PMU.disableWatchdog();
 
+    // Enable Button Battery charge
+    PMU.enableButtonBatteryCharge();
+
+    // Set Button Battery charge voltage
+    PMU.setButtonBatteryChargeVoltage(3300);
+
 }
 
 void printPMU()

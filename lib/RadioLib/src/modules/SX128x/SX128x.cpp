@@ -1,13 +1,9 @@
 #include "SX128x.h"
 #include <math.h>
-#if !defined(RADIOLIB_EXCLUDE_SX128X)
+#if !RADIOLIB_EXCLUDE_SX128X
 
 SX128x::SX128x(Module* mod) : PhysicalLayer(RADIOLIB_SX128X_FREQUENCY_STEP_SIZE, RADIOLIB_SX128X_MAX_PACKET_LENGTH) {
   this->mod = mod;
-}
-
-Module* SX128x::getMod() {
-  return(this->mod);
 }
 
 int16_t SX128x::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, int8_t pwr, uint16_t preambleLength) {
@@ -21,7 +17,7 @@ int16_t SX128x::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t sync
   this->mod->SPIstatusCommand = RADIOLIB_SX128X_CMD_GET_STATUS;
   this->mod->SPIstreamType = true;
   this->mod->SPIparseStatusCb = SPIparseStatus;
-  RADIOLIB_DEBUG_PRINTLN("M\tSX128x");
+  RADIOLIB_DEBUG_BASIC_PRINTLN("M\tSX128x");
 
   // initialize LoRa modulation variables
   this->bandwidthKhz = bw;
@@ -82,7 +78,7 @@ int16_t SX128x::beginGFSK(float freq, uint16_t br, float freqDev, int8_t pwr, ui
   this->mod->SPIstatusCommand = RADIOLIB_SX128X_CMD_GET_STATUS;
   this->mod->SPIstreamType = true;
   this->mod->SPIparseStatusCb = SPIparseStatus;
-  RADIOLIB_DEBUG_PRINTLN("M\tSX128x");
+  RADIOLIB_DEBUG_BASIC_PRINTLN("M\tSX128x");
 
   // initialize GFSK modulation variables
   this->bitRateKbps = br;
@@ -151,7 +147,7 @@ int16_t SX128x::beginBLE(float freq, uint16_t br, float freqDev, int8_t pwr, uin
   this->mod->SPIstatusCommand = RADIOLIB_SX128X_CMD_GET_STATUS;
   this->mod->SPIstreamType = true;
   this->mod->SPIparseStatusCb = SPIparseStatus;
-  RADIOLIB_DEBUG_PRINTLN("M\tSX128x");
+  RADIOLIB_DEBUG_BASIC_PRINTLN("M\tSX128x");
 
   // initialize BLE modulation variables
   this->bitRateKbps = br;
@@ -206,7 +202,7 @@ int16_t SX128x::beginFLRC(float freq, uint16_t br, uint8_t cr, int8_t pwr, uint1
   this->mod->SPIstatusCommand = RADIOLIB_SX128X_CMD_GET_STATUS;
   this->mod->SPIstreamType = true;
   this->mod->SPIparseStatusCb = SPIparseStatus;
-  RADIOLIB_DEBUG_PRINTLN("M\tSX128x");
+  RADIOLIB_DEBUG_BASIC_PRINTLN("M\tSX128x");
 
   // initialize FLRC modulation variables
   this->bitRateKbps = br;
@@ -312,7 +308,7 @@ int16_t SX128x::transmit(uint8_t* data, size_t len, uint8_t addr) {
   // calculate timeout (500% of expected time-on-air)
   uint32_t timeout = getTimeOnAir(len) * 5;
 
-  RADIOLIB_DEBUG_PRINTLN("Timeout in %d us", timeout);
+  RADIOLIB_DEBUG_BASIC_PRINTLN("Timeout in %lu us", timeout);
 
   // start transmission
   state = startTransmit(data, len, addr);
@@ -345,7 +341,7 @@ int16_t SX128x::receive(uint8_t* data, size_t len) {
   // calculate timeout (1000% of expected time-on-air)
   uint32_t timeout = getTimeOnAir(len) * 10;
 
-  RADIOLIB_DEBUG_PRINTLN("Timeout in %d us", timeout);
+  RADIOLIB_DEBUG_BASIC_PRINTLN("Timeout in %lu us", timeout);
 
   // start reception
   uint32_t timeoutValue = (uint32_t)((float)timeout / 15.625);
@@ -353,14 +349,28 @@ int16_t SX128x::receive(uint8_t* data, size_t len) {
   RADIOLIB_ASSERT(state);
 
   // wait for packet reception or timeout
+  bool softTimeout = false;
   uint32_t start = this->mod->hal->micros();
   while(!this->mod->hal->digitalRead(this->mod->getIrq())) {
     this->mod->hal->yield();
+    // safety check, the timeout should be done by the radio
     if(this->mod->hal->micros() - start > timeout) {
-      clearIrqStatus();
-      standby();
-      return(RADIOLIB_ERR_RX_TIMEOUT);
+      softTimeout = true;
+      break;
     }
+  }
+
+  // if it was a timeout, this will return an error code
+  state = standby();
+  if((state != RADIOLIB_ERR_NONE) && (state != RADIOLIB_ERR_SPI_CMD_TIMEOUT)) {
+    return(state);
+  }
+
+  // check whether this was a timeout or not
+  if((getIrqStatus() & RADIOLIB_SX128X_IRQ_RX_TX_TIMEOUT) || softTimeout) {
+    standby();
+    clearIrqStatus();
+    return(RADIOLIB_ERR_RX_TIMEOUT);
   }
 
   // read the received data
@@ -476,6 +486,22 @@ void SX128x::clearDio1Action() {
   this->mod->hal->detachInterrupt(this->mod->hal->pinToInterrupt(this->mod->getIrq()));
 }
 
+void SX128x::setPacketReceivedAction(void (*func)(void)) {
+  this->setDio1Action(func);
+}
+
+void SX128x::clearPacketReceivedAction() {
+  this->clearDio1Action();
+}
+
+void SX128x::setPacketSentAction(void (*func)(void)) {
+  this->setDio1Action(func);
+}
+
+void SX128x::clearPacketSentAction() {
+  this->clearDio1Action();
+}
+
 int16_t SX128x::startTransmit(uint8_t* data, size_t len, uint8_t addr) {
   // suppress unused variable warning
   (void)addr;
@@ -546,6 +572,10 @@ int16_t SX128x::finishTransmit() {
 
   // set mode to standby to disable transmitter/RF switch
   return(standby());
+}
+
+int16_t SX128x::startReceive() {
+  return(this->startReceive(RADIOLIB_SX128X_RX_TIMEOUT_INF, RADIOLIB_SX128X_IRQ_RX_DEFAULT, RADIOLIB_SX128X_IRQ_RX_DONE, 0));
 }
 
 int16_t SX128x::startReceive(uint16_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len) {
@@ -1242,7 +1272,7 @@ uint32_t SX128x::getTimeOnAir(size_t len) {
       uint32_t N_symbolPreamble = (this->preambleLengthLoRa & 0x0F) * (uint32_t(1) << ((this->preambleLengthLoRa & 0xF0) >> 4));
 
       // calculate the number of symbols
-      N_symbol = (float)N_symbolPreamble + coeff1 + 8.0 + ceil(max((int16_t)(8 * len + N_bitCRC - coeff2 + N_symbolHeader), (int16_t)0) / (float)coeff3) * (float)(this->codingRateLoRa + 4);
+      N_symbol = (float)N_symbolPreamble + coeff1 + 8.0 + ceil(RADIOLIB_MAX((int16_t)(8 * len + N_bitCRC - coeff2 + N_symbolHeader), (int16_t)0) / (float)coeff3) * (float)(this->codingRateLoRa + 4);
 
     } else {
       // long interleaving - abandon hope all ye who enter here
@@ -1299,7 +1329,7 @@ int16_t SX128x::invertIQ(bool enable) {
   return(setPacketParamsLoRa(this->preambleLengthLoRa, this->headerType, this->payloadLen, this->crcLoRa, this->invertIQEnabled));
 }
 
-#if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+#if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
 void SX128x::setDirectAction(void (*func)(void)) {
   // SX128x is unable to perform direct mode reception
   // this method is implemented only for PhysicalLayer compatibility
@@ -1313,9 +1343,13 @@ void SX128x::readBit(uint32_t pin) {
 }
 #endif
 
+Module* SX128x::getMod() {
+  return(this->mod);
+}
+
 uint8_t SX128x::getStatus() {
   uint8_t data = 0;
-  this->mod->SPIreadStream(RADIOLIB_SX128X_CMD_GET_STATUS, &data, 1);
+  this->mod->SPIreadStream(RADIOLIB_SX128X_CMD_GET_STATUS, &data, 0);
   return(data);
 }
 
@@ -1465,11 +1499,11 @@ int16_t SX128x::config(uint8_t modem) {
 }
 
 int16_t SX128x::SPIparseStatus(uint8_t in) {
-  if((in & 0b00001110) == RADIOLIB_SX128X_STATUS_CMD_TIMEOUT) {
+  if((in & 0b00011100) == RADIOLIB_SX128X_STATUS_CMD_TIMEOUT) {
     return(RADIOLIB_ERR_SPI_CMD_TIMEOUT);
-  } else if((in & 0b00001110) == RADIOLIB_SX128X_STATUS_CMD_ERROR) {
+  } else if((in & 0b00011100) == RADIOLIB_SX128X_STATUS_CMD_ERROR) {
     return(RADIOLIB_ERR_SPI_CMD_INVALID);
-  } else if((in & 0b00001110) == RADIOLIB_SX128X_STATUS_CMD_FAILED) {
+  } else if((in & 0b00011100) == RADIOLIB_SX128X_STATUS_CMD_FAILED) {
     return(RADIOLIB_ERR_SPI_CMD_FAILED);
   } else if((in == 0x00) || (in == 0xFF)) {
     return(RADIOLIB_ERR_CHIP_NOT_FOUND);

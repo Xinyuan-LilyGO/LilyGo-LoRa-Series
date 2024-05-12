@@ -168,7 +168,7 @@ class Module {
     */
     SPIparseStatusCb_t SPIparseStatusCb = nullptr;
 
-    #if defined(RADIOLIB_INTERRUPT_TIMING)
+    #if RADIOLIB_INTERRUPT_TIMING
 
     /*!
       \brief Timer interrupt setup callback typedef.
@@ -256,8 +256,8 @@ class Module {
       \brief SPI single transfer method.
       \param cmd SPI access command (read/write/burst/...).
       \param reg Address of SPI register to transfer to/from.
-      \param dataOut Data that will be transfered from master to slave.
-      \param dataIn Data that was transfered from slave to master.
+      \param dataOut Data that will be transferred from master to slave.
+      \param dataIn Data that was transferred from slave to master.
       \param numBytes Number of bytes to transfer.
     */
     void SPItransfer(uint8_t cmd, uint16_t reg, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes);
@@ -319,8 +319,8 @@ class Module {
       \param cmd SPI operation command.
       \param cmdLen SPI command length in bytes.
       \param write Set to true for write commands, false for read commands.
-      \param dataOut Data that will be transfered from master to slave.
-      \param dataIn Data that was transfered from slave to master.
+      \param dataOut Data that will be transferred from master to slave.
+      \param dataIn Data that was transferred from slave to master.
       \param numBytes Number of bytes to transfer.
       \param waitForGpio Whether to wait for some GPIO at the end of transfer (e.g. BUSY line on SX126x/SX128x).
       \param timeout GPIO wait period timeout in milliseconds.
@@ -462,35 +462,37 @@ class Module {
 
     /*!
       \brief Function to reflect bits within a byte.
+      \param in The input to reflect.
+      \param bits Number of bits to reflect.
+      \return The reflected input.
     */
-    static uint8_t flipBits(uint8_t b);
+    static uint32_t reflect(uint32_t in, uint8_t bits);
 
-    /*!
-      \brief Function to reflect bits within an integer.
-    */
-    static uint16_t flipBits16(uint16_t i);
-
+    #if RADIOLIB_DEBUG
     /*!
       \brief Function to dump data as hex into the debug port.
+      \param level RadioLib debug level, set to NULL to not print.
       \param data Data to dump.
       \param len Number of bytes to dump.
       \param width Word width (1 for uint8_t, 2 for uint16_t, 4 for uint32_t).
       \param be Print multi-byte data as big endian. Defaults to false.
     */
-    static void hexdump(uint8_t* data, size_t len, uint32_t offset = 0, uint8_t width = 1, bool be = false);
+    static void hexdump(const char* level, uint8_t* data, size_t len, uint32_t offset = 0, uint8_t width = 1, bool be = false);
 
     /*!
       \brief Function to dump device registers as hex into the debug port.
+      \param level RadioLib debug level, set to NULL to not print.
       \param start First address to dump.
       \param len Number of bytes to dump.
     */
-    void regdump(uint16_t start, size_t len);
+    void regdump(const char* level, uint16_t start, size_t len);
+    #endif
 
-    #if defined(RADIOLIB_DEBUG) and defined(RADIOLIB_BUILD_ARDUINO)
+    #if RADIOLIB_DEBUG and defined(RADIOLIB_BUILD_ARDUINO)
     static size_t serialPrintf(const char* format, ...);
     #endif
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     uint32_t csPin = RADIOLIB_NC;
@@ -502,7 +504,7 @@ class Module {
     uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
     const RfSwitchMode_t *rfSwitchTable = nullptr;
 
-    #if defined(RADIOLIB_INTERRUPT_TIMING)
+    #if RADIOLIB_INTERRUPT_TIMING
     uint32_t prevTimingLen = 0;
     #endif
 };

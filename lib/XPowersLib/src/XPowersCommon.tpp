@@ -31,10 +31,28 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #if defined(ARDUINO)
 #include <Wire.h>
-#endif
+#elif defined(ESP_PLATFORM)
+#include "esp_log.h"
+#include "esp_err.h"
+#include <cstring>
+#include "esp_idf_version.h"
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
+#include "driver/i2c_master.h"
+#else
+#include "driver/i2c.h"
+#define XPOWERSLIB_I2C_MASTER_TX_BUF_DISABLE   0                          /*!< I2C master doesn't need buffer */
+#define XPOWERSLIB_I2C_MASTER_RX_BUF_DISABLE   0                          /*!< I2C master doesn't need buffer */
+#define XPOWERSLIB_I2C_MASTER_TIMEOUT_MS       1000
+#endif //ESP_IDF_VERSION
 
+
+#endif //ESP_PLATFORM
+
+#define XPOWERSLIB_I2C_MASTER_SEEED            400000
 
 
 #ifdef _BV
@@ -48,13 +66,23 @@
 #endif
 
 
+
 #define XPOWERS_ATTR_NOT_IMPLEMENTED    __attribute__((error("Not implemented")))
 #define IS_BIT_SET(val,mask)            (((val)&(mask)) == (mask))
 
 #if !defined(ARDUINO)
+#ifdef linux
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#define log_e(__info,...)          printf("error :"  __info,##__VA_ARGS__)
+#define log_i(__info,...)          printf("info  :"  __info,##__VA_ARGS__)
+#define log_d(__info,...)          printf("debug :"  __info,##__VA_ARGS__)
+#else
 #define log_e(...)
 #define log_i(...)
 #define log_d(...)
+#endif
 
 #define LOW                 0x0
 #define HIGH                0x1
@@ -69,13 +97,25 @@
 
 #define RISING              0x01
 #define FALLING             0x02
-
 #endif
+
+#ifndef ESP32
+#ifndef log_e
+#define log_e(...)          Serial.printf(__VA_ARGS__)
+#endif
+#ifndef log_i
+#define log_i(...)          Serial.printf(__VA_ARGS__)
+#endif
+#ifndef log_d
+#define log_d(...)          Serial.printf(__VA_ARGS__)
+#endif
+#endif
+
+typedef int (*iic_fptr_t)(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len);
 
 template <class chipType>
 class XPowersCommon
 {
-    typedef int (*iic_fptr_t)(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len);
 
 public:
 
@@ -84,12 +124,110 @@ public:
     {
         if (__has_init)return thisChip().initImpl();
         __has_init = true;
+        __sda = sda;
+        __scl = scl;
         __wire = &w;
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
+        __wire->end();
+        __wire->setSDA(__sda);
+        __wire->setSCL(__scl);
+        __wire->begin();
+#else
         __wire->begin(sda, scl);
+#endif
         __addr = addr;
         return thisChip().initImpl();
     }
-#endif
+#elif defined(ESP_PLATFORM)
+
+
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
+
+    // * Using the new API of esp-idf 5.x, you need to pass the I2C BUS handle,
+    // * which is useful when the bus shares multiple devices.
+    bool begin(i2c_master_bus_handle_t i2c_dev_bus_handle, uint8_t addr)
+    {
+        log_i("Using ESP-IDF Driver interface.\n");
+        if (i2c_dev_bus_handle == NULL) return false;
+        if (__has_init)return thisChip().initImpl();
+
+        thisReadRegCallback = NULL;
+        thisWriteRegCallback = NULL;
+
+        /*
+            i2c_master_bus_config_t i2c_bus_config;
+            memset(&i2c_bus_config, 0, sizeof(i2c_bus_config));
+            i2c_bus_config.clk_source = I2C_CLK_SRC_DEFAULT;
+            i2c_bus_config.i2c_port = port_num;
+            i2c_bus_config.scl_io_num = (gpio_num_t)__scl;
+            i2c_bus_config.sda_io_num = (gpio_num_t)__sda;
+            i2c_bus_config.glitch_ignore_cnt = 7;
+
+            i2c_new_master_bus(&i2c_bus_config, &bus_handle);
+        */
+
+        bus_handle = i2c_dev_bus_handle;
+
+        i2c_device_config_t i2c_dev_conf = {
+            .dev_addr_length = I2C_ADDR_BIT_LEN_7,
+            .device_address = addr,
+            .scl_speed_hz = XPOWERSLIB_I2C_MASTER_SEEED,
+        };
+
+        if (ESP_OK != i2c_master_bus_add_device(bus_handle,
+                                                &i2c_dev_conf,
+                                                &__i2c_device)) {
+            return false;
+        }
+
+        __has_init = thisChip().initImpl();
+
+        if (!__has_init) {
+            // Initialization failed, delete device
+            i2c_master_bus_rm_device(__i2c_device);
+        }
+        return __has_init;
+    }
+
+
+#else //ESP 4.X
+
+
+    bool begin(i2c_port_t port_num, uint8_t addr, int sda, int scl)
+    {
+        __i2c_num = port_num;
+        log_i("Using ESP-IDF Driver interface.\n");
+        if (__has_init)return thisChip().initImpl();
+        __sda = sda;
+        __scl = scl;
+        __addr = addr;
+        thisReadRegCallback = NULL;
+        thisWriteRegCallback = NULL;
+
+        i2c_config_t i2c_conf;
+        memset(&i2c_conf, 0, sizeof(i2c_conf));
+        i2c_conf.mode = I2C_MODE_MASTER;
+        i2c_conf.sda_io_num = sda;
+        i2c_conf.scl_io_num = scl;
+        i2c_conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+        i2c_conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+        i2c_conf.master.clk_speed = XPOWERSLIB_I2C_MASTER_SEEED;
+
+        /**
+         * @brief Without checking whether the initialization is successful,
+         * I2C may be initialized externally,
+         * so just make sure there is an initialization here.
+         */
+        i2c_param_config(__i2c_num, &i2c_conf);
+        i2c_driver_install(__i2c_num,
+                           i2c_conf.mode,
+                           XPOWERSLIB_I2C_MASTER_RX_BUF_DISABLE,
+                           XPOWERSLIB_I2C_MASTER_TX_BUF_DISABLE, 0);
+        __has_init = thisChip().initImpl();
+        return __has_init;
+    }
+#endif //ESP 5.X
+#endif //ESP_PLATFORM
 
     bool begin(uint8_t addr, iic_fptr_t readRegCallback, iic_fptr_t writeRegCallback)
     {
@@ -104,46 +242,18 @@ public:
     int readRegister(uint8_t reg)
     {
         uint8_t val = 0;
-        if (thisReadRegCallback) {
-            if (thisReadRegCallback(__addr, reg, &val, 1) != 0) {
-                return 0;
-            }
-            return val;
-        }
-#if defined(ARDUINO)
-        if (__wire) {
-            __wire->beginTransmission(__addr);
-            __wire->write(reg);
-            if (__wire->endTransmission() != 0) {
-                return -1;
-            }
-            __wire->requestFrom(__addr, 1U);
-            return __wire->read();
-        }
-#endif
-        return -1;
+        return readRegister(reg, &val, 1) == -1 ? -1 : val;
     }
 
     int writeRegister(uint8_t reg, uint8_t val)
     {
-        if (thisWriteRegCallback) {
-            return thisWriteRegCallback(__addr, reg, &val, 1);
-        }
-#if defined(ARDUINO)
-        if (__wire) {
-            __wire->beginTransmission(__addr);
-            __wire->write(reg);
-            __wire->write(val);
-            return (__wire->endTransmission() == 0) ? 0 : -1;
-        }
-#endif
-        return -1;
+        return writeRegister(reg, &val, 1);
     }
 
-    int readRegister(uint8_t reg, uint8_t *buf, uint8_t lenght)
+    int readRegister(uint8_t reg, uint8_t *buf, uint8_t length)
     {
         if (thisReadRegCallback) {
-            return thisReadRegCallback(__addr, reg, buf, lenght);
+            return thisReadRegCallback(__addr, reg, buf, length);
         }
 #if defined(ARDUINO)
         if (__wire) {
@@ -152,27 +262,80 @@ public:
             if (__wire->endTransmission() != 0) {
                 return -1;
             }
-            __wire->requestFrom(__addr, lenght);
-            return __wire->readBytes(buf, lenght) == lenght ? 0 : -1;
+            __wire->requestFrom(__addr, length);
+            return __wire->readBytes(buf, length) == length ? 0 : -1;
         }
-#endif
+#elif defined(ESP_PLATFORM)
+
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
+        if (ESP_OK == i2c_master_transmit_receive(
+                    __i2c_device,
+                    (const uint8_t *)&reg,
+                    1,
+                    buf,
+                    length,
+                    -1)) {
+            return 0;
+        }
+#else //ESP_IDF_VERSION
+        if (ESP_OK == i2c_master_write_read_device(__i2c_num,
+                __addr,
+                (uint8_t *)&reg,
+                1,
+                buf,
+                length,
+                XPOWERSLIB_I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS)) {
+            return 0;
+        }
+#endif //ESP_IDF_VERSION
+#endif //ESP_PLATFORM
         return -1;
     }
 
-    int writeRegister(uint8_t reg, uint8_t *buf, uint8_t lenght)
+    int writeRegister(uint8_t reg, uint8_t *buf, uint8_t length)
     {
         if (thisWriteRegCallback) {
-            return thisWriteRegCallback(__addr, reg, buf, lenght);
+            return thisWriteRegCallback(__addr, reg, buf, length);
         }
 #if defined(ARDUINO)
         if (__wire) {
             __wire->beginTransmission(__addr);
             __wire->write(reg);
-            __wire->write(buf, lenght);
+            __wire->write(buf, length);
             return (__wire->endTransmission() == 0) ? 0 : -1;
         }
-#endif
         return -1;
+#elif defined(ESP_PLATFORM)
+        uint8_t *write_buffer = (uint8_t *)malloc(sizeof(uint8_t) * (length + 1));
+        if (!write_buffer) {
+            return -1;
+        }
+        write_buffer[0] = reg;
+        memcpy(write_buffer + 1, buf, length);
+
+
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
+        if (ESP_OK != i2c_master_transmit(
+                    __i2c_device,
+                    write_buffer,
+                    length + 1,
+                    -1)) {
+            free(write_buffer);
+            return -1;
+        }
+#else //ESP_IDF_VERSION
+        if (ESP_OK != i2c_master_write_to_device(__i2c_num,
+                __addr,
+                write_buffer,
+                length + 1,
+                XPOWERSLIB_I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS)) {
+            free(write_buffer);
+            return -1;
+        }
+#endif //ESP_IDF_VERSION
+        free(write_buffer);
+        return 0;
+#endif //ESP_PLATFORM
     }
 
 
@@ -245,8 +408,17 @@ protected:
 #if defined(ARDUINO)
         if (__has_init) return thisChip().initImpl();
         __has_init = true;
-        log_i("SDA:%d SCL:%d", __sda, __scl);
-        __wire->begin(__sda, __scl);
+        if (__wire) {
+            log_i("SDA:%d SCL:%d", __sda, __scl);
+#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
+            __wire->end();
+            __wire->setSDA(__sda);
+            __wire->setSCL(__scl);
+            __wire->begin();
+#else
+            __wire->begin(__sda, __scl);
+#endif
+        }
 #endif  /*ARDUINO*/
         return thisChip().initImpl();
     }
@@ -279,7 +451,14 @@ protected:
     bool        __has_init              = false;
 #if defined(ARDUINO)
     TwoWire     *__wire                 = NULL;
-#endif
+#elif defined(ESP_PLATFORM)
+    i2c_port_t  __i2c_num;
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
+    i2c_master_bus_handle_t  bus_handle;
+    i2c_master_dev_handle_t  __i2c_device;
+#endif //ESP_IDF_VERSION
+
+#endif //ESP_PLATFORM
     int         __sda                   = -1;
     int         __scl                   = -1;
     uint8_t     __addr                  = 0xFF;

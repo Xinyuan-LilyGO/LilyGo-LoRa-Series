@@ -66,7 +66,7 @@
 #define XPOWERS_AXP2101_INTSTS1                          (0x48)
 #define XPOWERS_AXP2101_INTSTS2                          (0x49)
 #define XPOWERS_AXP2101_INTSTS3                          (0x4A)
-#define XPOWERS_AXP2101_INTSTS_CNT                       (3u)
+#define XPOWERS_AXP2101_INTSTS_CNT                       (3)
 
 #define XPOWERS_AXP2101_TS_PIN_CTRL                      (0x50)
 #define XPOWERS_AXP2101_TS_HYSL2H_SET                    (0x52)
@@ -145,7 +145,7 @@
 #define XPOWERS_AXP2101_DCDC2_VOL_STEPS2                 (20u)
 
 #define XPOWERS_AXP2101_DCDC2_VOL_STEPS1_BASE            (0u)
-#define XPOWERS_AXP2101_DCDC2_VOL_STEPS2_BASE            (71u)
+#define XPOWERS_AXP2101_DCDC2_VOL_STEPS2_BASE            (71)
 
 
 #define XPOWERS_AXP2101_DCDC3_VOL1_MIN                  (500u)
@@ -163,8 +163,8 @@
 #define XPOWERS_AXP2101_DCDC3_VOL_STEPS3                 (100u)
 
 #define XPOWERS_AXP2101_DCDC3_VOL_STEPS1_BASE            (0u)
-#define XPOWERS_AXP2101_DCDC3_VOL_STEPS2_BASE            (71u)
-#define XPOWERS_AXP2101_DCDC3_VOL_STEPS3_BASE            (88u)
+#define XPOWERS_AXP2101_DCDC3_VOL_STEPS2_BASE            (71)
+#define XPOWERS_AXP2101_DCDC3_VOL_STEPS3_BASE            (88)
 
 
 
@@ -177,7 +177,7 @@
 #define XPOWERS_AXP2101_DCDC4_VOL_STEPS2                 (20u)
 
 #define XPOWERS_AXP2101_DCDC4_VOL_STEPS1_BASE            (0u)
-#define XPOWERS_AXP2101_DCDC4_VOL_STEPS2_BASE            (71u)
+#define XPOWERS_AXP2101_DCDC4_VOL_STEPS2_BASE            (71)
 
 
 
@@ -236,3 +236,7 @@
 #define XPOWERS_AXP2101_DLDO2_VOL_MIN                  (500)
 #define XPOWERS_AXP2101_DLDO2_VOL_MAX                  (3400)
 #define XPOWERS_AXP2101_DLDO2_VOL_STEPS                (100u)
+
+
+#define XPOWERS_AXP2101_CONVERSION(raw)                 (22.0 + (7274 - raw) / 20.0)
+

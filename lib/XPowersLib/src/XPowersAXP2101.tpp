@@ -215,6 +215,13 @@ public:
 
 #endif
 
+    XPowersAXP2101(uint8_t addr, iic_fptr_t readRegCallback, iic_fptr_t writeRegCallback)
+    {
+        thisReadRegCallback = readRegCallback;
+        thisWriteRegCallback = writeRegCallback;
+        __addr = addr;
+    }
+
     XPowersAXP2101()
     {
 #if defined(ARDUINO)
@@ -280,17 +287,17 @@ public:
 
     bool isBatInActiveModeState(void)
     {
-        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 3);
+        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 2);
     }
 
     bool getThermalRegulationStatus(void)
     {
-        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 2);
+        return  getRegisterBit(XPOWERS_AXP2101_STATUS1, 1);
     }
 
     bool getCurrnetLimitStatus(void)
     {
-        return getRegisterBit(XPOWERS_AXP2101_STATUS1, 1);
+        return getRegisterBit(XPOWERS_AXP2101_STATUS1, 0);
     }
 
     bool isCharging(void)
@@ -665,31 +672,37 @@ public:
 
     /**
      * @brief  Low battery warning threshold 5-20%, 1% per step
-     * @param  opt:   5 ~ 20
+     * @param  percentage:   5 ~ 20
      * @retval None
      */
-    void setLowBatWarnThreshold(uint8_t opt)
+    void setLowBatWarnThreshold(uint8_t percentage)
     {
-        if (opt < 5 || opt > 20)return;
+        if (percentage < 5 || percentage > 20)return;
         int val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET);
         if (val == -1)return;
         val &= 0x0F;
-        writeRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET, val | (opt << 4));
+        writeRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET, val | ((percentage - 5) << 4));
     }
 
     uint8_t getLowBatWarnThreshold(void)
     {
-        return (readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET) & 0xF0) >> 4;
+        int val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET);
+        if (val == -1)return 0;
+        val &= 0xF0;
+        val >>= 4;
+        return val;
     }
 
     /**
-     * @brief  Low battery shutdown threshold 5-20%, 1% per step
-     * @param  opt:   5 ~ 20
+     * @brief  Low battery shutdown threshold 0-15%, 1% per step
+     * @param  opt:   0 ~ 15
      * @retval None
      */
     void setLowBatShutdownThreshold(uint8_t opt)
     {
-        if (opt < 5 || opt > 20)return;
+        if (opt > 15) {
+            opt = 15;
+        }
         int val = readRegister(XPOWERS_AXP2101_LOW_BAT_WARN_SET);
         if (val == -1)return;
         val &= 0xF0;
@@ -1568,6 +1581,8 @@ public:
     uint16_t getDC3Voltage(void)
     {
         int val = readRegister(XPOWERS_AXP2101_DC_VOL2_CTRL) & 0x7F;
+        if (val == -1)
+            return 0;
         if (val < XPOWERS_AXP2101_DCDC3_VOL_STEPS2_BASE) {
             return (val  * XPOWERS_AXP2101_DCDC3_VOL_STEPS1) +  XPOWERS_AXP2101_DCDC3_VOL_MIN;
         } else if (val >= XPOWERS_AXP2101_DCDC3_VOL_STEPS2_BASE && val < XPOWERS_AXP2101_DCDC3_VOL_STEPS3_BASE) {
@@ -2220,10 +2235,10 @@ public:
         return clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 4);
     }
 
-    uint16_t getTemperature(void)
+    float getTemperature(void)
     {
-        //!FIXME
-        return readRegisterH6L8(XPOWERS_AXP2101_ADC_DATA_RELUST8, XPOWERS_AXP2101_ADC_DATA_RELUST9);
+        uint16_t raw = readRegisterH6L8(XPOWERS_AXP2101_ADC_DATA_RELUST8, XPOWERS_AXP2101_ADC_DATA_RELUST9);
+        return XPOWERS_AXP2101_CONVERSION(raw);
     }
 
     bool enableSystemVoltageMeasure(void)
@@ -2433,7 +2448,7 @@ public:
         int val = readRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL);
         if (val == -1)return;
         val &= 0xF0;
-        writeRegister(XPOWERS_AXP2101_ICC_CHG_SET, val | opt);
+        writeRegister(XPOWERS_AXP2101_ITERM_CHG_SET_CTRL, val | opt);
     }
 
     xpowers_axp2101_chg_iterm_t getChargerTerminationCurr(void)
@@ -2541,7 +2556,7 @@ public:
     /**
      * @brief  Clear interrupt controller state.
      */
-    void clearIrqStatus(void)
+    void clearIrqStatus()
     {
         for (int i = 0; i < XPOWERS_AXP2101_INTSTS_CNT; i++) {
             writeRegister(XPOWERS_AXP2101_INTSTS1 + i, 0xFF);
@@ -3030,7 +3045,7 @@ protected:
     {
         int res = 0;
         uint8_t data = 0, value = 0;
-        log_d("%s - HEX:0x%lx \n", enable ? "ENABLE" : "DISABLE", opts);
+        log_d("%s - HEX:0x%x \n", enable ? "ENABLE" : "DISABLE", opts);
         if (opts & 0x0000FF) {
             value = opts & 0xFF;
             // log_d("Write INT0: %x\n", value);

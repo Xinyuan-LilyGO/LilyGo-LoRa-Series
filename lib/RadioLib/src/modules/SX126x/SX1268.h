@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_SX126X)
+#if !RADIOLIB_EXCLUDE_SX126X
 
 #include "../../Module.h"
 #include "SX126x.h"
@@ -37,7 +37,9 @@ class SX1268: public SX126x {
       \param syncWord 1-byte LoRa sync word. Defaults to RADIOLIB_SX126X_SYNC_WORD_PRIVATE (0x12).
       \param power Output power in dBm. Defaults to 10 dBm.
       \param preambleLength LoRa preamble length in symbols. Defaults to 8 symbols.
-      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V, set to 0 to skip.
+      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, either set this value to 0, or set SX126x::XTAL to true.
       \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
       \returns \ref status_codes
     */
@@ -51,7 +53,9 @@ class SX1268: public SX126x {
       \param rxBw Receiver bandwidth in kHz. Defaults to 156.2 kHz.
       \param power Output power in dBm. Defaults to 10 dBm.
       \param preambleLength FSK preamble length in bits. Defaults to 16 bits.
-      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V, set to 0 to skip.
+      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, either set this value to 0, or set SX126x::XTAL to true.
       \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
       \returns \ref status_codes
     */
@@ -67,12 +71,15 @@ class SX1268: public SX126x {
     int16_t setFrequency(float freq);
 
     /*!
-      \brief Sets carrier frequency. Allowed values are in range from 410.0 to 810.0 MHz.
+      \brief Sets carrier frequency. Allowed values are in range from 150.0 to 960.0 MHz.
       \param freq Carrier frequency to be set in MHz.
       \param calibrate Run image calibration.
+      \param band Half bandwidth for image calibration. For example,
+      if carrier is 434 MHz and band is set to 4 MHz, then the image will be calibrate
+      for band 430 - 438 MHz. Unused if calibrate is set to false, defaults to 4 MHz
       \returns \ref status_codes
     */
-    int16_t setFrequency(float freq, bool calibrate);
+    int16_t setFrequency(float freq, bool calibrate, float band = 4);
 
     /*!
       \brief Sets output power. Allowed values are in range from -9 to 22 dBm.
@@ -81,7 +88,7 @@ class SX1268: public SX126x {
     */
     int16_t setOutputPower(int8_t power);
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
 

@@ -1,13 +1,9 @@
 #include "Si443x.h"
 #include <math.h>
-#if !defined(RADIOLIB_EXCLUDE_SI443X)
+#if !RADIOLIB_EXCLUDE_SI443X
 
 Si443x::Si443x(Module* mod) : PhysicalLayer(RADIOLIB_SI443X_FREQUENCY_STEP_SIZE, RADIOLIB_SI443X_MAX_PACKET_LENGTH) {
   this->mod = mod;
-}
-
-Module* Si443x::getMod() {
-  return(this->mod);
 }
 
 int16_t Si443x::begin(float br, float freqDev, float rxBw, uint8_t preambleLen) {
@@ -19,11 +15,11 @@ int16_t Si443x::begin(float br, float freqDev, float rxBw, uint8_t preambleLen) 
 
   // try to find the Si443x chip
   if(!Si443x::findChip()) {
-    RADIOLIB_DEBUG_PRINTLN("No Si443x found!");
+    RADIOLIB_DEBUG_BASIC_PRINTLN("No Si443x found!");
     this->mod->term();
     return(RADIOLIB_ERR_CHIP_NOT_FOUND);
   } else {
-    RADIOLIB_DEBUG_PRINTLN("M\tSi443x");
+    RADIOLIB_DEBUG_BASIC_PRINTLN("M\tSi443x");
   }
 
   // reset the device
@@ -212,6 +208,22 @@ void Si443x::setIrqAction(void (*func)(void)) {
 
 void Si443x::clearIrqAction() {
   this->mod->hal->detachInterrupt(this->mod->hal->pinToInterrupt(this->mod->getIrq()));
+}
+
+void Si443x::setPacketReceivedAction(void (*func)(void)) {
+  this->setIrqAction(func);
+}
+
+void Si443x::clearPacketReceivedAction() {
+  this->clearIrqAction();
+}
+
+void Si443x::setPacketSentAction(void (*func)(void)) {
+  this->setIrqAction(func);
+}
+
+void Si443x::clearPacketSentAction() {
+  this->clearIrqAction();
 }
 
 int16_t Si443x::startTransmit(uint8_t* data, size_t len, uint8_t addr) {
@@ -607,7 +619,7 @@ int16_t Si443x::getChipVersion() {
   return(this->mod->SPIgetRegValue(RADIOLIB_SI443X_REG_DEVICE_VERSION));
 }
 
-#if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+#if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
 void Si443x::setDirectAction(void (*func)(void)) {
   setIrqAction(func);
 }
@@ -623,6 +635,10 @@ int16_t Si443x::fixedPacketLengthMode(uint8_t len) {
 
 int16_t Si443x::variablePacketLengthMode(uint8_t maxLen) {
   return(Si443x::setPacketMode(RADIOLIB_SI443X_FIXED_PACKET_LENGTH_OFF, maxLen));
+}
+
+Module* Si443x::getMod() {
+  return(this->mod);
 }
 
 int16_t Si443x::setFrequencyRaw(float newFreq) {
@@ -684,7 +700,7 @@ bool Si443x::findChip() {
     if(version == RADIOLIB_SI443X_DEVICE_VERSION) {
       flagFound = true;
     } else {
-      RADIOLIB_DEBUG_PRINTLN("Si443x not found! (%d of 10 tries) RADIOLIB_SI443X_REG_DEVICE_VERSION == 0x%02X, expected 0x0%X", i + 1, version, RADIOLIB_SI443X_DEVICE_VERSION);
+      RADIOLIB_DEBUG_BASIC_PRINTLN("Si443x not found! (%d of 10 tries) RADIOLIB_SI443X_REG_DEVICE_VERSION == 0x%02X, expected 0x0%X", i + 1, version, RADIOLIB_SI443X_DEVICE_VERSION);
       this->mod->hal->delay(10);
       i++;
     }
@@ -753,8 +769,9 @@ int16_t Si443x::updateClockRecovery() {
   uint16_t rxOsr_fixed = (uint16_t)rxOsr;
 
   // print that whole mess
-  RADIOLIB_DEBUG_PRINTLN("%X\n%X\n%X", bypass, decRate, manch);
-  RADIOLIB_DEBUG_PRINTLN("%f\t%d\t%X\n%d\t%X\n%d\t%X", rxOsr, rxOsr_fixed, rxOsr_fixed, ncoOff, ncoOff, crGain, crGain);
+  RADIOLIB_DEBUG_BASIC_PRINTLN("%X\n%X\n%X", bypass, decRate, manch);
+  RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(rxOsr, 2);
+  RADIOLIB_DEBUG_BASIC_PRINTLN("\t%d\t%X\n%lu\t%lX\n%d\t%X", rxOsr_fixed, rxOsr_fixed, ncoOff, ncoOff, crGain, crGain);
 
   // update oversampling ratio
   int16_t state = this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_CLOCK_REC_OFFSET_2, (uint8_t)((rxOsr_fixed & 0x0700) >> 3), 7, 5);

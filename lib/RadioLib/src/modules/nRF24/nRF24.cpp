@@ -1,13 +1,9 @@
 #include "nRF24.h"
 #include <string.h>
-#if !defined(RADIOLIB_EXCLUDE_NRF24)
+#if !RADIOLIB_EXCLUDE_NRF24
 
 nRF24::nRF24(Module* mod) : PhysicalLayer(RADIOLIB_NRF24_FREQUENCY_STEP_SIZE, RADIOLIB_NRF24_MAX_PACKET_LENGTH) {
   this->mod = mod;
-}
-
-Module* nRF24::getMod() {
-  return(this->mod);
 }
 
 int16_t nRF24::begin(int16_t freq, int16_t dr, int8_t pwr, uint8_t addrWidth) {
@@ -27,11 +23,11 @@ int16_t nRF24::begin(int16_t freq, int16_t dr, int8_t pwr, uint8_t addrWidth) {
   // check SPI connection
   int16_t val = this->mod->SPIgetRegValue(RADIOLIB_NRF24_REG_SETUP_AW);
   if(!((val >= 0) && (val <= 3))) {
-    RADIOLIB_DEBUG_PRINTLN("No nRF24 found!");
+    RADIOLIB_DEBUG_BASIC_PRINTLN("No nRF24 found!");
     this->mod->term();
     return(RADIOLIB_ERR_CHIP_NOT_FOUND);
   }
-  RADIOLIB_DEBUG_PRINTLN("M\tnRF24");
+  RADIOLIB_DEBUG_BASIC_PRINTLN("M\tnRF24");
 
   // configure settings inaccessible by public API
   int16_t state = config();
@@ -157,6 +153,26 @@ int16_t nRF24::receiveDirect() {
 
 void nRF24::setIrqAction(void (*func)(void)) {
   this->mod->hal->attachInterrupt(this->mod->hal->pinToInterrupt(this->mod->getIrq()), func, this->mod->hal->GpioInterruptFalling);
+}
+
+void nRF24::clearIrqAction() {
+  this->mod->hal->detachInterrupt(this->mod->hal->pinToInterrupt(this->mod->getIrq()));
+}
+
+void nRF24::setPacketReceivedAction(void (*func)(void)) {
+  this->setIrqAction(func);
+}
+
+void nRF24::clearPacketReceivedAction() {
+  this->clearIrqAction();
+}
+
+void nRF24::setPacketSentAction(void (*func)(void)) {
+  this->setIrqAction(func);
+}
+
+void nRF24::clearPacketSentAction() {
+  this->clearIrqAction();
 }
 
 int16_t nRF24::startTransmit(uint8_t* data, size_t len, uint8_t addr) {
@@ -586,6 +602,10 @@ int16_t nRF24::config() {
   return(state);
 }
 
+Module* nRF24::getMod() {
+  return(this->mod);
+}
+
 void nRF24::SPIreadRxPayload(uint8_t* data, uint8_t numBytes) {
   SPItransfer(RADIOLIB_NRF24_CMD_READ_RX_PAYLOAD, false, NULL, data, numBytes);
 }
@@ -595,27 +615,43 @@ void nRF24::SPIwriteTxPayload(uint8_t* data, uint8_t numBytes) {
 }
 
 void nRF24::SPItransfer(uint8_t cmd, bool write, uint8_t* dataOut, uint8_t* dataIn, uint8_t numBytes) {
-  // start transfer
-  this->mod->hal->digitalWrite(this->mod->getCs(), this->mod->hal->GpioLevelLow);
-  this->mod->hal->spiBeginTransaction();
+  // prepare the buffers
+  size_t buffLen = 1 + numBytes;
+  #if RADIOLIB_STATIC_ONLY
+    uint8_t buffOut[RADIOLIB_STATIC_ARRAY_SIZE];
+    uint8_t buffIn[RADIOLIB_STATIC_ARRAY_SIZE];
+  #else
+    uint8_t* buffOut = new uint8_t[buffLen];
+    uint8_t* buffIn = new uint8_t[buffLen];
+  #endif
+  uint8_t* buffOutPtr = buffOut;
 
-  // send command
-  this->mod->hal->spiTransfer(cmd);
+  // copy the command
+  *(buffOutPtr++) = cmd;
 
-  // send data
+  // copy the data
   if(write) {
-    for(uint8_t i = 0; i < numBytes; i++) {
-      this->mod->hal->spiTransfer(dataOut[i]);
-    }
+    memcpy(buffOutPtr, dataOut, numBytes);
   } else {
-    for(uint8_t i = 0; i < numBytes; i++) {
-      dataIn[i] = this->mod->hal->spiTransfer(0x00);
-    }
+    memset(buffOutPtr, 0x00, numBytes);
   }
 
-  // stop transfer
+  // do the transfer
+  this->mod->hal->digitalWrite(this->mod->getCs(), this->mod->hal->GpioLevelLow);
+  this->mod->hal->spiBeginTransaction();
+  this->mod->hal->spiTransfer(buffOut, buffLen, buffIn);
   this->mod->hal->spiEndTransaction();
   this->mod->hal->digitalWrite(this->mod->getCs(), this->mod->hal->GpioLevelHigh);
+  
+  // copy the data
+  if(!write) {
+    memcpy(dataIn, &buffIn[1], numBytes);
+  }
+
+  #if !RADIOLIB_STATIC_ONLY
+    delete[] buffOut;
+    delete[] buffIn;
+  #endif
 }
 
 #endif

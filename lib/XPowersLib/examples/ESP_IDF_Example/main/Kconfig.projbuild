@@ -13,6 +13,18 @@ menu "XPowersLib Configuration"
             bool "Xpowers AXP192"
     endchoice
 
+    choice I2C_COMMUNICATION_METHOD
+        prompt "XPowersLIb read and write methods"
+        default I2C_COMMUNICATION_METHOD_BUILTIN_RW
+        help
+            Define XPowersLIb read and write methods
+
+        config I2C_COMMUNICATION_METHOD_BUILTIN_RW
+            bool "Implemented using built-in read and write methods"
+        config I2C_COMMUNICATION_METHOD_CALLBACK_RW
+            bool "Implemented using read and write callback methods"
+    endchoice
+
     config I2C_MASTER_PORT_NUM
         int "PMU I2C Port Number"
         default 1

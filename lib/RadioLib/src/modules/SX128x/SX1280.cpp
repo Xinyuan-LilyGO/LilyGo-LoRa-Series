@@ -1,6 +1,6 @@
 #include "SX1280.h"
 #include <string.h>
-#if !defined(RADIOLIB_EXCLUDE_SX128X)
+#if !RADIOLIB_EXCLUDE_SX128X
 
 SX1280::SX1280(Module* mod) : SX1281(mod) {
 
@@ -12,10 +12,11 @@ int16_t SX1280::range(bool master, uint32_t addr, uint16_t calTable[3][6]) {
   RADIOLIB_ASSERT(state);
 
   // wait until ranging is finished
-  uint32_t start = this->mod->hal->millis();
-  while(!this->mod->hal->digitalRead(this->mod->getIrq())) {
-    this->mod->hal->yield();
-    if(this->mod->hal->millis() - start > 10000) {
+  Module* mod = this->getMod();
+  uint32_t start = mod->hal->millis();
+  while(!mod->hal->digitalRead(mod->getIrq())) {
+    mod->hal->yield();
+    if(mod->hal->millis() - start > 10000) {
       clearIrqStatus();
       standby();
       return(RADIOLIB_ERR_RANGING_TIMEOUT);
@@ -121,9 +122,6 @@ int16_t SX1280::startRanging(bool master, uint32_t addr, uint16_t calTable[3][6]
 
   // set role and start ranging
   if(master) {
-
-    mod->setRfSwitchState(Module::MODE_TX);
-
     state = setRangingRole(RADIOLIB_SX128X_RANGING_ROLE_MASTER);
     RADIOLIB_ASSERT(state);
 
@@ -131,9 +129,6 @@ int16_t SX1280::startRanging(bool master, uint32_t addr, uint16_t calTable[3][6]
     RADIOLIB_ASSERT(state);
 
   } else {
-
-    mod->setRfSwitchState(Module::MODE_RX);
-
     state = setRangingRole(RADIOLIB_SX128X_RANGING_ROLE_SLAVE);
     RADIOLIB_ASSERT(state);
 

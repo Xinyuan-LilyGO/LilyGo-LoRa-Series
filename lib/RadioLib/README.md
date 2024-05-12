@@ -1,10 +1,10 @@
-# RadioLib ![Build Status](https://github.com/jgromes/RadioLib/workflows/CI/badge.svg) [![PlatformIO Registry](https://badges.registry.platformio.org/packages/jgromes/library/RadioLib.svg)](https://registry.platformio.org/libraries/jgromes/RadioLib)
+# RadioLib ![Build Status](https://github.com/jgromes/RadioLib/workflows/CI/badge.svg) [![PlatformIO Registry](https://badges.registry.platformio.org/packages/jgromes/library/RadioLib.svg)](https://registry.platformio.org/libraries/jgromes/RadioLib) [![Component Registry](https://components.espressif.com/components/jgromes/radiolib/badge.svg)](https://components.espressif.com/components/jgromes/radiolib)
 
 ### _One radio library to rule them all!_
 
 ## Universal wireless communication library for embedded devices
 
-## See the [Wiki](https://github.com/jgromes/RadioLib/wiki) for further information. See the [GitHub Pages](https://jgromes.github.io/RadioLib) for detailed and up-to-date API reference.
+## See the [Wiki](https://github.com/jgromes/RadioLib/wiki) and [FAQ](https://github.com/jgromes/RadioLib/wiki/Frequently-Asked-Questions) for further information. See the [GitHub Pages](https://jgromes.github.io/RadioLib) for detailed and up-to-date API reference.
 
 RadioLib allows its users to integrate all sorts of different wireless communication modules, protocols and even digital modes into a single consistent system.
 Want to add a Bluetooth interface to your LoRa network? Sure thing! Do you just want to go really old-school and play around with radio teletype, slow-scan TV, or even Hellschreiber using nothing but a cheap radio module? Why not!
@@ -25,7 +25,7 @@ RadioLib was originally created as a driver for [__RadioShield__](https://github
 * __SX126x__ series LoRa modules (SX1261, SX1262, SX1268)
 * __SX127x__ series LoRa modules (SX1272, SX1273, SX1276, SX1277, SX1278, SX1279)
 * __SX128x__ series LoRa/GFSK/BLE/FLRC modules (SX1280, SX1281, SX1282)
-* __SX1231__ FSK/OOK radio module
+* __SX123x__ FSK/OOK radio modules (SX1231, SX1233)
 
 ### Supported protocols and digital modes:
 * [__AX.25__](https://www.sigidwiki.com/wiki/PACKET) using 2-FSK or AFSK for modules:  
@@ -42,6 +42,9 @@ SX127x, RFM9x, SX126x, RF69, SX1231, CC1101, nRF24L01, RFM2x, Si443x and SX128x
 SX127x, RFM9x, SX126x, RF69, SX1231, CC1101, nRF24L01, RFM2x, Si443x and SX128x
 * [__POCSAG__](https://www.sigidwiki.com/wiki/POCSAG) using 2-FSK for modules:  
 SX127x, RFM9x, RF69, SX1231, CC1101, nRF24L01, RFM2x and Si443x
+* [__LoRaWAN__](https://lora-alliance.org/) using LoRa for modules:  
+SX127x, RFM9x, SX126x and SX128x  
+  * NOTE: LoRaWAN support is currently in beta, feedback via [Issues](https://github.com/jgromes/RadioLib/issues) and [Discussions](https://github.com/jgromes/RadioLib/discussions) is appreciated!
 
 ### Supported Arduino platforms:
 * __Arduino__  
@@ -50,6 +53,7 @@ SX127x, RFM9x, RF69, SX1231, CC1101, nRF24L01, RFM2x and Si443x
   * [__megaAVR__](https://github.com/arduino/ArduinoCore-megaavr) - Arduino Uno WiFi Rev.2 and Nano Every
   * [__SAM__](https://github.com/arduino/ArduinoCore-sam) - Arduino Due
   * [__SAMD__](https://github.com/arduino/ArduinoCore-samd) - Arduino Zero, MKR boards, M0 Pro etc.
+  * [__Renesas__](https://github.com/arduino/ArduinoCore-renesas) - Arduino Uno R4
 
 * __Adafruit__
   * [__SAMD__](https://github.com/adafruit/ArduinoCore-samd) - Adafruit Feather M0 and M4 boards (Feather, Metro, Gemma, Trinket etc.)
@@ -84,23 +88,4 @@ SX127x, RFM9x, RF69, SX1231, CC1101, nRF24L01, RFM2x and Si443x
 * __PJRC__
   * [__Teensy__](https://github.com/PaulStoffregen/cores) - Teensy 2.x, 3.x and 4.x boards
 
-The list above is by no means exhaustive - RadioLib code is independent of the used platform! Compilation of all examples is tested for all platforms officially supported prior to releasing new version. In addition, RadioLib includes an internal hardware abstracton layer, which allows it to be easily ported even to non-Arduino encironments.
-
-### In development:
-* __AX5243__ FSK module
-* __LoRaWAN__ protocol for SX127x, RFM9x and SX126x modules
-* ___and more!___
-
-## Frequently Asked Questions
-
-### Where should I start?
-First of all, take a look at the [examples](https://github.com/jgromes/RadioLib/tree/master/examples) and the [Wiki](https://github.com/jgromes/RadioLib/wiki) - especially the [Basics](https://github.com/jgromes/RadioLib/wiki/Basics) page. There's a lot of useful information over there. If something isn't working as expected, try searching the [issues](https://github.com/jgromes/RadioLib/issues/).
-
-### Does RadioLib require Arduino?
-While RadioLib was originally written with Arduino in mind, it has since evolved and contains its own lightweight hardware abstraction layer. Thanks to this layer, RadioLib can be used on non-Arduino frameworks as well. See [this Wiki page](https://github.com/jgromes/RadioLib/wiki/Porting-to-non-Arduino-Platforms) for details.
-
-### Help, my module isn't working!
-The fastest way to get help is by creating an [issue](https://github.com/jgromes/RadioLib/issues/new/choose) using the appropriate template. It is also highly recommended to try running the examples first - their functionality is tested from time to time and they should work. Finally, RadioLib is still under development, which means that sometimes, backwards-incompatible changes might be introduced. Though these are kept at minimum, sometimes it is unavoidable. You can check the [release changelog](https://github.com/jgromes/RadioLib/releases) to find out if there's been such a major change recently.
-
-### RadioLib doesn't support my module! What should I do?
-Start by creating new issue (if it doesn't exist yet). If you have some experience with microcontrollers and C/C++ in general, you can try to add the support yourself! Use the template files in `/extras/` folder to get started. This is by far the fastest way to implement new modules into RadioLib, since I can't be working on everything all the time. If you don't trust your programming skills enough to have a go at it yourself, don't worry. I will try to implement all requested modules, but it will take me a while.
+The list above is by no means exhaustive - RadioLib code is independent of the used platform! Compilation of all examples is tested for all platforms officially supported prior to releasing new version. In addition, RadioLib includes an internal hardware abstraction layer, which allows it to be easily ported even to non-Arduino environments.

@@ -1,4 +1,4 @@
-#if !defined(_RADIOLIB_NRF24_H) && !defined(RADIOLIB_EXCLUDE_NRF24)
+#if !defined(_RADIOLIB_NRF24_H) && !RADIOLIB_EXCLUDE_NRF24
 #define _RADIOLIB_NRF24_H
 
 #include "../../Module.h"
@@ -195,8 +195,6 @@ class nRF24: public PhysicalLayer {
     */
     nRF24(Module* mod);
 
-    Module* getMod();
-
     // basic methods
 
     /*!
@@ -273,6 +271,33 @@ class nRF24: public PhysicalLayer {
     void setIrqAction(void (*func)(void));
 
     /*!
+      \brief Clears interrupt service routine .
+    */
+    void clearIrqAction();
+
+    /*!
+      \brief Sets interrupt service routine to call when a packet is received.
+      \param func ISR to call.
+    */
+    void setPacketReceivedAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is received.
+    */
+    void clearPacketReceivedAction();
+
+    /*!
+      \brief Sets interrupt service routine to call when a packet is sent.
+      \param func ISR to call.
+    */
+    void setPacketSentAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is sent.
+    */
+    void clearPacketSentAction();
+
+    /*!
       \brief Interrupt-driven binary transmit method. IRQ will be activated when full packet is transmitted.
       Overloads for string-based transmissions are implemented in PhysicalLayer.
       \param data Binary data to be sent.
@@ -305,7 +330,8 @@ class nRF24: public PhysicalLayer {
     int16_t startReceive(uint32_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len);
 
     /*!
-      \brief Reads data received after calling startReceive method.
+      \brief Reads data received after calling startReceive method. When the packet length is not known in advance,
+      getPacketLength method must be called BEFORE calling readData!
       \param data Pointer to array to save the received binary data.
       \param len Number of bytes that will be received. Must be known in advance for binary transmissions.
       \returns \ref status_codes
@@ -439,18 +465,19 @@ class nRF24: public PhysicalLayer {
     */
     int16_t setEncoding(uint8_t encoding) override;
 
-#if !defined(RADIOLIB_GODMODE) && !defined(RADIOLIB_LOW_LEVEL)
+#if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
 #endif
-    Module* mod;
+    Module* getMod();
 
     void SPIreadRxPayload(uint8_t* data, uint8_t numBytes);
     void SPIwriteTxPayload(uint8_t* data, uint8_t numBytes);
     void SPItransfer(uint8_t cmd, bool write = false, uint8_t* dataOut = NULL, uint8_t* dataIn = NULL, uint8_t numBytes = 0);
 
-#if !defined(RADIOLIB_GODMODE)
-  protected:
+#if !RADIOLIB_GODMODE
+  private:
 #endif
+    Module* mod;
 
     int16_t frequency = RADIOLIB_NRF24_DEFAULT_FREQ;
     int16_t dataRate = RADIOLIB_NRF24_DEFAULT_DR;

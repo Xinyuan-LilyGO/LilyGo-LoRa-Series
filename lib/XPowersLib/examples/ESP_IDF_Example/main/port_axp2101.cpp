@@ -18,12 +18,45 @@ extern int pmu_register_write_byte(uint8_t devAddr, uint8_t regAddr, uint8_t *da
 
 esp_err_t pmu_init()
 {
+    //* Implemented using read and write callback methods, applicable to other platforms
+#if CONFIG_I2C_COMMUNICATION_METHOD_CALLBACK_RW
+    ESP_LOGI(TAG, "Implemented using read and write callback methods");
     if (PMU.begin(AXP2101_SLAVE_ADDRESS, pmu_register_read, pmu_register_write_byte)) {
         ESP_LOGI(TAG, "Init PMU SUCCESS!");
     } else {
         ESP_LOGE(TAG, "Init PMU FAILED!");
         return ESP_FAIL;
     }
+#endif
+
+    //* Use the built-in esp-idf communication method
+#if CONFIG_I2C_COMMUNICATION_METHOD_BUILTIN_RW
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)) && defined(CONFIG_XPOWERS_ESP_IDF_NEW_API)
+
+    ESP_LOGI(TAG, "Implemented using built-in read and write methods (Use higher version >= 5.0 API)");
+
+    // * Using the new API of esp-idf 5.x, you need to pass the I2C BUS handle,
+    // * which is useful when the bus shares multiple devices.
+    extern i2c_master_bus_handle_t bus_handle;
+
+    if (PMU.begin(bus_handle, AXP2101_SLAVE_ADDRESS)) {
+        ESP_LOGI(TAG, "Init PMU SUCCESS!");
+    } else {
+        ESP_LOGE(TAG, "Init PMU FAILED!");
+        return false;
+    }
+#else
+
+    ESP_LOGI(TAG, "Implemented using built-in read and write methods (Use lower version < 5.0 API)");
+
+    if (PMU.begin((i2c_port_t)CONFIG_I2C_MASTER_PORT_NUM, AXP2101_SLAVE_ADDRESS, CONFIG_PMU_I2C_SDA, CONFIG_PMU_I2C_SCL)) {
+        ESP_LOGI(TAG, "Init PMU SUCCESS!");
+    } else {
+        ESP_LOGE(TAG, "Init PMU FAILED!");
+        return false;
+    }
+#endif //ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)
+#endif //CONFIG_I2C_COMMUNICATION_METHOD_BUILTIN_RW
 
     //Turn off not use power channel
     PMU.disableDC2();
@@ -121,6 +154,16 @@ esp_err_t pmu_init()
         // XPOWERS_AXP2101_PKEY_NEGATIVE_IRQ | XPOWERS_AXP2101_PKEY_POSITIVE_IRQ   |   //POWER KEY
     );
 
+    /*
+      The default setting is CHGLED is automatically controlled by the PMU.
+    - XPOWERS_CHG_LED_OFF,
+    - XPOWERS_CHG_LED_BLINK_1HZ,
+    - XPOWERS_CHG_LED_BLINK_4HZ,
+    - XPOWERS_CHG_LED_ON,
+    - XPOWERS_CHG_LED_CTRL_CHG,
+    * */
+    PMU.setChargingLedMode(XPOWERS_CHG_LED_BLINK_1HZ);
+
     // Set the precharge charging current
     PMU.setPrechargeCurr(XPOWERS_AXP2101_PRECHARGE_50MA);
     // Set constant current charge current limit
@@ -134,9 +177,9 @@ esp_err_t pmu_init()
     // Set the watchdog trigger event type
     // PMU.setWatchdogConfig(XPOWERS_AXP2101_WDT_IRQ_TO_PIN);
     // Set watchdog timeout
-    // PMU.setWatchdogTimeout(XPOWERS_AXP2101_WDT_TIMEOUT_4S);
+    PMU.setWatchdogTimeout(XPOWERS_AXP2101_WDT_TIMEOUT_4S);
     // Enable watchdog to trigger interrupt event
-    // PMU.enableWatchdog();
+    PMU.enableWatchdog();
     return ESP_OK;
 }
 

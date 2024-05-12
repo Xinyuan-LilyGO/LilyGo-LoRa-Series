@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_SX127X)
+#if !RADIOLIB_EXCLUDE_SX127X
 
 #include "../../Module.h"
 
@@ -160,6 +160,7 @@
 #define RADIOLIB_SX127X_MASK_IRQ_FLAG_CAD_DONE                  0b11111011  //  2     2   CAD complete
 #define RADIOLIB_SX127X_MASK_IRQ_FLAG_FHSS_CHANGE_CHANNEL       0b11111101  //  1     1   FHSS change channel
 #define RADIOLIB_SX127X_MASK_IRQ_FLAG_CAD_DETECTED              0b11111110  //  0     0   valid LoRa signal detected during CAD operation
+#define RADIOLIB_SX127X_MASK_IRQ_FLAG_RX_DEFAULT                0b00011111  //  7     0   default for Rx (RX_TIMEOUT, RX_DONE, CRC_ERR)
 
 // RADIOLIB_SX127X_REG_FIFO_TX_BASE_ADDR
 #define RADIOLIB_SX127X_FIFO_TX_BASE_ADDR_MAX                   0b00000000  //  7     0   allocate the entire FIFO buffer for TX only
@@ -471,14 +472,14 @@
 // RADIOLIB_SX127X_REG_LOW_BAT
 #define RADIOLIB_SX127X_LOW_BAT_OFF                             0b00000000  //  3     3   low battery detector disabled
 #define RADIOLIB_SX127X_LOW_BAT_ON                              0b00001000  //  3     3   low battery detector enabled
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_1_695_V                    0b00000000  //  2     0   battery voltage threshold: 1.695 V
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_1_764_V                    0b00000001  //  2     0                              1.764 V
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_1_835_V                    0b00000010  //  2     0                              1.835 V (default)
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_1_905_V                    0b00000011  //  2     0                              1.905 V
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_1_976_V                    0b00000100  //  2     0                              1.976 V
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_2_045_V                    0b00000101  //  2     0                              2.045 V
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_2_116_V                    0b00000110  //  2     0                              2.116 V
-#define RADIOLIB_SX127X_LOW_BAT_TRIM_2_185_V                    0b00000111  //  2     0                              2.185 V
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_1_695_V               0b00000000  //  2     0   battery voltage threshold: 1.695 V
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_1_764_V               0b00000001  //  2     0                              1.764 V
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_1_835_V               0b00000010  //  2     0                              1.835 V (default)
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_1_905_V               0b00000011  //  2     0                              1.905 V
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_1_976_V               0b00000100  //  2     0                              1.976 V
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_2_045_V               0b00000101  //  2     0                              2.045 V
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_2_116_V               0b00000110  //  2     0                              2.116 V
+#define RADIOLIB_SX127X_LOW_BAT_THRESHOLD_2_185_V               0b00000111  //  2     0                              2.185 V
 
 // RADIOLIB_SX127X_REG_IRQ_FLAGS_1
 #define RADIOLIB_SX127X_FLAG_MODE_READY                         0b10000000  //  7     7   requested mode is ready
@@ -595,18 +596,17 @@ class SX127x: public PhysicalLayer {
     */
     SX127x(Module* mod);
 
-    Module* getMod();
-
     // basic methods
 
     /*!
       \brief Initialization method. Will be called with appropriate parameters when calling initialization method from derived class.
-      \param chipVersion Value in SPI version register. Used to verify the connection and hardware version.
+      \param chipVersion Array of possible values in SPI version register. Used to verify the connection and hardware version.
+      \param numVersions Number of possible chip versions.
       \param syncWord %LoRa sync word.
       \param preambleLength Length of %LoRa transmission preamble in symbols.
       \returns \ref status_codes
     */
-    int16_t begin(uint8_t chipVersion, uint8_t syncWord, uint16_t preambleLength);
+    int16_t begin(uint8_t* chipVersions, uint8_t numVersions, uint8_t syncWord, uint16_t preambleLength);
 
     /*!
       \brief Reset method. Will reset the chip to the default state using RST pin. Declared pure virtual since SX1272 and SX1278 implementations differ.
@@ -615,14 +615,15 @@ class SX127x: public PhysicalLayer {
 
     /*!
       \brief Initialization method for FSK modem. Will be called with appropriate parameters when calling FSK initialization method from derived class.
-      \param chipVersion Value in SPI version register. Used to verify the connection and hardware version.
+      \param chipVersion Array of possible values in SPI version register. Used to verify the connection and hardware version.
+      \param numVersions Number of possible chip versions.
       \param freqDev Frequency deviation of the FSK transmission in kHz.
       \param rxBw Receiver bandwidth in kHz.
       \param preambleLength Length of FSK preamble in bits.
       \param enableOOK Flag to specify OOK mode. This modulation is similar to FSK.
       \returns \ref status_codes
     */
-    int16_t beginFSK(uint8_t chipVersion, float freqDev, float rxBw, uint16_t preambleLength, bool enableOOK);
+    int16_t beginFSK(uint8_t* chipVersions, uint8_t numVersions, float freqDev, float rxBw, uint16_t preambleLength, bool enableOOK);
 
     /*!
       \brief Binary transmit method. Will transmit arbitrary binary data up to 255 bytes long using %LoRa or up to 63 bytes using FSK modem.
@@ -647,7 +648,7 @@ class SX127x: public PhysicalLayer {
       \brief Performs scan for valid %LoRa preamble in the current channel.
       \returns \ref status_codes
     */
-    int16_t scanChannel();
+    int16_t scanChannel() override;
 
     /*!
       \brief Sets the %LoRa module to sleep to save power. %Module will not be able to transmit or receive any data while in sleep mode.
@@ -717,6 +718,39 @@ class SX127x: public PhysicalLayer {
     void clearDio1Action();
 
     /*!
+      \brief Sets interrupt service routine to call when a packet is received.
+      \param func ISR to call.
+    */
+    void setPacketReceivedAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is received.
+    */
+    void clearPacketReceivedAction();
+
+    /*!
+      \brief Sets interrupt service routine to call when a packet is sent.
+      \param func ISR to call.
+    */
+    void setPacketSentAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is sent.
+    */
+    void clearPacketSentAction();
+
+    /*!
+      \brief Sets interrupt service routine to call when a channel scan is finished.
+      \param func ISR to call.
+    */
+    void setChannelScanAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a channel scan is finished.
+    */
+    void clearChannelScanAction();
+
+    /*!
       \brief Set interrupt service routine function to call when FIFO is empty.
       \param func Pointer to interrupt service routine.
     */
@@ -748,7 +782,7 @@ class SX127x: public PhysicalLayer {
     bool fifoAdd(uint8_t* data, int totalLen, int* remLen);
 
     /*!
-      \brief Set interrupt service routine function to call when FIFO is sufficently full to read.
+      \brief Set interrupt service routine function to call when FIFO is sufficiently full to read.
       \param data Pointer to a buffer that stores the receive data.
       \param totalLen Total number of bytes to receive.
       \param rcvLen Pointer to a counter holding the number of bytes that have been received so far.
@@ -770,29 +804,41 @@ class SX127x: public PhysicalLayer {
       \returns \ref status_codes
     */
     int16_t finishTransmit() override;
+    
+    /*!
+      \brief Interrupt-driven receive method with default parameters.
+      Implemented for compatibility with PhysicalLayer.
+      \returns \ref status_codes
+    */
+    int16_t startReceive();
 
     /*!
       \brief Interrupt-driven receive method. DIO0 will be activated when full valid packet is received.
-      \param len Expected length of packet to be received. Required for LoRa spreading factor 6.
+      \param len Expected length of packet to be received, or 0 when unused.
+      Defaults to 0, non-zero required for LoRa spreading factor 6.
       \param mode Receive mode to be used. Defaults to RxContinuous.
       \returns \ref status_codes
     */
-    int16_t startReceive(uint8_t len = 0, uint8_t mode = RADIOLIB_SX127X_RXCONTINUOUS);
+    int16_t startReceive(uint8_t len, uint8_t mode = RADIOLIB_SX127X_RXCONTINUOUS);
     
     /*!
       \brief Interrupt-driven receive method, implemented for compatibility with PhysicalLayer.
-      \param mode Receive mode to be used.
+      \param timeout Receive mode type and/or raw timeout value in symbols.
+      When set to 0, the timeout will be infinite and the device will remain
+      in Rx mode until explicitly commanded to stop (Rx continuous mode).
+      When non-zero (maximum 1023), the device will be set to Rx single mode and timeout will be set.
       \param irqFlags Ignored.
       \param irqMask Ignored.
       \param len Expected length of packet to be received. Required for LoRa spreading factor 6.
       \returns \ref status_codes
     */
-    int16_t startReceive(uint32_t mode, uint16_t irqFlags, uint16_t irqMask, size_t len);
+    int16_t startReceive(uint32_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len);
 
     /*!
-      \brief Reads data that was received after calling startReceive method. This method reads len characters.
+      \brief Reads data that was received after calling startReceive method. When the packet length is not known in advance,
+      getPacketLength method must be called BEFORE calling readData!
       \param data Pointer to array to save the received binary data.
-      \param len Number of bytes that will be read. When set to 0, the packet length will be retreived automatically.
+      \param len Number of bytes that will be read. When set to 0, the packet length will be retrieved automatically.
       When more bytes than received are requested, only the number of bytes requested will be returned.
       \returns \ref status_codes
     */
@@ -803,7 +849,13 @@ class SX127x: public PhysicalLayer {
       DIO1 will be activated if there's no preamble detected before timeout.
       \returns \ref status_codes
     */
-    int16_t startChannelScan();
+    int16_t startChannelScan() override;
+
+    /*!
+      \brief Read the channel scan result.
+      \returns \ref status_codes
+    */
+    int16_t getChannelScanResult() override;
 
     // configuration methods
 
@@ -826,7 +878,14 @@ class SX127x: public PhysicalLayer {
       \param preambleLength Preamble length to be set (in symbols when in LoRa mode or bits in FSK mode).
       \returns \ref status_codes
     */
-    int16_t setPreambleLength(uint16_t preambleLength);
+    int16_t setPreambleLength(size_t preambleLength) override;
+
+    /*!
+      \brief Invert FSK preamble polarity. The default (non-inverted) is 0x55, the inverted is 0xAA.
+      \param enable Preamble polarity in FSK mode - 0xAA when true, 0x55 when false.
+      \returns \ref status_codes
+    */
+    int16_t invertPreamble(bool enable);
 
     /*!
       \brief Gets frequency error of the latest received packet.
@@ -894,7 +953,7 @@ class SX127x: public PhysicalLayer {
       \param len Sync word length (in bytes).
       \returns \ref status_codes
     */
-    int16_t setSyncWord(uint8_t* syncWord, size_t len);
+    int16_t setSyncWord(uint8_t* syncWord, size_t len) override;
 
     /*!
       \brief Sets FSK node address. Calling this method will enable address filtering. Only available in FSK mode.
@@ -985,11 +1044,39 @@ class SX127x: public PhysicalLayer {
     int16_t variablePacketLengthMode(uint8_t maxLen = RADIOLIB_SX127X_MAX_PACKET_LENGTH_FSK);
 
     /*!
-      \brief Get expected time-on-air for a given size of payload
+      \brief Convert from bytes to LoRa symbols.
+      \param len Payload length in bytes.
+      \returns The total number of LoRa symbols, including preamble, sync and possible header.
+    */
+    float getNumSymbols(size_t len);
+
+    /*!
+      \brief Get expected time-on-air for a given size of payload.
       \param len Payload length in bytes.
       \returns Expected time-on-air in microseconds.
     */
-    uint32_t getTimeOnAir(size_t len);
+    uint32_t getTimeOnAir(size_t len) override;
+
+    /*!
+      \brief Calculate the timeout value for this specific module / series (in number of symbols or units of time)
+      \param timeoutUs Timeout in microseconds to listen for
+      \returns Timeout value in a unit that is specific for the used module
+    */
+    uint32_t calculateRxTimeout(uint32_t timeoutUs);
+
+    /*!
+      \brief Create the flags that make up RxDone and RxTimeout used for receiving downlinks
+      \param irqFlags The flags for which IRQs must be triggered
+      \param irqMask Mask indicating which IRQ triggers a DIO
+      \returns \ref status_codes
+    */
+    int16_t irqRxDoneRxTimeout(uint16_t &irqFlags, uint16_t &irqMask);
+
+    /*!
+      \brief Check whether the IRQ bit for RxTimeout is set
+      \returns \ref RxTimeout IRQ is set
+    */
+    bool isRxTimeout();
 
     /*!
       \brief Enable CRC filtering and generation.
@@ -1056,14 +1143,14 @@ class SX127x: public PhysicalLayer {
 
     /*!
       \brief Enable/disable inversion of the I and Q signals
-      \param invertIQ QI inversion enabled (true) or disabled (false);
+      \param enable QI inversion enabled (true) or disabled (false);
       \returns \ref status_codes
     */
-    int16_t invertIQ(bool invertIQ);
+    int16_t invertIQ(bool enable) override;
 
-    #if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+    #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     /*!
-      \brief Set interrupt service routine function to call when data bit is receveid in direct mode.
+      \brief Set interrupt service routine function to call when data bit is received in direct mode.
       \param func Pointer to interrupt service routine.
     */
     void setDirectAction(void (*func)(void));
@@ -1129,41 +1216,52 @@ class SX127x: public PhysicalLayer {
     */
     int16_t setRSSIThreshold(float dbm);
 
-#if !defined(RADIOLIB_GODMODE) && !defined(RADIOLIB_LOW_LEVEL)
+    /*!
+      \brief Set low battery indicator threshold.
+      \param level Battery threshold level (one of RADIOLIB_SX127X_LOW_BAT_THRESHOLD_*),
+      or -1 to disable the detector. Disabled by default. Note that this will not attach any interrupts!
+      \param pin DIO pin number which will be used to signal low battery. Only DIO0/4 can be used
+      (in packet mode) or DIO3/4 (in continuous mode). Ignored when disabling the detector.
+      \returns \ref status_codes
+    */
+    int16_t setLowBatteryThreshold(int8_t level, uint32_t pin = RADIOLIB_NC);
+
+#if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
 #endif
-    Module* mod;
+    Module* getMod();
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   protected:
 #endif
-
     float frequency = 0;
     float bandwidth = 0;
     uint8_t spreadingFactor = 0;
-    uint8_t codingRate = 0;
-    float bitRate = 0;
-    bool ookEnabled = false;
-    bool crcEnabled = false;
-    bool crcOn = true; // default value used in FSK mode
     size_t packetLength = 0;
+    uint8_t codingRate = 0;
+    bool crcEnabled = false;
+    bool ookEnabled = false;
 
-    int16_t setFrequencyRaw(float newFreq);
-    int16_t setBitRateCommon(float br, uint8_t fracRegAddr);
-    int16_t config();
     int16_t configFSK();
     int16_t getActiveModem();
-    int16_t directMode();
-    int16_t setPacketMode(uint8_t mode, uint8_t len);
+    int16_t setFrequencyRaw(float newFreq);
+    int16_t setBitRateCommon(float br, uint8_t fracRegAddr);
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
+    Module* mod;
+
+    float bitRate = 0;
+    bool crcOn = true; // default value used in FSK mode
     float dataRate = 0;
     bool packetLengthQueried = false; // FSK packet length is the first byte in FIFO, length can only be queried once
     uint8_t packetLengthConfig = RADIOLIB_SX127X_PACKET_VARIABLE;
 
-    bool findChip(uint8_t ver);
+    int16_t config();
+    int16_t directMode();
+    int16_t setPacketMode(uint8_t mode, uint8_t len);
+    bool findChip(uint8_t* vers, uint8_t num);
     int16_t setMode(uint8_t mode);
     int16_t setActiveModem(uint8_t modem);
     void clearIRQFlags();
@@ -1172,7 +1270,7 @@ class SX127x: public PhysicalLayer {
     /*!
       \brief Calculate exponent and mantissa values for receiver bandwidth and AFC
       \param bandwidth bandwidth to be set (in kHz).
-      \returns bandwidth in manitsa and exponent format
+      \returns bandwidth in mantissa and exponent format
     */
     static uint8_t calculateBWManExp(float bandwidth);
 

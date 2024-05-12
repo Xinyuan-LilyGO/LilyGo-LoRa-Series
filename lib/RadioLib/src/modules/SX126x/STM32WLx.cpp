@@ -6,7 +6,7 @@ This file is licensed under the MIT License: https://opensource.org/licenses/MIT
 */
 
 #include "STM32WLx.h"
-#if !defined(RADIOLIB_EXCLUDE_STM32WLX)
+#if !RADIOLIB_EXCLUDE_STM32WLX
 
 STM32WLx::STM32WLx(STM32WLx_Module* mod) : SX1262(mod) { }
 
@@ -44,21 +44,49 @@ int16_t STM32WLx::setOutputPower(int8_t power) {
   int16_t state = readRegister(RADIOLIB_SX126X_REG_OCP_CONFIGURATION, &ocp, 1);
   RADIOLIB_ASSERT(state);
 
-  // Use HP only if available and needed for the requested power
-  bool hp_supported = this->mod->findRfSwitchMode(MODE_TX_HP);
-  bool use_hp = power > 14 && hp_supported;
-
-  // set PA config.
-  if(use_hp) {
-    RADIOLIB_CHECK_RANGE(power, -9, 22, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
-    state = SX126x::setPaConfig(0x04, 0x00, 0x07); // HP output up to 22dBm
-    this->txMode = MODE_TX_HP;
-  } else {
-    RADIOLIB_CHECK_RANGE(power, -17, 14, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
-    state = SX126x::setPaConfig(0x04, 0x01, 0x00); // LP output up to 14dBm
-    this->txMode = MODE_TX_LP;
+  // check the user did not request power output that is not possible
+  Module* mod = this->getMod();
+  bool hp_supported = mod->findRfSwitchMode(MODE_TX_HP);
+  bool lp_supported = mod->findRfSwitchMode(MODE_TX_LP);
+  if((!lp_supported && (power < -9)) || (!hp_supported && (power > 14))) {
+    // LP not supported but requested power is below HP low bound or
+    // HP not supported but requested power is above LP high bound
+    return(RADIOLIB_ERR_INVALID_OUTPUT_POWER);
   }
-  RADIOLIB_ASSERT(state);
+
+  // set PA config based on which PAs are supported
+  bool use_hp = false;
+  if(hp_supported && lp_supported) {
+    // both PAs supported, use HP when above 14 dBm
+    if(power > 14) {
+      RADIOLIB_CHECK_RANGE(power, -9, 22, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+      state = SX126x::setPaConfig(0x04, 0x00, 0x07); // HP output up to 22dBm
+      this->txMode = MODE_TX_HP;
+      use_hp = true;
+    } else {
+      RADIOLIB_CHECK_RANGE(power, -17, 14, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+      state = SX126x::setPaConfig(0x04, 0x01, 0x00); // LP output up to 14dBm
+      this->txMode = MODE_TX_LP;
+    }
+  
+  } else if(!hp_supported && lp_supported) {
+    // only LP supported
+    RADIOLIB_CHECK_RANGE(power, -17, 14, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+    state = SX126x::setPaConfig(0x04, 0x01, 0x00);
+    this->txMode = MODE_TX_LP;
+
+  } else if(hp_supported && !lp_supported) {
+    // only HP supported
+    RADIOLIB_CHECK_RANGE(power, -9, 22, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+    state = SX126x::setPaConfig(0x04, 0x00, 0x07);
+    this->txMode = MODE_TX_HP;
+    use_hp = true;
+
+  } else {
+    // neither PA is supported
+    return(RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+
+  }
 
   // Apply workaround for HP only
   state = SX126x::fixPaClamping(use_hp);
@@ -99,4 +127,28 @@ void STM32WLx::clearDio1Action() {
   SubGhz.detachInterrupt();
 }
 
-#endif // !defined(RADIOLIB_EXCLUDE_STM32WLX)
+void STM32WLx::setPacketReceivedAction(void (*func)(void)) {
+  this->setDio1Action(func);
+}
+
+void STM32WLx::clearPacketReceivedAction() {
+  this->clearDio1Action();
+}
+
+void STM32WLx::setPacketSentAction(void (*func)(void)) {
+  this->setDio1Action(func);
+}
+
+void STM32WLx::clearPacketSentAction() {
+  this->clearDio1Action();
+}
+
+void STM32WLx::setChannelScanAction(void (*func)(void)) {
+  this->setDio1Action(func);
+}
+
+void STM32WLx::clearChannelScanAction() {
+  this->clearDio1Action();
+}
+
+#endif

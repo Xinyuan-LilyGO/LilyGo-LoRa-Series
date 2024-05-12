@@ -4,8 +4,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "BuildOpt.h"
+
 /*!
-  \class Hal
+  \class RadioLibHal
   \brief Hardware abstraction library base interface.
 */
 class RadioLibHal {
@@ -146,11 +148,12 @@ class RadioLibHal {
     virtual void spiBeginTransaction() = 0;
 
     /*!
-      \brief Method to transfer one byte over SPI.
-      \param b Byte to send.
-      \returns Received byte.
+      \brief Method to transfer buffer over SPI.
+      \param out Buffer to send.
+      \param len Number of data to send or receive.
+      \param in Buffer to save received data into.
     */
-    virtual uint8_t spiTransfer(uint8_t b) = 0;
+    virtual void spiTransfer(uint8_t* out, size_t len, uint8_t* in) = 0;
 
     /*!
       \brief Method to end SPI transaction.
@@ -168,13 +171,13 @@ class RadioLibHal {
     /*!
       \brief Module initialization method.
       This will be called by all radio modules at the beginning of startup.
-      Can be used to e.g., initalize SPI interface.
+      Can be used to e.g., initialize SPI interface.
     */
     virtual void init();
 
     /*!
       \brief Module termination method.
-      This will be called by all radio modules when the desctructor is called.
+      This will be called by all radio modules when the destructor is called.
       Can be used to e.g., stop SPI interface.
     */
     virtual void term();

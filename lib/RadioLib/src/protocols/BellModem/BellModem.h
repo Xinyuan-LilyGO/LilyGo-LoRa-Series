@@ -7,6 +7,8 @@
 #include "../../ArduinoHal.h"
 #endif
 
+#if !RADIOLIB_EXCLUDE_BELL
+
 #include "../PhysicalLayer/PhysicalLayer.h"
 #include "../AFSK/AFSK.h"
 #include "../Print/Print.h"
@@ -114,7 +116,7 @@ class BellClient: public AFSKClient, public RadioLibPrint {
     */
     int16_t standby();
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     BellModem_t modemType;
@@ -123,5 +125,7 @@ class BellClient: public AFSKClient, public RadioLibPrint {
     bool autoStart = true;
 
 };
+
+#endif
 
 #endif

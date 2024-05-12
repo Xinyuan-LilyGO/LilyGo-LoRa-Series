@@ -1,5 +1,5 @@
 #include "SX1262.h"
-#if !defined(RADIOLIB_EXCLUDE_SX126X)
+#if !RADIOLIB_EXCLUDE_SX126X
 
 SX1262::SX1262(Module* mod) : SX126x(mod) {
   chipType = RADIOLIB_SX1262_CHIP_TYPE;
@@ -51,29 +51,12 @@ int16_t SX1262::setFrequency(float freq) {
   return(setFrequency(freq, true));
 }
 
-int16_t SX1262::setFrequency(float freq, bool calibrate) {
+int16_t SX1262::setFrequency(float freq, bool calibrate, float band) {
   RADIOLIB_CHECK_RANGE(freq, 150.0, 960.0, RADIOLIB_ERR_INVALID_FREQUENCY);
 
-  // calibrate image
+  // calibrate image rejection
   if(calibrate) {
-    uint8_t data[2];
-    if(freq > 900.0) {
-      data[0] = RADIOLIB_SX126X_CAL_IMG_902_MHZ_1;
-      data[1] = RADIOLIB_SX126X_CAL_IMG_902_MHZ_2;
-    } else if(freq > 850.0) {
-      data[0] = RADIOLIB_SX126X_CAL_IMG_863_MHZ_1;
-      data[1] = RADIOLIB_SX126X_CAL_IMG_863_MHZ_2;
-    } else if(freq > 770.0) {
-      data[0] = RADIOLIB_SX126X_CAL_IMG_779_MHZ_1;
-      data[1] = RADIOLIB_SX126X_CAL_IMG_779_MHZ_2;
-    } else if(freq > 460.0) {
-      data[0] = RADIOLIB_SX126X_CAL_IMG_470_MHZ_1;
-      data[1] = RADIOLIB_SX126X_CAL_IMG_470_MHZ_2;
-    } else {
-      data[0] = RADIOLIB_SX126X_CAL_IMG_430_MHZ_1;
-      data[1] = RADIOLIB_SX126X_CAL_IMG_430_MHZ_2;
-    }
-    int16_t state = SX126x::calibrateImage(data);
+    int16_t state = SX126x::calibrateImage(freq - band, freq + band);
     RADIOLIB_ASSERT(state);
   }
 

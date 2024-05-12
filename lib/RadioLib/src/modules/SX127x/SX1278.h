@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_SX127X)
+#if !RADIOLIB_EXCLUDE_SX127X
 
 #include "../../Module.h"
 #include "SX127x.h"
@@ -67,7 +67,9 @@
 #define RADIOLIB_SX1278_AGC_AUTO_ON                             0b00000100  //  2     2   LNA gain set by internal AGC loop
 
 // SX127X_REG_VERSION
-#define RADIOLIB_SX1278_CHIP_VERSION                            0x12
+#define RADIOLIB_SX1278_CHIP_VERSION                            0x12  // this is the "official" version listed in datasheet
+#define RADIOLIB_SX1278_CHIP_VERSION_ALT                        0x13  // appears sometimes 
+#define RADIOLIB_SX1278_CHIP_VERSION_RFM9X                      0x11  // this value is used for the RFM9x
 
 // SX1278 FSK modem settings
 // SX127X_REG_PA_RAMP
@@ -184,15 +186,37 @@ class SX1278: public SX127x {
       \returns \ref status_codes
     */
     int16_t setBitRate(float br) override;
+        
+    /*!
+      \brief Set data.
+      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \returns \ref status_codes
+    */
+    int16_t setDataRate(DataRate_t dr) override;
+    
+    /*!
+      \brief Check the data rate can be configured by this module.
+      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \returns \ref status_codes
+    */
+    int16_t checkDataRate(DataRate_t dr) override;
+
+    /*!
+      \brief Sets transmission output power. Allowed values range from -3 to 15 dBm (RFO pin) or +2 to +17 dBm (PA_BOOST pin).
+      High power +20 dBm operation is also supported, on the PA_BOOST pin. Defaults to PA_BOOST.
+      \param power Transmission output power in dBm.
+      \returns \ref status_codes
+    */
+    int16_t setOutputPower(int8_t power) override;
 
     /*!
       \brief Sets transmission output power. Allowed values range from -3 to 15 dBm (RFO pin) or +2 to +17 dBm (PA_BOOST pin).
       High power +20 dBm operation is also supported, on the PA_BOOST pin.
       \param power Transmission output power in dBm.
-      \param useRfo Whether to use the RFO (true) or the PA_BOOST (false) pin for the RF output. Defaults to PA_BOOST.
+      \param useRfo Whether to use the RFO (true) or the PA_BOOST (false) pin for the RF output.
       \returns \ref status_codes
     */
-    int16_t setOutputPower(int8_t power, bool useRfo = false);
+    int16_t setOutputPower(int8_t power, bool useRfo);
 
     /*!
       \brief Sets gain of receiver LNA (low-noise amplifier). Can be set to any integer in range 1 to 6 where 1 is the highest gain.
@@ -265,7 +289,7 @@ class SX1278: public SX127x {
     */
     int16_t explicitHeader();
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   protected:
 #endif
     int16_t setBandwidthRaw(uint8_t newBandwidth);
@@ -276,13 +300,19 @@ class SX1278: public SX127x {
     int16_t configFSK();
     void errataFix(bool rx);
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     bool ldroAuto = true;
     bool ldroEnabled = false;
 
 };
+
+/*!
+  \class RFM98
+  \brief Only exists as alias for SX1278, since there seems to be no difference between %RFM98 and %SX1278 modules.
+*/
+RADIOLIB_TYPE_ALIAS(SX1278, RFM98)
 
 #endif
 

@@ -47,25 +47,32 @@
 // warnings are printed in this file since BuildOpt.h is compiled in multiple places
 
 // check God mode
-#if defined(RADIOLIB_GODMODE)
+#if RADIOLIB_GODMODE
   #warning "God mode active, I hope it was intentional. Buckle up, lads."
 #endif
 
 // print debug info
-#if defined(RADIOLIB_DEBUG)
+#if RADIOLIB_DEBUG
   #define RADIOLIB_VALUE_TO_STRING(x) #x
   #define RADIOLIB_VALUE(x) RADIOLIB_VALUE_TO_STRING(x)
-  #define RADIOLIB_VAR_NAME_VALUE(var) #var "="  RADIOLIB_VALUE(var)
-  #pragma message(RADIOLIB_VAR_NAME_VALUE(RADIOLIB_PLATFORM))
-  #pragma message(RADIOLIB_VAR_NAME_VALUE(RADIOLIB_VERSION_MAJOR))
-  #pragma message(RADIOLIB_VAR_NAME_VALUE(RADIOLIB_VERSION_MINOR))
-  #pragma message(RADIOLIB_VAR_NAME_VALUE(RADIOLIB_VERSION_PATCH))
-  #pragma message(RADIOLIB_VAR_NAME_VALUE(RADIOLIB_VERSION_EXTRA))
+  #pragma message("\nRadioLib Debug Info\nVersion:  \"" \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_MAJOR) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_MINOR) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_PATCH) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_EXTRA) "\"\n" \
+  "Platform: " RADIOLIB_VALUE(RADIOLIB_PLATFORM) "\n" \
+  "Compiled: " RADIOLIB_VALUE(__DATE__) " " RADIOLIB_VALUE(__TIME__) \
+  )
 #endif
 
 // check unknown/unsupported platform
 #if defined(RADIOLIB_UNKNOWN_PLATFORM)
   #warning "RadioLib might not be compatible with this Arduino board - check supported platforms at https://github.com/jgromes/RadioLib!"
+#endif
+
+// print warning for low-end platforms
+#if defined(RADIOLIB_LOWEND_PLATFORM)
+  #warning "Low-end platform detected, stability issues are likely!"
 #endif
 
 #include "modules/CC1101/CC1101.h"
@@ -74,13 +81,11 @@
 #include "modules/RF69/RF69.h"
 #include "modules/RFM2x/RFM22.h"
 #include "modules/RFM2x/RFM23.h"
-#include "modules/RFM9x/RFM95.h"
-#include "modules/RFM9x/RFM96.h"
-#include "modules/RFM9x/RFM97.h"
 #include "modules/Si443x/Si4430.h"
 #include "modules/Si443x/Si4431.h"
 #include "modules/Si443x/Si4432.h"
-#include "modules/SX1231/SX1231.h"
+#include "modules/SX123x/SX1231.h"
+#include "modules/SX123x/SX1233.h"
 #include "modules/SX126x/SX1261.h"
 #include "modules/SX126x/SX1262.h"
 #include "modules/SX126x/SX1268.h"
@@ -109,9 +114,14 @@
 #include "protocols/ExternalRadio/ExternalRadio.h"
 #include "protocols/Print/Print.h"
 #include "protocols/BellModem/BellModem.h"
+#include "protocols/LoRaWAN/LoRaWAN.h"
+
+// utilities
+#include "utils/CRC.h"
+#include "utils/Cryptography.h"
 
 // only create Radio class when using RadioShield
-#if defined(RADIOLIB_RADIOSHIELD)
+#if RADIOLIB_RADIOSHIELD
 
 // RadioShield pin definitions
 #define RADIOSHIELD_CS_A    10
@@ -143,7 +153,7 @@ class Radio {
       ModuleB = new Module(RADIOSHIELD_CS_B, RADIOSHIELD_IRQ_B, RADIOSHIELD_RST_B, RADIOSHIELD_GPIO_B);
     }
 
-#if defined(RADIOLIB_GODMODE)
+#if RADIOLIB_GODMODE
   private:
 #endif
 

@@ -1,6 +1,6 @@
 #include "AX25.h"
 #include <string.h>
-#if !defined(RADIOLIB_EXCLUDE_AX25)
+#if !RADIOLIB_EXCLUDE_AX25
 
 AX25Frame::AX25Frame(const char* destCallsign, uint8_t destSSID, const char* srcCallsign, uint8_t srcSSID, uint8_t control)
 : AX25Frame(destCallsign, destSSID, srcCallsign, srcSSID, control, 0, NULL, 0) {
@@ -25,7 +25,7 @@ AX25Frame::AX25Frame(const char* destCallsign, uint8_t destSSID, const char* src
 
   // set repeaters
   this->numRepeaters = 0;
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     this->repeaterCallsigns = NULL;
     this->repeaterSSIDs = NULL;
   #endif
@@ -43,7 +43,7 @@ AX25Frame::AX25Frame(const char* destCallsign, uint8_t destSSID, const char* src
   // info field
   this->infoLen = infoLen;
   if(infoLen > 0) {
-    #if !defined(RADIOLIB_STATIC_ONLY)
+    #if !RADIOLIB_STATIC_ONLY
       this->info = new uint8_t[infoLen];
     #endif
     memcpy(this->info, info, infoLen);
@@ -55,7 +55,7 @@ AX25Frame::AX25Frame(const AX25Frame& frame) {
 }
 
 AX25Frame::~AX25Frame() {
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     // deallocate info field
     if(infoLen > 0) {
       delete[] this->info;
@@ -124,7 +124,7 @@ int16_t AX25Frame::setRepeaters(char** repeaterCallsigns, uint8_t* repeaterSSIDs
   }
 
   // create buffers
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     this->repeaterCallsigns = new char*[numRepeaters];
     for(uint8_t i = 0; i < numRepeaters; i++) {
       this->repeaterCallsigns[i] = new char[strlen(repeaterCallsigns[i]) + 1];
@@ -153,12 +153,12 @@ void AX25Frame::setSendSequence(uint8_t seqNumber) {
 
 AX25Client::AX25Client(PhysicalLayer* phy) {
   phyLayer = phy;
-  #if !defined(RADIOLIB_EXCLUDE_AFSK)
+  #if !RADIOLIB_EXCLUDE_AFSK
   bellModem = nullptr;
   #endif
 }
 
-#if !defined(RADIOLIB_EXCLUDE_AFSK)
+#if !RADIOLIB_EXCLUDE_AFSK
 AX25Client::AX25Client(AFSKClient* audio) {
   phyLayer = audio->phyLayer;
   bellModem = new BellClient(audio);
@@ -194,7 +194,12 @@ int16_t AX25Client::begin(const char* srcCallsign, uint8_t srcSSID, uint8_t preL
   preambleLen = preLen;
 
   // configure for direct mode
-  return(phyLayer->startDirect());
+  #if !RADIOLIB_EXCLUDE_AFSK
+  if(bellModem != nullptr) {
+    return(phyLayer->startDirect());
+  }
+  #endif
+  return(RADIOLIB_ERR_NONE);
 }
 
 #if defined(RADIOLIB_BUILD_ARDUINO)
@@ -221,7 +226,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
   }
 
   // check repeater configuration
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     if(!(((frame->repeaterCallsigns == NULL) && (frame->repeaterSSIDs == NULL) && (frame->numRepeaters == 0)) ||
          ((frame->repeaterCallsigns != NULL) && (frame->repeaterSSIDs != NULL) && (frame->numRepeaters != 0)))) {
       return(RADIOLIB_ERR_INVALID_NUM_REPEATERS);
@@ -236,7 +241,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
   // calculate frame length without FCS (destination address, source address, repeater addresses, control, PID, info)
   size_t frameBuffLen = ((2 + frame->numRepeaters)*(RADIOLIB_AX25_MAX_CALLSIGN_LEN + 1)) + 1 + 1 + frame->infoLen;
   // create frame buffer without preamble, start or stop flags
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     uint8_t* frameBuff = new uint8_t[frameBuffLen + 2];
   #else
     uint8_t frameBuff[RADIOLIB_STATIC_ARRAY_SIZE];
@@ -303,16 +308,22 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
 
   // flip bit order
   for(size_t i = 0; i < frameBuffLen; i++) {
-    frameBuff[i] = Module::flipBits(frameBuff[i]);
+    frameBuff[i] = Module::reflect(frameBuff[i], 8);
   }
 
-  // calculate FCS
-  uint16_t fcs = getFrameCheckSequence(frameBuff, frameBuffLen);
+  // calculate
+  RadioLibCRCInstance.size = 16;
+  RadioLibCRCInstance.poly = RADIOLIB_CRC_CCITT_POLY;
+  RadioLibCRCInstance.init = RADIOLIB_CRC_CCITT_INIT;
+  RadioLibCRCInstance.out = RADIOLIB_CRC_CCITT_OUT;
+  RadioLibCRCInstance.refIn = false;
+  RadioLibCRCInstance.refOut = false;
+  uint16_t fcs = RadioLibCRCInstance.checksum(frameBuff, frameBuffLen);
   *(frameBuffPtr++) = (uint8_t)((fcs >> 8) & 0xFF);
   *(frameBuffPtr++) = (uint8_t)(fcs & 0xFF);
 
   // prepare buffer for the final frame (stuffed, with added preamble + flags and NRZI-encoded)
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     // worst-case scenario: sequence of 1s, will have 120% of the original length, stuffed frame also includes both flags
     uint8_t* stuffedFrameBuff = new uint8_t[preambleLen + 1 + (6*frameBuffLen)/5 + 2];
   #else
@@ -356,7 +367,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
   }
 
   // deallocate memory
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     delete[] frameBuff;
   #endif
 
@@ -402,7 +413,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
 
   // transmit
   int16_t state = RADIOLIB_ERR_NONE;
-  #if !defined(RADIOLIB_EXCLUDE_AFSK)
+  #if !RADIOLIB_EXCLUDE_AFSK
   if(bellModem != nullptr) {
     bellModem->idle();
 
@@ -416,12 +427,12 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
   } else {
   #endif
     state = phyLayer->transmit(stuffedFrameBuff, stuffedFrameBuffLen);
-  #if !defined(RADIOLIB_EXCLUDE_AFSK)
+  #if !RADIOLIB_EXCLUDE_AFSK
   }
   #endif
 
   // deallocate memory
-  #if !defined(RADIOLIB_STATIC_ONLY)
+  #if !RADIOLIB_STATIC_ONLY
     delete[] stuffedFrameBuff;
   #endif
 
@@ -429,34 +440,11 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
 }
 
 void AX25Client::getCallsign(char* buff) {
-  strncpy(buff, sourceCallsign, RADIOLIB_AX25_MAX_CALLSIGN_LEN);
+  strncpy(buff, sourceCallsign, RADIOLIB_AX25_MAX_CALLSIGN_LEN + 1);
 }
 
 uint8_t AX25Client::getSSID() {
   return(sourceSSID);
-}
-
-/*
-  CCITT CRC implementation based on https://github.com/kicksat/ax25
-
-  Licensed under Creative Commons Attribution-ShareAlike 4.0 International
-  https://creativecommons.org/licenses/by-sa/4.0/
-*/
-uint16_t AX25Client::getFrameCheckSequence(uint8_t* buff, size_t len) {
-  uint8_t outBit;
-  uint16_t mask;
-  uint16_t shiftReg = CRC_CCITT_INIT;
-
-  for(size_t i = 0; i < len; i++) {
-    for(uint8_t b = 0x80; b > 0x00; b /= 2) {
-      outBit = (shiftReg & 0x01) ? 0x01 : 0x00;
-      shiftReg >>= 1;
-      mask = XOR((buff[i] & b), outBit) ? CRC_CCITT_POLY_REVERSED : 0x0000;
-      shiftReg ^= mask;
-    }
-  }
-
-  return(Module::flipBits16(~shiftReg));
 }
 
 #endif

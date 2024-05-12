@@ -1,13 +1,9 @@
 #include "RF69.h"
 #include <math.h>
-#if !defined(RADIOLIB_EXCLUDE_RF69)
+#if !RADIOLIB_EXCLUDE_RF69
 
 RF69::RF69(Module* module) : PhysicalLayer(RADIOLIB_RF69_FREQUENCY_STEP_SIZE, RADIOLIB_RF69_MAX_PACKET_LENGTH)  {
   this->mod = module;
-}
-
-Module* RF69::getMod() {
-  return(this->mod);
 }
 
 int16_t RF69::begin(float freq, float br, float freqDev, float rxBw, int8_t pwr, uint8_t preambleLen) {
@@ -27,18 +23,18 @@ int16_t RF69::begin(float freq, float br, float freqDev, float rxBw, int8_t pwr,
     if(version == RADIOLIB_RF69_CHIP_VERSION) {
       flagFound = true;
     } else {
-      RADIOLIB_DEBUG_PRINTLN("RF69 not found! (%d of 10 tries) RADIOLIB_RF69_REG_VERSION == 0x%04X, expected 0x0024", i + 1, version);
+      RADIOLIB_DEBUG_BASIC_PRINTLN("RF69 not found! (%d of 10 tries) RADIOLIB_RF69_REG_VERSION == 0x%04X, expected 0x0024", i + 1, version);
       this->mod->hal->delay(10);
       i++;
     }
   }
 
   if(!flagFound) {
-    RADIOLIB_DEBUG_PRINTLN("No RF69 found!");
+    RADIOLIB_DEBUG_BASIC_PRINTLN("No RF69 found!");
     this->mod->term();
     return(RADIOLIB_ERR_CHIP_NOT_FOUND);
   } else {
-    RADIOLIB_DEBUG_PRINTLN("M\tRF69");
+    RADIOLIB_DEBUG_BASIC_PRINTLN("M\tRF69");
   }
 
   // configure settings not accessible by API
@@ -294,6 +290,22 @@ void RF69::clearDio1Action() {
   this->mod->hal->detachInterrupt(this->mod->hal->pinToInterrupt(this->mod->getGpio()));
 }
 
+void RF69::setPacketReceivedAction(void (*func)(void)) {
+  this->setDio0Action(func);
+}
+
+void RF69::clearPacketReceivedAction() {
+  this->clearDio0Action();
+}
+
+void RF69::setPacketSentAction(void (*func)(void)) {
+  this->setDio0Action(func);
+}
+
+void RF69::clearPacketSentAction() {
+  this->clearDio0Action();
+}
+
 void RF69::setFifoEmptyAction(void (*func)(void)) {
   // set DIO1 to the FIFO empty event (the register setting is done in startTransmit)
   if(this->mod->getGpio() == RADIOLIB_NC) {
@@ -359,7 +371,7 @@ bool RF69::fifoGet(volatile uint8_t* data, int totalLen, volatile int* rcvLen) {
 
   // get the data
   this->mod->SPIreadRegisterBurst(RADIOLIB_RF69_REG_FIFO, len, dataPtr);
-  (*rcvLen) += (len);
+  *rcvLen = *rcvLen + len;
 
   // check if we're done
   if(*rcvLen >= totalLen) {
@@ -944,7 +956,7 @@ uint8_t RF69::randomByte() {
   return(randByte);
 }
 
-#if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+#if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
 void RF69::setDirectAction(void (*func)(void)) {
   setDio1Action(func);
 }
@@ -964,6 +976,10 @@ int16_t RF69::setDIOMapping(uint32_t pin, uint32_t value) {
   }
 
   return(this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_DIO_MAPPING_2, value, 15 - 2 * pin, 14 - 2 * pin));
+}
+
+Module* RF69::getMod() {
+  return(this->mod);
 }
 
 int16_t RF69::getChipVersion() {

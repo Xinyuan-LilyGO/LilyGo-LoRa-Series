@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_SX127X)
+#if !RADIOLIB_EXCLUDE_SX127X
 
 #include "SX1278.h"
 
@@ -63,11 +63,23 @@ class SX1276: public SX1278 {
     */
     int16_t setFrequency(float freq);
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
 
 };
+
+/*!
+  \class RFM95
+  \brief Only exists as alias for SX1276, since there seems to be no difference between %RFM95 and %SX1276 modules.
+*/
+RADIOLIB_TYPE_ALIAS(SX1276, RFM95)
+
+/*!
+  \class RFM96
+  \brief Only exists as alias for SX1276, since there seems to be no difference between %RFM96 and %SX1276 modules.
+*/
+RADIOLIB_TYPE_ALIAS(SX1276, RFM96)
 
 #endif
 

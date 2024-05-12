@@ -10,7 +10,7 @@ This file is licensed under the MIT License: https://opensource.org/licenses/MIT
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_STM32WLX)
+#if !RADIOLIB_EXCLUDE_STM32WLX
 
 #include "../../Module.h"
 #include "SX1262.h"
@@ -81,8 +81,9 @@ class STM32WLx : public SX1262 {
       This automatically switches between the low-power (LP) and high-power (HP) amplifier.
 
       LP is preferred and supports -17 to +14dBm. When a higher power is
-      requested (or the LP amplifier is marked as unvailable using
-      setRfSwitchTable()), HP is used, which supports -9 to +22dBm.
+      requested (or the LP amplifier is marked as unavailable using
+      setRfSwitchTable()), HP is used, which supports -9 to +22dBm. If the LP is marked as unavailable,
+      HP output will be used instead.
 
       \param power Output power to be set in dBm.
 
@@ -119,16 +120,49 @@ class STM32WLx : public SX1262 {
     */
     void clearDio1Action();
 
-#if !defined(RADIOLIB_GODMODE)
+    /*!
+      \brief Sets interrupt service routine to call when a packet is received.
+      \param func ISR to call.
+    */
+    void setPacketReceivedAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is received.
+    */
+    void clearPacketReceivedAction();
+
+    /*!
+      \brief Sets interrupt service routine to call when a packet is sent.
+      \param func ISR to call.
+    */
+    void setPacketSentAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is sent.
+    */
+    void clearPacketSentAction();
+
+    /*!
+      \brief Sets interrupt service routine to call when a channel scan is finished.
+      \param func ISR to call.
+    */
+    void setChannelScanAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a channel scan is finished.
+    */
+    void clearChannelScanAction();
+
+#if !RADIOLIB_GODMODE
   protected:
 #endif
     virtual int16_t clearIrqStatus(uint16_t clearIrqParams) override;
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
 };
 
-#endif // !defined(RADIOLIB_EXCLUDE_SX126X)
+#endif
 
-#endif // _RADIOLIB_STM32WLX_MODULE_H
+#endif

@@ -144,6 +144,13 @@ public:
     }
 #endif
 
+    XPowersAXP202(uint8_t addr, iic_fptr_t readRegCallback, iic_fptr_t writeRegCallback)
+    {
+        thisReadRegCallback = readRegCallback;
+        thisWriteRegCallback = writeRegCallback;
+        __addr = addr;
+    }
+
     XPowersAXP202()
     {
 #if defined(ARDUINO)

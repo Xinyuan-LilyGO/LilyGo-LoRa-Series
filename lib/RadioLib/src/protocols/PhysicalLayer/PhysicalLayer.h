@@ -4,6 +4,25 @@
 #include "../../TypeDef.h"
 #include "../../Module.h"
 
+// data rate structure interpretation in case LoRa is used
+struct LoRaRate_t {
+  uint8_t spreadingFactor;
+  float bandwidth;
+  uint8_t codingRate;
+};
+
+// data rate structure interpretation in case FSK is used
+struct FSKRate_t {
+  float bitRate;
+  float freqDev;
+};
+
+// common data rate
+union DataRate_t {
+  LoRaRate_t lora;
+  FSKRate_t fsk;
+};
+
 /*!
   \class PhysicalLayer
 
@@ -90,6 +109,12 @@ class PhysicalLayer {
     virtual int16_t standby(uint8_t mode);
 
     /*!
+      \brief Sets module to received mode using its default configuration.
+      \returns \ref status_codes
+    */
+    virtual int16_t startReceive();
+
+    /*!
       \brief Interrupt-driven receive method. A DIO pin will be activated when full packet is received. 
       Must be implemented in module class.
       \param timeout Raw timeout value. Some modules use this argument to specify operation mode
@@ -148,7 +173,7 @@ class PhysicalLayer {
     /*!
       \brief Reads data that was received after calling startReceive method.
       \param str Address of Arduino String to save the received data.
-      \param len Expected number of characters in the message. When set to 0, the packet length will be retreived 
+      \param len Expected number of characters in the message. When set to 0, the packet length will be retrieved 
       automatically. When more bytes than received are requested, only the number of bytes requested will be returned.
       \returns \ref status_codes
     */
@@ -158,7 +183,7 @@ class PhysicalLayer {
     /*!
       \brief Reads data that was received after calling startReceive method.
       \param data Pointer to array to save the received binary data.
-      \param len Number of bytes that will be read. When set to 0, the packet length will be retreived automatically.
+      \param len Number of bytes that will be read. When set to 0, the packet length will be retrieved automatically.
       When more bytes than received are requested, only the number of bytes requested will be returned.
       \returns \ref status_codes
     */
@@ -218,6 +243,49 @@ class PhysicalLayer {
     virtual int16_t setEncoding(uint8_t encoding);
 
     /*!
+      \brief Set IQ inversion. Must be implemented in module class if the module supports it.
+      \param enable True to use inverted IQ, false for non-inverted.
+      \returns \ref status_codes
+    */
+    virtual int16_t invertIQ(bool enable);
+
+    /*!
+      \brief Set output power. Must be implemented in module class if the module supports it.
+      \param power Output power in dBm. The allowed range depends on the module used.
+      \returns \ref status_codes
+    */
+    virtual int16_t setOutputPower(int8_t power);
+
+    /*!
+      \brief Set sync word. Must be implemented in module class if the module supports it.
+      \param sync Pointer to the sync word.
+      \param len Sync word length in bytes. Maximum length depends on the module used.
+      \returns \ref status_codes
+    */
+    virtual int16_t setSyncWord(uint8_t* sync, size_t len);
+
+    /*!
+      \brief Set preamble length. Must be implemented in module class if the module supports it.
+      \param len Preamble length in bytes. Maximum length depends on the module used.
+      \returns \ref status_codes
+    */
+    virtual int16_t setPreambleLength(size_t len);
+    
+    /*!
+      \brief Set data. Must be implemented in module class if the module supports it.
+      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \returns \ref status_codes
+    */
+    virtual int16_t setDataRate(DataRate_t dr);
+
+    /*!
+      \brief Check the data rate can be configured by this module. Must be implemented in module class if the module supports it.
+      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \returns \ref status_codes
+    */
+    virtual int16_t checkDataRate(DataRate_t dr);
+
+    /*!
       \brief Gets the module frequency step size that was set in constructor.
       \returns Synthesizer frequency step size in Hz.
     */
@@ -241,6 +309,55 @@ class PhysicalLayer {
       \returns SNR of the last received packet in dB.
     */
     virtual float getSNR();
+
+    /*!
+      \brief Get expected time-on-air for a given size of payload
+      \param len Payload length in bytes.
+      \returns Expected time-on-air in microseconds.
+    */
+    virtual uint32_t getTimeOnAir(size_t len);
+
+    /*!
+      \brief Calculate the timeout value for this specific module / series (in number of symbols or units of time)
+      \param timeoutUs Timeout in microseconds to listen for
+      \returns Timeout value in a unit that is specific for the used module
+    */
+    virtual uint32_t calculateRxTimeout(uint32_t timeoutUs);
+
+    /*!
+      \brief Create the flags that make up RxDone and RxTimeout used for receiving downlinks
+      \param irqFlags The flags for which IRQs must be triggered
+      \param irqMask Mask indicating which IRQ triggers a DIO
+      \returns \ref status_codes
+    */
+    virtual int16_t irqRxDoneRxTimeout(uint16_t &irqFlags, uint16_t &irqMask);
+
+    /*!
+      \brief Check whether the IRQ bit for RxTimeout is set
+      \returns \ref RxTimeout IRQ is set
+    */
+    virtual bool isRxTimeout();
+
+    /*!
+      \brief Interrupt-driven channel activity detection method. interrupt will be activated
+      when packet is detected. Must be implemented in module class.
+      \returns \ref status_codes
+    */
+    virtual int16_t startChannelScan();
+
+    /*!
+      \brief Read the channel scan result
+      \returns \ref status_codes
+    */
+    virtual int16_t getChannelScanResult();
+
+    /*!
+      \brief Check whether the current communication channel is free or occupied. Performs CAD for LoRa modules,
+      or RSSI measurement for FSK modules.
+      \returns RADIOLIB_CHANNEL_FREE when channel is free,
+      RADIOLIB_PREAMBLE_DETECTEDwhen occupied or other \ref status_codes.
+    */
+    virtual int16_t scanChannel();
 
     /*!
       \brief Get truly random number in range 0 - max.
@@ -270,7 +387,7 @@ class PhysicalLayer {
     */
     int16_t startDirect();
 
-    #if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+    #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     /*!
       \brief Set sync word to be used to determine start of packet in direct reception mode.
       \param syncWord Sync word bits.
@@ -280,7 +397,7 @@ class PhysicalLayer {
     int16_t setDirectSyncWord(uint32_t syncWord, uint8_t len);
 
     /*!
-      \brief Set interrupt service routine function to call when data bit is receveid in direct mode.
+      \brief Set interrupt service routine function to call when data bit is received in direct mode.
       Must be implemented in module class.
       \param func Pointer to interrupt service routine.
     */
@@ -321,17 +438,39 @@ class PhysicalLayer {
     virtual int16_t setDIOMapping(uint32_t pin, uint32_t value);
 
     /*!
-      \brief Sets interrupt service routine to call when DIO1 activates.
+      \brief Sets interrupt service routine to call when a packet is received.
       \param func ISR to call.
     */
-    virtual void setDio1Action(void (*func)(void));
+    virtual void setPacketReceivedAction(void (*func)(void));
 
     /*!
-      \brief Clears interrupt service routine to call when DIO1 activates.
+      \brief Clears interrupt service routine to call when a packet is received.
     */
-    virtual void clearDio1Action();
+    virtual void clearPacketReceivedAction();
 
-    #if defined(RADIOLIB_INTERRUPT_TIMING)
+    /*!
+      \brief Sets interrupt service routine to call when a packet is sent.
+      \param func ISR to call.
+    */
+    virtual void setPacketSentAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is sent.
+    */
+    virtual void clearPacketSentAction();
+    
+    /*!
+      \brief Sets interrupt service routine to call when a channel scan is finished.
+      \param func ISR to call.
+    */
+    virtual void setChannelScanAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a channel scan is finished.
+    */
+    virtual void clearChannelScanAction();
+
+    #if RADIOLIB_INTERRUPT_TIMING
 
     /*!
       \brief Set function to be called to set up the timing interrupt.
@@ -348,18 +487,20 @@ class PhysicalLayer {
 
     #endif
 
-#if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+#if !RADIOLIB_GODMODE
   protected:
+#endif
+#if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     void updateDirectBuffer(uint8_t bit);
 #endif
 
-#if !defined(RADIOLIB_GODMODE)
+#if !RADIOLIB_GODMODE
   private:
 #endif
     float freqStep;
     size_t maxPacketLength;
 
-    #if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+    #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     uint8_t bufferBitPos;
     uint8_t bufferWritePos;
     uint8_t bufferReadPos;
@@ -383,6 +524,8 @@ class PhysicalLayer {
     friend class FSK4Client;
     friend class PagerClient;
     friend class BellClient;
+    friend class FT8Client;
+    friend class LoRaWANNode;
 };
 
 #endif

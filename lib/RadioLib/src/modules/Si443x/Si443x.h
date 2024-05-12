@@ -3,7 +3,7 @@
 
 #include "../../TypeDef.h"
 
-#if !defined(RADIOLIB_EXCLUDE_SI443X)
+#if !RADIOLIB_EXCLUDE_SI443X
 
 #include "../../Module.h"
 
@@ -566,8 +566,6 @@ class Si443x: public PhysicalLayer {
     */
     Si443x(Module* mod);
 
-    Module* getMod();
-
     // basic methods
 
     /*!
@@ -657,6 +655,28 @@ class Si443x: public PhysicalLayer {
     void clearIrqAction();
 
     /*!
+      \brief Sets interrupt service routine to call when a packet is received.
+      \param func ISR to call.
+    */
+    void setPacketReceivedAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is received.
+    */
+    void clearPacketReceivedAction();
+
+    /*!
+      \brief Sets interrupt service routine to call when a packet is sent.
+      \param func ISR to call.
+    */
+    void setPacketSentAction(void (*func)(void));
+
+    /*!
+      \brief Clears interrupt service routine to call when a packet is sent.
+    */
+    void clearPacketSentAction();
+
+    /*!
       \brief Interrupt-driven binary transmit method. Will start transmitting arbitrary binary data up to 64 bytes long.
       \param data Binary data that will be transmitted.
       \param len Length of binary data to transmit (in bytes).
@@ -688,9 +708,10 @@ class Si443x: public PhysicalLayer {
     int16_t startReceive(uint32_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len);
 
     /*!
-      \brief Reads data that was received after calling startReceive method. This method reads len characters.
+      \brief Reads data that was received after calling startReceive method. When the packet length is not known in advance,
+      getPacketLength method must be called BEFORE calling readData!
       \param data Pointer to array to save the received binary data.
-      \param len Number of bytes that will be read. When set to 0, the packet length will be retreived automatically.
+      \param len Number of bytes that will be read. When set to 0, the packet length will be retrieved automatically.
       When more bytes than received are requested, only the number of bytes requested will be returned.
       \returns \ref status_codes
     */
@@ -774,9 +795,9 @@ class Si443x: public PhysicalLayer {
    */
     int16_t getChipVersion();
 
-    #if !defined(RADIOLIB_EXCLUDE_DIRECT_RECEIVE)
+    #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
     /*!
-      \brief Set interrupt service routine function to call when data bit is receveid in direct mode.
+      \brief Set interrupt service routine function to call when data bit is received in direct mode.
       \param func Pointer to interrupt service routine.
     */
     void setDirectAction(void (*func)(void));
@@ -802,14 +823,20 @@ class Si443x: public PhysicalLayer {
    */
    int16_t variablePacketLengthMode(uint8_t maxLen = RADIOLIB_SI443X_MAX_PACKET_LENGTH);
 
-#if !defined(RADIOLIB_GODMODE) && !defined(RADIOLIB_LOW_LEVEL)
+#if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
+#endif
+    Module* getMod();
+
+#if !RADIOLIB_GODMODE
+  protected:
+#endif
+    int16_t setFrequencyRaw(float newFreq);
+
+#if !RADIOLIB_GODMODE
+  private:
 #endif
     Module* mod;
-
-#if !defined(RADIOLIB_GODMODE)
-  protected:
-#endif
 
     float bitRate = 0;
     float frequencyDev = 0;
@@ -819,18 +846,13 @@ class Si443x: public PhysicalLayer {
     bool packetLengthQueried = false;
     uint8_t packetLengthConfig = RADIOLIB_SI443X_FIXED_PACKET_LENGTH_ON;
 
-    int16_t setFrequencyRaw(float newFreq);
-    int16_t setPacketMode(uint8_t mode, uint8_t len);
-
-#if !defined(RADIOLIB_GODMODE)
-  private:
-#endif
     bool findChip();
     void clearIRQFlags();
     void clearFIFO(size_t count);
     int16_t config();
     int16_t updateClockRecovery();
     int16_t directMode();
+    int16_t setPacketMode(uint8_t mode, uint8_t len);
 };
 
 #endif
