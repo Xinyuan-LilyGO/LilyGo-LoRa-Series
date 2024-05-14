@@ -52,13 +52,40 @@ int16_t SX1268::setFrequency(float freq) {
 }
 
 /// \todo integers only (all modules - frequency, data rate, bandwidth etc.)
-int16_t SX1268::setFrequency(float freq, bool calibrate, float band) {
+int16_t SX1268::setFrequency(float freq, bool calibrate) {
   RADIOLIB_CHECK_RANGE(freq, 410.0, 810.0, RADIOLIB_ERR_INVALID_FREQUENCY);
 
   // calibrate image rejection
   if(calibrate) {
-    int16_t state = SX126x::calibrateImage(freq - band, freq + band);
+    uint8_t data[2] = { 0, 0 };
+
+    // try to match the frequency ranges
+    int freqBand = (int)freq;
+    if((freqBand >= 779) && (freqBand <= 787)) {
+      data[0] = RADIOLIB_SX126X_CAL_IMG_779_MHZ_1;
+      data[1] = RADIOLIB_SX126X_CAL_IMG_779_MHZ_2;
+    } else if((freqBand >= 470) && (freqBand <= 510)) {
+      data[0] = RADIOLIB_SX126X_CAL_IMG_470_MHZ_1;
+      data[1] = RADIOLIB_SX126X_CAL_IMG_470_MHZ_2;
+    } else if((freqBand >= 430) && (freqBand <= 440)) {
+      data[0] = RADIOLIB_SX126X_CAL_IMG_430_MHZ_1;
+      data[1] = RADIOLIB_SX126X_CAL_IMG_430_MHZ_2;
+    }
+
+    int16_t state;
+    if(data[0]) {
+      // matched with predefined ranges, do the calibration
+      state = SX126x::calibrateImage(data);
+    
+    } else {
+      // if nothing matched, try custom calibration - the may or may not work
+      RADIOLIB_DEBUG_BASIC_PRINTLN("Failed to match predefined frequency range, trying custom");
+      state = SX126x::calibrateImageRejection(freq - 4.0f, freq + 4.0f);
+    
+    }
+    
     RADIOLIB_ASSERT(state);
+
   }
 
   // set frequency
@@ -66,24 +93,33 @@ int16_t SX1268::setFrequency(float freq, bool calibrate, float band) {
 }
 
 int16_t SX1268::setOutputPower(int8_t power) {
-  RADIOLIB_CHECK_RANGE(power, -9, 22, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+  // check if power value is configurable
+  int16_t state = checkOutputPower(power, NULL);
+  RADIOLIB_ASSERT(state);
 
   // get current OCP configuration
   uint8_t ocp = 0;
-  int16_t state = readRegister(RADIOLIB_SX126X_REG_OCP_CONFIGURATION, &ocp, 1);
+  state = readRegister(RADIOLIB_SX126X_REG_OCP_CONFIGURATION, &ocp, 1);
   RADIOLIB_ASSERT(state);
 
   // set PA config
   state = SX126x::setPaConfig(0x04, RADIOLIB_SX126X_PA_CONFIG_SX1268);
   RADIOLIB_ASSERT(state);
 
-  // set output power
-  /// \todo power ramp time configuration
-  state = SX126x::setTxParams(power);
+  // set output power with default 200us ramp
+  state = SX126x::setTxParams(power, RADIOLIB_SX126X_PA_RAMP_200U);
   RADIOLIB_ASSERT(state);
 
   // restore OCP configuration
   return(writeRegister(RADIOLIB_SX126X_REG_OCP_CONFIGURATION, &ocp, 1));
+}
+
+int16_t SX1268::checkOutputPower(int8_t power, int8_t* clipped) {
+  if(clipped) {
+    *clipped = RADIOLIB_MAX(-9, RADIOLIB_MIN(22, power));
+  }
+  RADIOLIB_CHECK_RANGE(power, -9, 22, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+  return(RADIOLIB_ERR_NONE);
 }
 
 #endif

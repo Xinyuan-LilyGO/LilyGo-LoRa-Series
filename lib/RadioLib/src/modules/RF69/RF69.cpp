@@ -100,18 +100,18 @@ void RF69::reset() {
 
 int16_t RF69::transmit(uint8_t* data, size_t len, uint8_t addr) {
   // calculate timeout (5ms + 500 % of expected time-on-air)
-  uint32_t timeout = 5000000 + (uint32_t)((((float)(len * 8)) / (this->bitRate * 1000.0)) * 5000000.0);
+  RadioLibTime_t timeout = 5 + (RadioLibTime_t)((((float)(len * 8)) / this->bitRate) * 5);
 
   // start transmission
   int16_t state = startTransmit(data, len, addr);
   RADIOLIB_ASSERT(state);
 
   // wait for transmission end or timeout
-  uint32_t start = this->mod->hal->micros();
+  RadioLibTime_t start = this->mod->hal->millis();
   while(!this->mod->hal->digitalRead(this->mod->getIrq())) {
     this->mod->hal->yield();
 
-    if(this->mod->hal->micros() - start > timeout) {
+    if(this->mod->hal->millis() - start > timeout) {
       finishTransmit();
       return(RADIOLIB_ERR_TX_TIMEOUT);
     }
@@ -122,18 +122,18 @@ int16_t RF69::transmit(uint8_t* data, size_t len, uint8_t addr) {
 
 int16_t RF69::receive(uint8_t* data, size_t len) {
   // calculate timeout (500 ms + 400 full 64-byte packets at current bit rate)
-  uint32_t timeout = 500000 + (1.0/(this->bitRate*1000.0))*(RADIOLIB_RF69_MAX_PACKET_LENGTH*400.0);
+  RadioLibTime_t timeout = 500 + (1.0/(this->bitRate))*(RADIOLIB_RF69_MAX_PACKET_LENGTH*400.0);
 
   // start reception
   int16_t state = startReceive();
   RADIOLIB_ASSERT(state);
 
   // wait for packet reception or timeout
-  uint32_t start = this->mod->hal->micros();
+  RadioLibTime_t start = this->mod->hal->millis();
   while(!this->mod->hal->digitalRead(this->mod->getIrq())) {
     this->mod->hal->yield();
 
-    if(this->mod->hal->micros() - start > timeout) {
+    if(this->mod->hal->millis() - start > timeout) {
       standby();
       clearIRQFlags();
       return(RADIOLIB_ERR_RX_TIMEOUT);
@@ -259,7 +259,7 @@ int16_t RF69::startReceive() {
   return(state);
 }
 
-int16_t RF69::startReceive(uint32_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len) {
+int16_t RF69::startReceive(uint32_t timeout, uint32_t irqFlags, uint32_t irqMask, size_t len) {
   (void)timeout;
   (void)irqFlags;
   (void)irqMask;
@@ -566,9 +566,9 @@ int16_t RF69::setBitRate(float br) {
   setMode(RADIOLIB_RF69_STANDBY);
 
   // set bit rate
-  uint16_t bitRate = 32000 / br;
-  int16_t state = this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_BITRATE_MSB, (bitRate & 0xFF00) >> 8, 7, 0);
-  state |= this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_BITRATE_LSB, bitRate & 0x00FF, 7, 0);
+  uint16_t bitRateRaw = 32000 / br;
+  int16_t state = this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_BITRATE_MSB, (bitRateRaw & 0xFF00) >> 8, 7, 0);
+  state |= this->mod->SPIsetRegValue(RADIOLIB_RF69_REG_BITRATE_LSB, bitRateRaw & 0x00FF, 7, 0);
   if(state == RADIOLIB_ERR_NONE) {
     this->bitRate = br;
   }

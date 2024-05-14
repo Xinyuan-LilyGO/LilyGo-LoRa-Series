@@ -54,7 +54,7 @@ struct tone_t {
   /*!
     \brief Length of tone in us, set to 0 for picture scan tones.
   */
-  uint32_t len;
+  RadioLibTime_t len;
 
   /*!
     \brief Frequency of tone in Hz, set to 0 for picture scan tones.
@@ -174,7 +174,7 @@ class SSTVClient {
       \param imgLine Image line to send, in 24-bit RGB. It is up to the user to ensure that
       imgLine has enough pixels to send it in the current SSTV mode.
     */
-    void sendLine(uint32_t* imgLine);
+    void sendLine(const uint32_t* imgLine);
 
     /*!
       \brief Get picture height of the currently configured SSTV mode.
@@ -194,7 +194,7 @@ class SSTVClient {
     SSTVMode_t txMode = Scottie1;
     bool firstLine = true;
 
-    void tone(float freq, uint32_t len = 0);
+    void tone(float freq, RadioLibTime_t len = 0);
 };
 
 #endif

@@ -22,7 +22,7 @@ int16_t FSK4Client::begin(float base, uint32_t shift, uint16_t rate) {
   shiftFreqHz = shift;
 
   // calculate duration of 1 bit
-  bitDuration = (uint32_t)1000000/rate;
+  bitDuration = (RadioLibTime_t)1000000/rate;
 
   // calculate carrier shift
   shiftFreq = getRawShift(shift);
@@ -81,7 +81,7 @@ size_t FSK4Client::write(uint8_t b) {
 
 void FSK4Client::tone(uint8_t i) {
   Module* mod = phyLayer->getMod();
-  uint32_t start = mod->hal->micros();
+  RadioLibTime_t start = mod->hal->micros();
   transmitDirect(baseFreq + tones[i], baseFreqHz + tonesHz[i]);
   mod->waitForMicroseconds(start, bitDuration);
 }
@@ -112,12 +112,12 @@ int32_t FSK4Client::getRawShift(int32_t shift) {
   int32_t step = round(phyLayer->getFreqStep());
 
   // check minimum shift value
-  if(abs(shift) < step / 2) {
+  if(RADIOLIB_ABS(shift) < step / 2) {
     return(0);
   }
 
   // round shift to multiples of frequency step size
-  if(abs(shift) % step < (step / 2)) {
+  if(RADIOLIB_ABS(shift) % step < (step / 2)) {
     return(shift / step);
   }
   if(shift < 0) {

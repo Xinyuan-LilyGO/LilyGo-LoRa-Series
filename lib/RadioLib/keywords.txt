@@ -15,6 +15,9 @@ ArduinoHal	KEYWORD1
 # modules
 CC1101	KEYWORD1
 LLCC68	KEYWORD1
+LR1110	KEYWORD1
+LR1120	KEYWORD1
+LR1121	KEYWORD1
 nRF24	KEYWORD1
 RF69	KEYWORD1
 RFM22	KEYWORD1
@@ -88,6 +91,11 @@ AS923	KEYWORD1
 KR920	KEYWORD1
 IN865	KEYWORD1
 
+# LR11x0 scan results
+LR11x0WifiResult_t	KEYWORD1
+LR11x0WifiResultFull_t	KEYWORD1
+LR11x0WifiResultExtended_t	KEYWORD1
+
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
@@ -124,6 +132,7 @@ setCodingRate	KEYWORD2
 setFrequency	KEYWORD2
 setSyncWord	KEYWORD2
 setOutputPower	KEYWORD2
+checkOutputPower	KEYWORD2
 setCurrentLimit	KEYWORD2
 setPreambleLength	KEYWORD2
 setGain	KEYWORD2
@@ -134,6 +143,7 @@ getSNR	KEYWORD2
 getDataRate	KEYWORD2
 setBitRate	KEYWORD2
 setRxBandwidth	KEYWORD2
+autoSetRxBandwidth	KEYWORD2
 setAFCBandwidth	KEYWORD2
 setAFC		KEYWORD2
 setAFCAGCTrigger	KEYWORD2
@@ -224,6 +234,7 @@ spectralScanStart	KEYWORD2
 spectralScanAbort	KEYWORD2
 spectralScanGetStatus	KEYWORD2
 spectralScanGetResult	KEYWORD2
+setPaRampTime	KEYWORD2
 
 # nRF24
 setIrqAction	KEYWORD2
@@ -233,6 +244,16 @@ setReceivePipe	KEYWORD2
 disablePipe	KEYWORD2
 getStatus	KEYWORD2
 setAutoAck	KEYWORD2
+
+# LR11x0
+beginLRFHSS	KEYWORD2
+setLrFhssConfig	KEYWORD2
+startWifiScan	KEYWORD2
+getWifiScanResultsCount	KEYWORD2
+getWifiScanResult	KEYWORD2
+wifiScan	KEYWORD2
+setWiFiScanAction	KEYWORD2
+clearWiFiScanAction	KEYWORD2
 
 # RTTY
 idle	KEYWORD2
@@ -307,10 +328,10 @@ uplink	KEYWORD2
 downlink	KEYWORD2
 sendReceive	KEYWORD2
 setDeviceStatus	KEYWORD2
-getFcntUp	KEYWORD2
-getNFcntDown	KEYWORD2
-getAFcntDown	KEYWORD2
-resetFcntDown	KEYWORD2
+getFCntUp	KEYWORD2
+getNFCntDown	KEYWORD2
+getAFCntDown	KEYWORD2
+resetFCntDown	KEYWORD2
 setDatarate	KEYWORD2
 setADR	KEYWORD2
 setDutyCycle	KEYWORD2
@@ -319,10 +340,10 @@ timeUntilUplink	KEYWORD2
 setDwellTime	KEYWORD2
 maxPayloadDwellTime	KEYWORD2
 setTxPower	KEYWORD2
-setCSMA	KEYWORD2
 getMacLinkCheckAns	KEYWORD2
 getMacDeviceTimeAns	KEYWORD2
 getDevAddr	KEYWORD2
+getLastToA	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

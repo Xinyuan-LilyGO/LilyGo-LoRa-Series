@@ -1,6 +1,8 @@
 #if !defined(_RADIOLIB_BUILD_OPTIONS_H)
 #define _RADIOLIB_BUILD_OPTIONS_H
 
+#include "TypeDef.h"
+
 /* RadioLib build configuration options */
 
 /*
@@ -350,12 +352,12 @@
   // ... and for the grand finale, we have millis() and micros() DEFINED AS MACROS!
   #if defined(millis)
   #undef millis
-  inline unsigned long millis() { return((unsigned long)(STCV / 1000)); };
+  inline RadioLibTime_t millis() { return((RadioLibTime_t)(STCV / 1000)); };
   #endif
 
   #if defined(micros)
   #undef micros
-  inline unsigned long micros() { return((unsigned long)(STCV)); };
+  inline RadioLibTime_t micros() { return((RadioLibTime_t)(STCV)); };
   #endif
 
 #elif defined(TEENSYDUINO)
@@ -529,6 +531,17 @@
   #define RADIOLIB_DEBUG_SPI_HEXDUMP(...) {}
 #endif
 
+// debug info strings
+#define RADIOLIB_VALUE_TO_STRING(x) #x
+#define RADIOLIB_VALUE(x) RADIOLIB_VALUE_TO_STRING(x)
+
+#define RADIOLIB_INFO "\nRadioLib Info\nVersion:  \"" \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_MAJOR) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_MINOR) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_PATCH) "." \
+  RADIOLIB_VALUE(RADIOLIB_VERSION_EXTRA) "\"\n" \
+  "Platform: " RADIOLIB_VALUE(RADIOLIB_PLATFORM) "\n" \
+  "Compiled: " RADIOLIB_VALUE(__DATE__) " " RADIOLIB_VALUE(__TIME__)
 
 /*!
   \brief A simple assert macro, will return on error.

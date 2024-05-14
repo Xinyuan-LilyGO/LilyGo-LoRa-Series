@@ -188,6 +188,18 @@
 #define RADIOLIB_SX126X_CALIBRATE_RC64K_ON                      0b00000001  //  0     0                               enabled
 #define RADIOLIB_SX126X_CALIBRATE_ALL                           0b01111111  //  6     0   calibrate all blocks
 
+//RADIOLIB_SX126X_CMD_CALIBRATE_IMAGE
+#define RADIOLIB_SX126X_CAL_IMG_430_MHZ_1                       0x6B
+#define RADIOLIB_SX126X_CAL_IMG_430_MHZ_2                       0x6F
+#define RADIOLIB_SX126X_CAL_IMG_470_MHZ_1                       0x75
+#define RADIOLIB_SX126X_CAL_IMG_470_MHZ_2                       0x81
+#define RADIOLIB_SX126X_CAL_IMG_779_MHZ_1                       0xC1
+#define RADIOLIB_SX126X_CAL_IMG_779_MHZ_2                       0xC5
+#define RADIOLIB_SX126X_CAL_IMG_863_MHZ_1                       0xD7
+#define RADIOLIB_SX126X_CAL_IMG_863_MHZ_2                       0xDB
+#define RADIOLIB_SX126X_CAL_IMG_902_MHZ_1                       0xE1
+#define RADIOLIB_SX126X_CAL_IMG_902_MHZ_2                       0xE9
+
 //RADIOLIB_SX126X_CMD_SET_PA_CONFIG
 #define RADIOLIB_SX126X_PA_CONFIG_HP_MAX                        0x07
 #define RADIOLIB_SX126X_PA_CONFIG_PA_LUT                        0x01
@@ -440,7 +452,7 @@ class SX126x: public PhysicalLayer {
       \brief Default constructor.
       \param mod Instance of Module that will be used to communicate with the radio.
     */
-    SX126x(Module* mod);
+    explicit SX126x(Module* mod);
 
     /*!
       \brief Whether the module has an XTAL (true) or TCXO (false). Defaults to false.
@@ -574,34 +586,34 @@ class SX126x: public PhysicalLayer {
       \brief Sets interrupt service routine to call when a packet is received.
       \param func ISR to call.
     */
-    void setPacketReceivedAction(void (*func)(void));
+    void setPacketReceivedAction(void (*func)(void)) override;
 
     /*!
       \brief Clears interrupt service routine to call when a packet is received.
     */
-    void clearPacketReceivedAction();
+    void clearPacketReceivedAction() override;
 
     /*!
       \brief Sets interrupt service routine to call when a packet is sent.
       \param func ISR to call.
     */
-    void setPacketSentAction(void (*func)(void));
+    void setPacketSentAction(void (*func)(void)) override;
 
     /*!
       \brief Clears interrupt service routine to call when a packet is sent.
     */
-    void clearPacketSentAction();
+    void clearPacketSentAction() override;
 
     /*!
       \brief Sets interrupt service routine to call when a channel scan is finished.
       \param func ISR to call.
     */
-    void setChannelScanAction(void (*func)(void));
+    void setChannelScanAction(void (*func)(void)) override;
 
     /*!
       \brief Clears interrupt service routine to call when a channel scan is finished.
     */
-    void clearChannelScanAction();
+    void clearChannelScanAction() override;
 
     /*!
       \brief Interrupt-driven binary transmit method.
@@ -625,7 +637,7 @@ class SX126x: public PhysicalLayer {
 
       \returns \ref status_codes
     */
-    int16_t startReceive();
+    int16_t startReceive() override;
 
     /*!
       \brief Interrupt-driven receive method. DIO1 will be activated when full packet is received.
@@ -642,7 +654,7 @@ class SX126x: public PhysicalLayer {
       \param len Only for PhysicalLayer compatibility, not used.
       \returns \ref status_codes
     */
-    int16_t startReceive(uint32_t timeout, uint16_t irqFlags = RADIOLIB_SX126X_IRQ_RX_DEFAULT, uint16_t irqMask = RADIOLIB_SX126X_IRQ_RX_DONE, size_t len = 0);
+    int16_t startReceive(uint32_t timeout, uint32_t irqFlags = RADIOLIB_SX126X_IRQ_RX_DEFAULT, uint32_t irqMask = RADIOLIB_SX126X_IRQ_RX_DONE, size_t len = 0);
 
     /*!
       \brief Interrupt-driven receive method where the device mostly sleeps and periodically wakes to listen.
@@ -774,7 +786,7 @@ class SX126x: public PhysicalLayer {
       \param br FSK bit rate to be set in kbps.
       \returns \ref status_codes
     */
-    int16_t setBitRate(float br);
+    int16_t setBitRate(float br) override;
 
     /*!
       \brief Set data.
@@ -908,7 +920,7 @@ class SX126x: public PhysicalLayer {
       \brief Gets SNR (Signal to Noise Ratio) of the last received packet. Only available for LoRa modem.
       \returns SNR of the last received packet in dB.
     */
-    float getSNR();
+    float getSNR() override;
 
     /*!
       \brief Gets frequency error of the latest received packet.
@@ -935,7 +947,7 @@ class SX126x: public PhysicalLayer {
 
     /*!
       \brief Set modem in variable packet length mode. Available in FSK mode only.
-      \param len Maximum packet length.
+      \param maxLen Maximum packet length.
       \returns \ref status_codes
     */
     int16_t variablePacketLengthMode(uint8_t maxLen = RADIOLIB_SX126X_MAX_PACKET_LENGTH);
@@ -945,14 +957,14 @@ class SX126x: public PhysicalLayer {
       \param len Payload length in bytes.
       \returns Expected time-on-air in microseconds.
     */
-    uint32_t getTimeOnAir(size_t len) override;
+    RadioLibTime_t getTimeOnAir(size_t len) override;
 
     /*!
       \brief Calculate the timeout value for this specific module / series (in number of symbols or units of time)
       \param timeoutUs Timeout in microseconds to listen for
       \returns Timeout value in a unit that is specific for the used module
     */
-    uint32_t calculateRxTimeout(uint32_t timeoutUs);
+    RadioLibTime_t calculateRxTimeout(RadioLibTime_t timeoutUs) override;
 
     /*!
       \brief Create the flags that make up RxDone and RxTimeout used for receiving downlinks
@@ -960,13 +972,13 @@ class SX126x: public PhysicalLayer {
       \param irqMask Mask indicating which IRQ triggers a DIO
       \returns \ref status_codes
     */
-    int16_t irqRxDoneRxTimeout(uint16_t &irqFlags, uint16_t &irqMask);
+    int16_t irqRxDoneRxTimeout(uint32_t &irqFlags, uint32_t &irqMask) override;
 
     /*!
       \brief Check whether the IRQ bit for RxTimeout is set
-      \returns \ref RxTimeout IRQ is set
+      \returns Whether RxTimeout IRQ is set
     */
-    bool isRxTimeout();
+    bool isRxTimeout() override;
 
     /*!
       \brief Set implicit header mode for future reception/transmission.
@@ -1028,7 +1040,7 @@ class SX126x: public PhysicalLayer {
       \brief Get one truly random byte from RSSI noise.
       \returns TRNG byte.
     */
-    uint8_t randomByte();
+    uint8_t randomByte() override;
 
     /*!
       \brief Enable/disable inversion of the I and Q signals
@@ -1042,13 +1054,13 @@ class SX126x: public PhysicalLayer {
       \brief Set interrupt service routine function to call when data bit is received in direct mode.
       \param func Pointer to interrupt service routine.
     */
-    void setDirectAction(void (*func)(void));
+    void setDirectAction(void (*func)(void)) override;
 
     /*!
       \brief Function to read and process data bit in direct reception mode.
       \param pin Pin on which to read.
     */
-    void readBit(uint32_t pin);
+    void readBit(uint32_t pin) override;
     #endif
 
     /*!
@@ -1102,10 +1114,25 @@ class SX126x: public PhysicalLayer {
     */
     int16_t setPaConfig(uint8_t paDutyCycle, uint8_t deviceSel, uint8_t hpMax = RADIOLIB_SX126X_PA_CONFIG_HP_MAX, uint8_t paLut = RADIOLIB_SX126X_PA_CONFIG_PA_LUT);
 
+    /*!
+      \brief Perform image rejection calibration for the specified frequency band.
+      WARNING: Use at your own risk! Setting incorrect values may lead to decreased performance
+      \param freqMin Frequency band lower bound.
+      \param freqMax Frequency band upper bound.
+      \returns \ref status_codes
+    */
+    int16_t calibrateImageRejection(float freqMin, float freqMax);
+
+    /*!
+      \brief Set PA ramp-up time. Set to 200us by default.
+      \returns \ref status_codes
+    */
+    int16_t setPaRampTime(uint8_t rampTime);
+
 #if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
 #endif
-    Module* getMod();
+    Module* getMod() override;
     
     // SX126x SPI command implementations
     int16_t setFs();
@@ -1119,9 +1146,9 @@ class SX126x: public PhysicalLayer {
     int16_t setDioIrqParams(uint16_t irqMask, uint16_t dio1Mask, uint16_t dio2Mask = RADIOLIB_SX126X_IRQ_NONE, uint16_t dio3Mask = RADIOLIB_SX126X_IRQ_NONE);
     virtual int16_t clearIrqStatus(uint16_t clearIrqParams = RADIOLIB_SX126X_IRQ_ALL);
     int16_t setRfFrequency(uint32_t frf);
-    int16_t calibrateImage(float freqMin, float freqMax);
+    int16_t calibrateImage(uint8_t* data);
     uint8_t getPacketType();
-    int16_t setTxParams(uint8_t power, uint8_t rampTime = RADIOLIB_SX126X_PA_RAMP_200U);
+    int16_t setTxParams(uint8_t power, uint8_t rampTime);
     int16_t setModulationParams(uint8_t sf, uint8_t bw, uint8_t cr, uint8_t ldro);
     int16_t setModulationParamsFSK(uint32_t br, uint8_t sh, uint8_t rxBw, uint32_t freqDev);
     int16_t setPacketParams(uint16_t preambleLen, uint8_t crcType, uint8_t payloadLen, uint8_t hdrType, uint8_t invertIQ);
@@ -1136,7 +1163,7 @@ class SX126x: public PhysicalLayer {
 #if !RADIOLIB_GODMODE
   protected:
 #endif
-    const char* chipType;
+    const char* chipType = NULL;
     uint8_t bandwidth = 0;
     
     // Allow subclasses to define different TX modes
@@ -1166,6 +1193,7 @@ class SX126x: public PhysicalLayer {
     float dataRateMeasured = 0;
 
     uint32_t tcxoDelay = 0;
+    uint8_t pwr = 0;
 
     size_t implicitLen = 0;
     uint8_t invertIQEnabled = RADIOLIB_SX126X_LORA_IQ_STANDARD;

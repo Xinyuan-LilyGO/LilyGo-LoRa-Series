@@ -8,8 +8,8 @@ nRF24::nRF24(Module* mod) : PhysicalLayer(RADIOLIB_NRF24_FREQUENCY_STEP_SIZE, RA
 
 int16_t nRF24::begin(int16_t freq, int16_t dr, int8_t pwr, uint8_t addrWidth) {
   // set module properties
-  this->mod->SPIreadCommand = RADIOLIB_NRF24_CMD_READ;
-  this->mod->SPIwriteCommand = RADIOLIB_NRF24_CMD_WRITE;
+  this->mod->spiConfig.cmds[RADIOLIB_MODULE_SPI_COMMAND_READ] = RADIOLIB_NRF24_CMD_READ;
+  this->mod->spiConfig.cmds[RADIOLIB_MODULE_SPI_COMMAND_WRITE] = RADIOLIB_NRF24_CMD_WRITE;
   this->mod->init();
   this->mod->hal->pinMode(this->mod->getIrq(), this->mod->hal->GpioModeInput);
 
@@ -88,7 +88,7 @@ int16_t nRF24::transmit(uint8_t* data, size_t len, uint8_t addr) {
   RADIOLIB_ASSERT(state);
 
   // wait until transmission is finished
-  uint32_t start = this->mod->hal->micros();
+  uint32_t start = this->mod->hal->millis();
   while(this->mod->hal->digitalRead(this->mod->getIrq())) {
     this->mod->hal->yield();
 
@@ -98,8 +98,8 @@ int16_t nRF24::transmit(uint8_t* data, size_t len, uint8_t addr) {
       return(RADIOLIB_ERR_ACK_NOT_RECEIVED);
     }
 
-    // check timeout: 15 retries * 4ms (max Tx time as per datasheet)
-    if(this->mod->hal->micros() - start >= 60000) {
+    // check timeout: 15 retries * 4ms (max Tx time as per datasheet) + 10 ms
+    if(this->mod->hal->millis() - start >= ((15 * 4) + 10)) {
       finishTransmit();
       return(RADIOLIB_ERR_TX_TIMEOUT);
     }
@@ -114,12 +114,12 @@ int16_t nRF24::receive(uint8_t* data, size_t len) {
   RADIOLIB_ASSERT(state);
 
   // wait for Rx_DataReady or timeout
-  uint32_t start = this->mod->hal->micros();
+  uint32_t start = this->mod->hal->millis();
   while(this->mod->hal->digitalRead(this->mod->getIrq())) {
     this->mod->hal->yield();
 
-    // check timeout: 15 retries * 4ms (max Tx time as per datasheet)
-    if(this->mod->hal->micros() - start >= 60000) {
+    // check timeout: 15 retries * 4ms (max Tx time as per datasheet) + 10 ms
+    if(this->mod->hal->millis() - start >= ((15 * 4) + 10)) {
       standby();
       clearIRQ();
       return(RADIOLIB_ERR_RX_TIMEOUT);
@@ -249,7 +249,7 @@ int16_t nRF24::startReceive() {
   return(state);
 }
 
-int16_t nRF24::startReceive(uint32_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len) {
+int16_t nRF24::startReceive(uint32_t timeout, uint32_t irqFlags, uint32_t irqMask, size_t len) {
   (void)timeout;
   (void)irqFlags;
   (void)irqMask;
@@ -298,14 +298,14 @@ int16_t nRF24::setBitRate(float br) {
   RADIOLIB_ASSERT(state);
 
   // set data rate
-  uint16_t dataRate = (uint16_t)br;
-  if(dataRate == 250) {
+  uint16_t bitRate = (uint16_t)br;
+  if(bitRate == 250) {
     state = this->mod->SPIsetRegValue(RADIOLIB_NRF24_REG_RF_SETUP, RADIOLIB_NRF24_DR_250_KBPS, 5, 5);
     state |= this->mod->SPIsetRegValue(RADIOLIB_NRF24_REG_RF_SETUP, RADIOLIB_NRF24_DR_250_KBPS, 3, 3);
-  } else if(dataRate == 1000) {
+  } else if(bitRate == 1000) {
     state = this->mod->SPIsetRegValue(RADIOLIB_NRF24_REG_RF_SETUP, RADIOLIB_NRF24_DR_1_MBPS, 5, 5);
     state |= this->mod->SPIsetRegValue(RADIOLIB_NRF24_REG_RF_SETUP, RADIOLIB_NRF24_DR_1_MBPS, 3, 3);
-  } else if(dataRate == 2000) {
+  } else if(bitRate == 2000) {
     state = this->mod->SPIsetRegValue(RADIOLIB_NRF24_REG_RF_SETUP, RADIOLIB_NRF24_DR_2_MBPS, 5, 5);
     state |= this->mod->SPIsetRegValue(RADIOLIB_NRF24_REG_RF_SETUP, RADIOLIB_NRF24_DR_2_MBPS, 3, 3);
   } else {
@@ -313,7 +313,7 @@ int16_t nRF24::setBitRate(float br) {
   }
   
   if(state == RADIOLIB_ERR_NONE) {
-    this->dataRate = dataRate;
+    this->dataRate = bitRate;
   }
 
 

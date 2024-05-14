@@ -73,17 +73,17 @@ void Si443x::reset() {
 
 int16_t Si443x::transmit(uint8_t* data, size_t len, uint8_t addr) {
   // calculate timeout (5ms + 500 % of expected time-on-air)
-  uint32_t timeout = 5000000 + (uint32_t)((((float)(len * 8)) / (this->bitRate * 1000.0)) * 5000000.0);
+  RadioLibTime_t timeout = 5 + (uint32_t)((((float)(len * 8)) / this->bitRate) * 5);
 
   // start transmission
   int16_t state = startTransmit(data, len, addr);
   RADIOLIB_ASSERT(state);
 
   // wait for transmission end or timeout
-  uint32_t start = this->mod->hal->micros();
+  RadioLibTime_t start = this->mod->hal->millis();
   while(this->mod->hal->digitalRead(this->mod->getIrq())) {
     this->mod->hal->yield();
-    if(this->mod->hal->micros() - start > timeout) {
+    if(this->mod->hal->millis() - start > timeout) {
       finishTransmit();
       return(RADIOLIB_ERR_TX_TIMEOUT);
     }
@@ -94,16 +94,16 @@ int16_t Si443x::transmit(uint8_t* data, size_t len, uint8_t addr) {
 
 int16_t Si443x::receive(uint8_t* data, size_t len) {
   // calculate timeout (500 ms + 400 full 64-byte packets at current bit rate)
-  uint32_t timeout = 500000 + (1.0/(this->bitRate*1000.0))*(RADIOLIB_SI443X_MAX_PACKET_LENGTH*400.0);
+  RadioLibTime_t timeout = 500 + (1.0/(this->bitRate))*(RADIOLIB_SI443X_MAX_PACKET_LENGTH*400.0);
 
   // start reception
   int16_t state = startReceive();
   RADIOLIB_ASSERT(state);
 
   // wait for packet reception or timeout
-  uint32_t start = this->mod->hal->micros();
+  RadioLibTime_t start = this->mod->hal->millis();
   while(this->mod->hal->digitalRead(this->mod->getIrq())) {
-    if(this->mod->hal->micros() - start > timeout) {
+    if(this->mod->hal->millis() - start > timeout) {
       standby();
       clearIRQFlags();
       return(RADIOLIB_ERR_RX_TIMEOUT);
@@ -300,7 +300,7 @@ int16_t Si443x::startReceive() {
   return(state);
 }
 
-int16_t Si443x::startReceive(uint32_t timeout, uint16_t irqFlags, uint16_t irqMask, size_t len) {
+int16_t Si443x::startReceive(uint32_t timeout, uint32_t irqFlags, uint32_t irqMask, size_t len) {
   (void)timeout;
   (void)irqFlags;
   (void)irqMask;
@@ -558,11 +558,11 @@ int16_t Si443x::setEncoding(uint8_t encoding) {
   /// \todo - add inverted Manchester?
   switch(encoding) {
     case RADIOLIB_ENCODING_NRZ:
-      return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_INVERTED_OFF | RADIOLIB_SI443X_MANCHESTER_OFF | RADIOLIB_SI443X_WHITENING_OFF, 2, 0));
+      return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_OFF | RADIOLIB_SI443X_WHITENING_OFF, 2, 0));
     case RADIOLIB_ENCODING_MANCHESTER:
-      return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_INVERTED_OFF | RADIOLIB_SI443X_MANCHESTER_ON | RADIOLIB_SI443X_WHITENING_OFF, 2, 0));
+      return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_ON | RADIOLIB_SI443X_WHITENING_OFF, 2, 0));
     case RADIOLIB_ENCODING_WHITENING:
-      return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_INVERTED_OFF | RADIOLIB_SI443X_MANCHESTER_OFF | RADIOLIB_SI443X_WHITENING_ON, 2, 0));
+      return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_OFF | RADIOLIB_SI443X_WHITENING_ON, 2, 0));
     default:
       return(RADIOLIB_ERR_INVALID_ENCODING);
   }
@@ -577,12 +577,8 @@ int16_t Si443x::setDataShaping(uint8_t sh) {
   switch(sh) {
     case RADIOLIB_SHAPING_NONE:
       return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_INVERTED_OFF | RADIOLIB_SI443X_MANCHESTER_OFF | RADIOLIB_SI443X_WHITENING_OFF, 2, 0));
-    case RADIOLIB_SHAPING_0_3:
-      return(RADIOLIB_ERR_INVALID_ENCODING);
     case RADIOLIB_SHAPING_0_5:
       return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_2, RADIOLIB_SI443X_MODULATION_GFSK, 1, 0));
-    case RADIOLIB_SHAPING_1_0:
-      return(this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_MODULATION_MODE_CONTROL_1, RADIOLIB_SI443X_MANCHESTER_INVERTED_OFF | RADIOLIB_SI443X_MANCHESTER_OFF | RADIOLIB_SI443X_WHITENING_ON, 2, 0));
     default:
       return(RADIOLIB_ERR_INVALID_ENCODING);
   }
@@ -771,7 +767,7 @@ int16_t Si443x::updateClockRecovery() {
   // print that whole mess
   RADIOLIB_DEBUG_BASIC_PRINTLN("%X\n%X\n%X", bypass, decRate, manch);
   RADIOLIB_DEBUG_BASIC_PRINT_FLOAT(rxOsr, 2);
-  RADIOLIB_DEBUG_BASIC_PRINTLN("\t%d\t%X\n%lu\t%lX\n%d\t%X", rxOsr_fixed, rxOsr_fixed, ncoOff, ncoOff, crGain, crGain);
+  RADIOLIB_DEBUG_BASIC_PRINTLN("\t%d\t%X\n%lu\t%lX\n%d\t%X", rxOsr_fixed, rxOsr_fixed, (long unsigned int)ncoOff, (long unsigned int)ncoOff, crGain, crGain);
 
   // update oversampling ratio
   int16_t state = this->mod->SPIsetRegValue(RADIOLIB_SI443X_REG_CLOCK_REC_OFFSET_2, (uint8_t)((rxOsr_fixed & 0x0700) >> 3), 7, 5);

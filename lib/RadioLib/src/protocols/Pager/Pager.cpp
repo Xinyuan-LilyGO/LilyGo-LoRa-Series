@@ -28,15 +28,12 @@ PagerClient::PagerClient(PhysicalLayer* phy) {
   #if !RADIOLIB_EXCLUDE_DIRECT_RECEIVE
   readBitInstance = phyLayer;
   #endif
-  filterNumAddresses = 0;
-  filterAddresses = NULL;
-  filterMasks = NULL;
 }
 
 int16_t PagerClient::begin(float base, uint16_t speed, bool invert, uint16_t shift) {
   // calculate duration of 1 bit in us
   dataRate = (float)speed/1000.0f;
-  bitDuration = (uint32_t)1000000/speed;
+  bitDuration = (RadioLibTime_t)1000000/speed;
 
   // calculate 24-bit frequency
   baseFreq = base;
@@ -206,7 +203,7 @@ int16_t PagerClient::transmit(uint8_t* data, size_t len, uint32_t addr, uint8_t 
           // in BCD mode, pad the rest of the code word with spaces (0xC)
           if(encoding == RADIOLIB_PAGER_BCD) {
             uint8_t numSteps = (symbolPos - RADIOLIB_PAGER_FUNC_BITS_POS + symbolLength)/symbolLength;
-            for(uint8_t i = 0; i < numSteps; i++) {
+            for(uint8_t j = 0; j < numSteps; j++) {
               symbol = encodeBCD(' ');
               symbol = Module::reflect(symbol, 8);
               symbol >>= (8 - symbolLength);
@@ -397,17 +394,15 @@ int16_t PagerClient::readData(uint8_t* data, size_t* len, uint32_t* addr) {
   }
 
   // we have the address, start pulling out the message
-  bool complete = false;
   size_t decodedBytes = 0;
   uint32_t prevCw = 0;
   bool overflow = false;
   int8_t ovfBits = 0;
-  while(!complete && phyLayer->available()) {
+  while(phyLayer->available()) {
     uint32_t cw = read();
 
     // check if it's the idle code word
     if(cw == RADIOLIB_PAGER_IDLE_CODE_WORD) {
-      complete = true;
       break;
     }
 
@@ -511,7 +506,7 @@ void PagerClient::write(uint32_t codeWord) {
   Module* mod = phyLayer->getMod();
   for(int8_t i = 31; i >= 0; i--) {
     uint32_t mask = (uint32_t)0x01 << i;
-    uint32_t start = mod->hal->micros();
+    RadioLibTime_t start = mod->hal->micros();
 
     // figure out the shift direction - start by assuming the bit is 0
     int16_t change = shiftFreq;
@@ -532,7 +527,7 @@ void PagerClient::write(uint32_t codeWord) {
     // this is pretty silly, while(mod->hal->micros() ... ) would be enough
     // but for some reason, MegaCore throws a linker error on it
     // "relocation truncated to fit: R_AVR_7_PCREL against `no symbol'"
-    uint32_t now = mod->hal->micros();
+    RadioLibTime_t now = mod->hal->micros();
     while(now - start < bitDuration) {
       now = mod->hal->micros();
     }
@@ -554,7 +549,7 @@ uint32_t PagerClient::read() {
     codeWord = ~codeWord;
   }
 
-  RADIOLIB_DEBUG_PROTOCOL_PRINTLN("R\t%lX", codeWord);
+  RADIOLIB_DEBUG_PROTOCOL_PRINTLN("R\t%lX", (long unsigned int)codeWord);
   // TODO BCH error correction here
   return(codeWord);
 }

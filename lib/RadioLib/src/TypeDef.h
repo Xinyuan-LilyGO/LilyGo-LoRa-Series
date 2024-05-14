@@ -563,6 +563,28 @@
 */
 #define RADIOLIB_LORAWAN_NO_DOWNLINK                            (-1116)
 
+// LR11x0-specific status codes
+
+/*!
+  \brief The selected 802.11 WiFi type is invalid.
+*/
+#define RADIOLIB_ERR_INVALID_WIFI_TYPE                          (-1200)
+
+/*!
+  \}
+*/
+
+/*!
+  \defgroup typedefs Type aliases used by RadioLib.
+
+  \{
+*/
+
+/*!
+  \brief Type used for durations in RadioLib
+*/
+typedef unsigned long RadioLibTime_t;
+
 /*!
   \}
 */

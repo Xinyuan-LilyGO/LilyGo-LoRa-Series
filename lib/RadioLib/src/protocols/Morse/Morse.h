@@ -148,7 +148,7 @@ class MorseClient: public RadioLibPrint {
       \param b Byte to write.
       \returns 1 if the byte was written, 0 otherwise.
     */
-    size_t write(uint8_t b);
+    size_t write(uint8_t b) override;
 
 #if !RADIOLIB_GODMODE
   private:
@@ -167,9 +167,9 @@ class MorseClient: public RadioLibPrint {
 
     // variables to keep decoding state
     uint32_t signalCounter = 0;
-    uint32_t signalStart = 0;
+    RadioLibTime_t signalStart = 0;
     uint32_t pauseCounter = 0;
-    uint32_t pauseStart = 0;
+    RadioLibTime_t pauseStart = 0;
 
     size_t printNumber(unsigned long, uint8_t);
     size_t printFloat(double, uint8_t);
