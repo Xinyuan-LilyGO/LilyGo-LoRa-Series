@@ -7,6 +7,6 @@
 | T-Beam-V1.1/V1.2        | [Shell](./T-Beam-V1X.7z)                   |
 | T3-S3                   | [Shell](./T3-S3.7z)                        |
 | T3-V2.1-1.6             | [Shell](./T3-V2.1-1.6.7z)                  |
-| T-Beam-Supreme-Shell.7z | ![Shell](./images/QQ图片20240514163135.png) |
+| T-Beam-Supreme-Shell.7z | ![Shell](./images/T-Beam-Supreme-Shell.png) |
 
 
