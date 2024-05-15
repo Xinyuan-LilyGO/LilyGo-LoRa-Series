@@ -1,5 +1,5 @@
 #include <TinyGPS++.h>
-#include "boards.h"
+#include "LoRaBoards.h"
 
 // The TinyGPS++ object
 TinyGPSPlus gps;
@@ -7,7 +7,7 @@ TinyGPSPlus gps;
 
 void setup()
 {
-    initBoard();
+    setupBoards();
     Serial.println(F("FullExample.ino"));
     Serial.println(F("An extensive example of many interesting TinyGPS++ features"));
     Serial.print(F("Testing TinyGPS++ library v. ")); Serial.println(TinyGPSPlus::libraryVersion());
@@ -71,8 +71,8 @@ static void smartDelay(unsigned long ms)
 {
     unsigned long start = millis();
     do {
-        while (Serial1.available())
-            gps.encode(Serial1.read());
+        while (SerialGPS.available())
+            gps.encode(SerialGPS.read());
     } while (millis() - start < ms);
 }
 

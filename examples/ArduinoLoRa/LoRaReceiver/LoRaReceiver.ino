@@ -1,17 +1,22 @@
-
+// Only supports SX1276/SX1278
 #include <LoRa.h>
-#include "boards.h"
+#include "LoRaBoards.h"
 
 void setup()
 {
-    initBoard();
+    setupBoards();
     // When the power is turned on, a delay is required.
     delay(1500);
 
     Serial.println("LoRa Receiver");
 
+#ifdef  RADIO_TCXO_ENABLE
+    pinMode(RADIO_TCXO_ENABLE, OUTPUT);
+    digitalWrite(RADIO_TCXO_ENABLE, HIGH);
+#endif
+
     LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DIO0_PIN);
-    if (!LoRa.begin(LoRa_frequency)) {
+    if (!LoRa.begin(LORA_FREQ_CONFIG)) {
         Serial.println("Starting LoRa failed!");
         while (1);
     }
@@ -36,7 +41,6 @@ void loop()
         // print RSSI of packet
         Serial.print("' with RSSI ");
         Serial.println(LoRa.packetRssi());
-#ifdef HAS_DISPLAY
         if (u8g2) {
             u8g2->clearBuffer();
             char buf[256];
@@ -48,6 +52,5 @@ void loop()
             u8g2->drawStr(0, 56, buf);
             u8g2->sendBuffer();
         }
-#endif
     }
 }

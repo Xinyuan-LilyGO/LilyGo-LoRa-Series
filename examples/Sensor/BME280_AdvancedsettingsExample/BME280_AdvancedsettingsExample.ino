@@ -20,7 +20,7 @@
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
-#include "boards.h"
+#include "LoRaBoards.h"
 
 
 
@@ -35,7 +35,7 @@ void setup()
     Serial.begin(115200);
     Serial.println(F("BME280 test"));
 
-    initBoard();
+    setupBoards();
 
     if (! bme.begin(0x77, &Wire)) {
         Serial.println("Could not find a valid BME280 sensor, check wiring!");

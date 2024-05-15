@@ -20,7 +20,7 @@
 #include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
-#include "boards.h"
+#include "LoRaBoards.h"
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 
@@ -34,7 +34,7 @@ void setup()
     while (!Serial);   // time to get serial running
     Serial.println(F("BME280 test"));
 
-    initBoard();
+    setupBoards();
 
     unsigned status;
 

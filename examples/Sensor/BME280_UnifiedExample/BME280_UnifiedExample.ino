@@ -19,7 +19,7 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_BME280.h>
-#include "boards.h"
+#include "LoRaBoards.h"
 
 Adafruit_BME280 bme; // use I2C interface
 Adafruit_Sensor *bme_temp = bme.getTemperatureSensor();
@@ -31,7 +31,7 @@ void setup()
     Serial.begin(115200);
     Serial.println(F("BME280 Sensor event test"));
 
-    initBoard();
+    setupBoards();
 
     if (!bme.begin()) {
         Serial.println(F("Could not find a valid BME280 sensor, check wiring!"));

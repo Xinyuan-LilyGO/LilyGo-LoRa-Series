@@ -35,7 +35,7 @@
 #include "SSD1306Wire.h"        // legacy: #include "SSD1306.h"
 // Optionally include custom images
 #include "images.h"
-#include "boards.h"
+#include "LoRaBoards.h"
 
 
 SSD1306Wire display(0x3c, I2C_SDA, I2C_SCL);
@@ -142,7 +142,7 @@ long timeSinceLastModeSwitch = 0;
 
 void setup()
 {
-    initBoard();
+    setupBoards();
 
     // Initialising the UI will init the display too.
     display.init();

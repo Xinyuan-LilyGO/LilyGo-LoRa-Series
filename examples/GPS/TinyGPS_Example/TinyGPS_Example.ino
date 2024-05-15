@@ -3,8 +3,8 @@
   Base on TinyGPSPlus //https://github.com/mikalhart/TinyGPSPlus
 */
 
+#include "LoRaBoards.h"
 #include <TinyGPS++.h>
-#include "boards.h"
 
 TinyGPSPlus gps;
 
@@ -12,7 +12,8 @@ void displayInfo();
 
 void setup()
 {
-    initBoard();
+    setupBoards();
+
     // When the power is turned on, a delay is required.
     delay(1500);
 
@@ -27,13 +28,13 @@ void setup()
 void loop()
 {
     // This sketch displays information every time a new sentence is correctly encoded.
-    while (Serial1.available() > 0)
-        if (gps.encode(Serial1.read()))
+    while (SerialGPS.available() > 0)
+        if (gps.encode(SerialGPS.read()))
             displayInfo();
 
-    if (millis() > 5000 && gps.charsProcessed() < 10) {
+    if (millis() > 15000 && gps.charsProcessed() < 10) {
         Serial.println(F("No GPS detected: check wiring."));
-        while (true);
+        delay(15000);
     }
 }
 

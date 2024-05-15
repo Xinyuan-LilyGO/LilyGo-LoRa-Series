@@ -34,7 +34,7 @@
 */
 
 #include <Arduino.h>
-#include "boards.h"
+#include "LoRaBoards.h"
 
 
 void u8g2_prepare(void)
@@ -250,7 +250,7 @@ void draw(void)
 
 void setup(void)
 {
-    initBoard();
+    setupBoards();
     if (!u8g2) {
         Serial.println("No find SH1106 display!Please check whether the connection is normal");
         while (1);

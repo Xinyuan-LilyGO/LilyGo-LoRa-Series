@@ -17,70 +17,57 @@
 #include <RadioLib.h>
 #include "utilities.h"
 #include <AceButton.h>
+#include "LoRaBoards.h"
 
 using namespace ace_button;
 
-bool readkey();
 void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void setFlag(void);
 
-// ! Please select the corresponding RF module
-// #define USING_SX1262
-// #define USING_SX1268
-// #define USING_SX1276
-// #define USING_SX1278
-// #define USING_SX1280
+#if     defined(USING_SX1276)
+#define CONFIG_RADIO_FREQ           868.0
+#define CONFIG_RADIO_OUTPUT_POWER   17
+#define CONFIG_RADIO_BW             125.0
+SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
-
-#if     defined(USING_SX1262)
-uint8_t txPower = 22;
-float radioFreq = 868.0;
-SX1262
-#elif   defined(USING_SX1268)
-uint8_t txPower = 22;
-float radioFreq = 433.0;
-SX1268
-#elif   defined(USING_SX1276)
-#undef RADIO_DIO1_PIN
-#define RADIO_DIO1_PIN              9       //SX1276 DIO1 = IO9
-uint8_t txPower = 17;
-float radioFreq = 868.0;
-SX1276
 #elif   defined(USING_SX1278)
-#undef RADIO_DIO1_PIN
-#define RADIO_DIO1_PIN              9       //SX1278 DIO1 = IO9
-uint8_t txPower = 17;
-float radioFreq = 433.0;
-SX1278
+#define CONFIG_RADIO_FREQ           433.0
+#define CONFIG_RADIO_OUTPUT_POWER   17
+#define CONFIG_RADIO_BW             125.0
+SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
+
+#elif   defined(USING_SX1262)
+#define CONFIG_RADIO_FREQ           868.0
+#define CONFIG_RADIO_OUTPUT_POWER   22
+#define CONFIG_RADIO_BW             125.0
+
+SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+
 #elif   defined(USING_SX1280)
-#undef RADIO_DIO1_PIN
-#define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
-#undef RADIO_BUSY_PIN
-#define RADIO_BUSY_PIN              36      //SX1280 BUSY = IO36
+#define CONFIG_RADIO_FREQ           2400.0
+#define CONFIG_RADIO_OUTPUT_POWER   13
+#define CONFIG_RADIO_BW             203.125
+SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
-#ifdef LILYGO_T3_S3_V1_0
-uint8_t txPower = 3;                        //The SX1280 PA version cannot set the power over 3dBm, otherwise it will burn the PA
-#else
-//T3 S3 V1.2 No PA Version
-uint8_t txPower = 13;
-#undef RADIO_RX_PIN
-#undef RADIO_TX_PIN
-#endif
-float radioFreq = 2400.0;
-SX1280
-#else
+#elif   defined(USING_SX1268)
+#define CONFIG_RADIO_FREQ           433.0
+#define CONFIG_RADIO_OUTPUT_POWER   22
+#define CONFIG_RADIO_BW             125.0
+SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
-#error "No define radio type !"
+#elif   defined(USING_LR1121)
+#define CONFIG_RADIO_FREQ           868.0
+#define CONFIG_RADIO_OUTPUT_POWER   22
+#define CONFIG_RADIO_BW             125.0
+LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
-radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 
 // save transmission state between loops
 int             transmissionState = RADIOLIB_ERR_NONE;
 bool            transmittedFlag = false;
-volatile bool   enableInterrupt = true;
 uint32_t        transmissionCounter = 0;
 uint32_t        recvCounter = 0;
 float           radioRSSI   =   0;
@@ -100,10 +87,6 @@ AceButton       button;
 
 void setFlag(void)
 {
-    // check if the interrupt is enabled
-    if (!enableInterrupt) {
-        return;
-    }
     // we got a packet, set the flag
     transmittedFlag = true;
 }
@@ -118,10 +101,8 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         Serial.printf("framCounter : %d\n", framCounter);
         switch (framCounter) {
         case 0:
-            enableInterrupt = false;
             break;
         case 1:
-            enableInterrupt = true;
             Serial.println("Start transmit");
             state = radio.transmit((uint8_t *)&transmissionCounter, 4);
             if (state != RADIOLIB_ERR_NONE) {
@@ -129,7 +110,6 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
             }
             break;
         case 2:
-            enableInterrupt = true;
             Serial.println("Start receive");
             state = radio.startReceive();
             if (state != RADIOLIB_ERR_NONE) {
@@ -150,25 +130,9 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
 
 void setup()
 {
+    setupBoards();
 
-    Serial.begin(115200);
-    Serial.println("initBoard");
-
-    pinMode(BOARD_LED, OUTPUT);
-    digitalWrite(BOARD_LED, LED_ON);
-
-    Wire.begin(I2C_SDA, I2C_SCL);
-
-    SDSPI.begin(SDCARD_SCLK, SDCARD_MISO, SDCARD_MOSI, SDCARD_CS);
-    isSdCardOnline = SD.begin(SDCARD_CS, SDSPI);
-    if (!isSdCardOnline) {
-        Serial.println("setupSDCard FAIL");
-    } else {
-        uint32_t cardSize = SD.cardSize() / (1024 * 1024);
-        Serial.print("setupSDCard PASS . SIZE = ");
-        Serial.print(cardSize);
-        Serial.println(" MB");
-    }
+    delay(1000);
 
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     button.init(BUTTON_PIN);
@@ -201,51 +165,125 @@ void setup()
 
     display.flipScreenVertically();
 
-
-    SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
     Serial.print(F("[Radio] Initializing ... "));
-    int  state = radio.begin(radioFreq);
+    int  state = radio.begin();
     if ( state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
     } else {
         Serial.println(F("failed!"));
     }
     isRadioOnline = state == RADIOLIB_ERR_NONE;
-    enableInterrupt = false;
-
-    // The SX1280 PA version cannot set the power over 3dBm, otherwise it will burn the PA
-    // Other types of modules are standard transmission power.
-    if (radio.setOutputPower(txPower) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
-        Serial.println(F("Selected output power is invalid for this module!"));
-    }
 
 #if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
     //The SX1280 version needs to set RX, TX antenna switching pins
     radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
 #endif
 
+    /*
+     *   Sets carrier frequency.
+     *   SX1278/SX1276 : Allowed values range from 137.0 MHz to 525.0 MHz.
+     *   SX1268/SX1262 : Allowed values are in range from 150.0 to 960.0 MHz.
+     *   SX1280        : Allowed values are in range from 2400.0 to 2500.0 MHz.
+     *   LR1121        : Allowed values are in range from 150.0 to 960.0 MHz, 1900 - 2200 MHz and 2400 - 2500 MHz. Will also perform calibrations.
+     * * * */
 
-#ifndef USING_SX1280
-    // set bandwidth to 250 kHz
-    if (radio.setBandwidth(250.0) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
-        Serial.println(F("Selected bandwidth is invalid for this module!"));
+    if (radio.setFrequency(CONFIG_RADIO_FREQ) == RADIOLIB_ERR_INVALID_FREQUENCY) {
+        Serial.println(F("Selected frequency is invalid for this module!"));
+        while (true);
     }
 
-    // set over current protection limit to 80 mA (accepted range is 45 - 240 mA)
-    // NOTE: set value to 0 to disable overcurrent protection
-    if (radio.setCurrentLimit(120) == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
+    /*
+    *   Sets LoRa link bandwidth.
+    *   SX1278/SX1276 : Allowed values are 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250 and 500 kHz. Only available in %LoRa mode.
+    *   SX1268/SX1262 : Allowed values are 7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125.0, 250.0 and 500.0 kHz.
+    *   SX1280        : Allowed values are 203.125, 406.25, 812.5 and 1625.0 kHz.
+    *   LR1121        : Allowed values are 62.5, 125.0, 250.0 and 500.0 kHz.
+    * * * */
+    if (radio.setBandwidth(CONFIG_RADIO_BW) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
+        Serial.println(F("Selected bandwidth is invalid for this module!"));
+        while (true);
+    }
+
+
+    /*
+    * Sets LoRa link spreading factor.
+    * SX1278/SX1276 :  Allowed values range from 6 to 12. Only available in LoRa mode.
+    * SX1262        :  Allowed values range from 5 to 12.
+    * SX1280        :  Allowed values range from 5 to 12.
+    * LR1121        :  Allowed values range from 5 to 12.
+    * * * */
+    if (radio.setSpreadingFactor(10) == RADIOLIB_ERR_INVALID_SPREADING_FACTOR) {
+        Serial.println(F("Selected spreading factor is invalid for this module!"));
+        while (true);
+    }
+
+    /*
+    * Sets LoRa coding rate denominator.
+    * SX1278/SX1276/SX1268/SX1262 : Allowed values range from 5 to 8. Only available in LoRa mode.
+    * SX1280        :  Allowed values range from 5 to 8.
+    * LR1121        :  Allowed values range from 5 to 8.
+    * * * */
+    if (radio.setCodingRate(6) == RADIOLIB_ERR_INVALID_CODING_RATE) {
+        Serial.println(F("Selected coding rate is invalid for this module!"));
+        while (true);
+    }
+
+    /*
+    * Sets LoRa sync word.
+    * SX1278/SX1276/SX1268/SX1262/SX1280 : Sets LoRa sync word. Only available in LoRa mode.
+    * * */
+    if (radio.setSyncWord(0xAB) != RADIOLIB_ERR_NONE) {
+        Serial.println(F("Unable to set sync word!"));
+        while (true);
+    }
+
+    /*
+    * Sets transmission output power.
+    * SX1278/SX1276 :  Allowed values range from -3 to 15 dBm (RFO pin) or +2 to +17 dBm (PA_BOOST pin). High power +20 dBm operation is also supported, on the PA_BOOST pin. Defaults to PA_BOOST.
+    * SX1262        :  Allowed values are in range from -9 to 22 dBm. This method is virtual to allow override from the SX1261 class.
+    * SX1268        :  Allowed values are in range from -9 to 22 dBm.
+    * SX1280        :  Allowed values are in range from -18 to 13 dBm.
+    * LR1121        :  Allowed values are in range from -9 to 22 dBm (high-power PA) or -17 to 14 dBm (low-power PA)
+    * * * */
+    if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.println(F("Selected output power is invalid for this module!"));
+        while (true);
+    }
+
+#if !defined(USING_SX1280) && !defined(USING_LR1121)
+    /*
+    * Sets current limit for over current protection at transmitter amplifier.
+    * SX1278/SX1276 : Allowed values range from 45 to 120 mA in 5 mA steps and 120 to 240 mA in 10 mA steps.
+    * SX1262/SX1268 : Allowed values range from 45 to 120 mA in 2.5 mA steps and 120 to 240 mA in 10 mA steps.
+    * NOTE: set value to 0 to disable overcurrent protection
+    * * * */
+    if (radio.setCurrentLimit(140) == RADIOLIB_ERR_INVALID_CURRENT_LIMIT) {
         Serial.println(F("Selected current limit is invalid for this module!"));
+        while (true);
     }
 #endif
+
+    /*
+    * Sets preamble length for LoRa or FSK modem.
+    * SX1278/SX1276 : Allowed values range from 6 to 65535 in %LoRa mode or 0 to 65535 in FSK mode.
+    * SX1262/SX1268 : Allowed values range from 1 to 65535.
+    * SX1280        : Allowed values range from 1 to 65535.
+    * LR1121        : Allowed values range from 1 to 65535.
+    * * */
+    if (radio.setPreambleLength(15) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH) {
+        Serial.println(F("Selected preamble length is invalid for this module!"));
+        while (true);
+    }
+
+    // Enables or disables CRC check of received packets.
+    if (radio.setCRC(false) == RADIOLIB_ERR_INVALID_CRC_CONFIGURATION) {
+        Serial.println(F("Selected CRC is invalid for this module!"));
+        while (true);
+    }
 
     // set the function that will be called
     // when new packet is received
-#if defined(USING_SX1276) || defined(USING_SX1278)
-    radio.setDio0Action(setFlag, RISING);
-#else
-    radio.setDio1Action(setFlag);
-#endif
-
+    radio.setPacketReceivedAction(setFlag);
 
     // start listening for LoRa packets
     Serial.print(F("[Radio] Starting to listen ... "));
@@ -331,10 +369,6 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 
         digitalWrite(BOARD_LED, 1 - digitalRead(BOARD_LED));
 
-        // disable the interrupt service routine while
-        // processing the data
-        enableInterrupt = false;
-
         // reset flag
         transmittedFlag = false;
 
@@ -365,9 +399,6 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
         // put module back to listen mode
         radio.startReceive();
 
-        // we're ready to receive more packets,
-        // enable interrupt service routine
-        enableInterrupt = true;
     }
 
     display->drawString(0 + x, 0 + y, "Radio Rx");

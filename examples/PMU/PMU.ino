@@ -8,10 +8,10 @@
  */
 
 
-#include "boards.h"
+#include "LoRaBoards.h"
 
 
-#if !defined(LILYGO_TBeamS3_SUPREME_V3_0) && !defined(LILYGO_TBeam_V1_X)
+#if !defined(T_BEAM_S3_SUPREME) && !defined(T_BEAM) 
 #error "The sketch is only suitable for boards carrying AXP192 or AXP2101 chips!"
 #endif
 
@@ -21,7 +21,7 @@ uint32_t startMillis;
 void setup()
 {
     // Init PMU
-    initBoard();
+    setupBoards();
 }
 
 

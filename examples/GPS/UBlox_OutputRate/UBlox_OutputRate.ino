@@ -1,4 +1,4 @@
-#include "boards.h"
+#include "LoRaBoards.h"
 #include "SparkFun_Ublox_Arduino_Library.h" //http://librarymanager/All#SparkFun_Ublox_GPS
 SFE_UBLOX_GPS myGPS;
 
@@ -9,11 +9,11 @@ long updateCount = 0; //Used to calc the actual update rate.
 void setup()
 {
 
-    initBoard();
+    setupBoards();
     // When the power is turned on, a delay is required.
     delay(1500);
 
-    if (myGPS.begin(Serial1) == false) { //Connect to the Ublox module using Serial port
+    if (myGPS.begin(SerialGPS) == false) { //Connect to the Ublox module using Serial port
         Serial.println(F("Ublox GPS not detected . Please check wiring. Freezing."));
         while (1);
     }

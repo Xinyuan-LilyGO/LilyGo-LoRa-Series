@@ -31,7 +31,7 @@
 #include <SPI.h>
 #include <Arduino.h>
 #include "SensorQMC6310.hpp"
-#include "boards.h"
+#include "LoRaBoards.h"
 
 SensorQMC6310 qmc;
 
@@ -117,7 +117,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    initBoard();
+    setupBoards();
 
     if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");

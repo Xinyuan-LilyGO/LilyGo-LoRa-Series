@@ -32,7 +32,7 @@
 #include <Arduino.h>
 #include "SensorQMC6310.hpp"
 #include "SH1106Wire.h"         //Oled display from https://github.com/ThingPulse/esp8266-oled-ssd1306
-#include "boards.h"
+#include "LoRaBoards.h"
 
 SH1106Wire display(0x3c, I2C_SDA, I2C_SCL);
 SensorQMC6310 qmc;
@@ -71,7 +71,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    initBoard();
+    setupBoards();
 
     if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");

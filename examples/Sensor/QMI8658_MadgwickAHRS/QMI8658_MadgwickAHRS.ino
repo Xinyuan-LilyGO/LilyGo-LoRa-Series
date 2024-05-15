@@ -32,7 +32,7 @@
 #include <SPI.h>
 #include "SensorQMI8658.hpp"
 #include <MadgwickAHRS.h>       //MadgwickAHRS from https://github.com/arduino-libraries/MadgwickAHRS
-#include "boards.h"
+#include "LoRaBoards.h"
 
 
 SensorQMI8658 qmi;
@@ -48,15 +48,15 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    initBoard();
-    
+    setupBoards();
+
     pinMode(SPI_CS, OUTPUT);    //sdcard pin set high
     digitalWrite(SPI_CS, HIGH);
 
     // SDCard shares SPI bus with QMI8658
     // SPI has been initialized in initBoard.
     // Only need to pass SPIhandler to the QMI class.
-    if (!qmi.begin(IMU_CS, -1, -1, -1, SDSPI)) {
+    if (!qmi.begin(IMU_CS, -1, -1, -1, SDCardSPI)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);

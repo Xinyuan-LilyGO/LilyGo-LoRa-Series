@@ -34,7 +34,7 @@
 #include <Wire.h>               // Only needed for Arduino 1.6.5 and earlier
 #include "SSD1306Wire.h"        // legacy: #include "SSD1306.h"
 #include "images.h"
-#include "boards.h"
+#include "LoRaBoards.h"
 #include "OLEDDisplayUi.h"
 
 SSD1306Wire display(0x3c, I2C_SDA, I2C_SCL);
@@ -118,7 +118,7 @@ int overlaysCount = 1;
 
 void setup()
 {
-    initBoard();
+    setupBoards();
 
     // The ESP is capable of rendering 60fps in 80Mhz mode
     // but that won't give you much time for anything else

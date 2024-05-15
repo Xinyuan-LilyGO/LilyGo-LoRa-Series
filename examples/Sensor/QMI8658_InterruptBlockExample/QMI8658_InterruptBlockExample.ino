@@ -33,7 +33,7 @@
 #include "SensorQMI8658.hpp"
 #include <MadgwickAHRS.h>       //MadgwickAHRS from https://github.com/arduino-libraries/MadgwickAHRS
 #include "SH1106Wire.h"         //Oled display from https://github.com/ThingPulse/esp8266-oled-ssd1306
-#include "boards.h"
+#include "LoRaBoards.h"
 
 
 
@@ -56,7 +56,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    initBoard();
+    setupBoards();
 
     display.init();
     display.flipScreenVertically();
@@ -66,9 +66,9 @@ void setup()
     digitalWrite(SPI_CS, HIGH);
 
     // SDCard shares SPI bus with QMI8658
-    // SPI has been initialized in initBoard. 
+    // SPI has been initialized in initBoard.
     // Only need to pass SPIhandler to the QMI class.
-    if (!qmi.begin(IMU_CS, -1, -1, -1, SDSPI)) {
+    if (!qmi.begin(IMU_CS, -1, -1, -1, SDCardSPI)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);

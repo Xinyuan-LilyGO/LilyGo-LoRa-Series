@@ -30,8 +30,8 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Arduino.h>
-#include "SensorPCF8563.tpp"
-#include "boards.h"
+#include "SensorPCF8563.hpp"
+#include "LoRaBoards.h"
 
 SensorPCF8563 rtc;
 uint32_t lastMillis;
@@ -41,7 +41,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    initBoard();
+    setupBoards();
 
     // PMU and RTC share I2C bus
     if (!rtc.begin(PMU_WIRE_PORT, PCF8563_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {

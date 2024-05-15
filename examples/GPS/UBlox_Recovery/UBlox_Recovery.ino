@@ -7,9 +7,9 @@
  * @note      This sample file is intended to restore the UBLOX GNSS module to the factory default value, and the default output baud rate is 9600
  */
 
-#include "boards.h"
+#include "LoRaBoards.h"
 
-#define SerialGNSS Serial1
+#define SerialGNSS SerialGPS
 
 uint8_t buffer[256];
 
@@ -86,22 +86,22 @@ bool recovery()
     SerialGNSS.write(cfg_clear1, sizeof(cfg_clear1));
 
     if (getAck(buffer, 256, 0x05, 0x01)) {
-        Serial.println("Get ack successed!");
+        Serial.println("Get ack successes!");
     }
     SerialGNSS.write(cfg_clear2, sizeof(cfg_clear2));
     if (getAck(buffer, 256, 0x05, 0x01)) {
-        Serial.println("Get ack successed!");
+        Serial.println("Get ack successes!");
     }
     SerialGNSS.write(cfg_clear3, sizeof(cfg_clear3));
     if (getAck(buffer, 256, 0x05, 0x01)) {
-        Serial.println("Get ack successed!");
+        Serial.println("Get ack successes!");
     }
 
     // UBX-CFG-RATE, Size 8, 'Navigation/measurement rate settings'
     uint8_t cfg_rate[] = {0xB5, 0x62, 0x06, 0x08, 0x00, 0x00, 0x0E, 0x30};
     SerialGNSS.write(cfg_rate, sizeof(cfg_rate));
     if (getAck(buffer, 256, 0x06, 0x08)) {
-        Serial.println("Get ack successed!");
+        Serial.println("Get ack successes!");
     } else {
         return false;
     }
@@ -112,10 +112,10 @@ bool recovery()
 void setup()
 {
 
-    initBoard();
+    setupBoards();
 
     if (recovery()) {
-        Serial.println("recovery successed!");
+        Serial.println("recovery successes!");
     } else {
         Serial.println("recovery failed!");
     }

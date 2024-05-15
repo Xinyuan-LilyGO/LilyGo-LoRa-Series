@@ -69,7 +69,7 @@
 */
 
 #include <Arduino.h>
-#include "boards.h"
+#include "LoRaBoards.h"
 
 
 #define INFO_SCREEN_DELAY 3000
@@ -96,7 +96,7 @@ uint32_t lcg_rnd(void)
 
 void setup(void)
 {
-    initBoard();
+    setupBoards();
     if (!u8g2) {
         Serial.println("No find SH1106 display!Please check whether the connection is normal");
         while (1);

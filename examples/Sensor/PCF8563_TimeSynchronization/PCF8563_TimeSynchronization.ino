@@ -33,8 +33,8 @@
 #include <time.h>
 #include <WiFi.h>
 #include <sntp.h>
-#include "SensorPCF8563.tpp"
-#include "boards.h"
+#include "SensorPCF8563.hpp"
+#include "LoRaBoards.h"
 
 
 const char *ssid       = "YOUR_SSID";
@@ -65,7 +65,7 @@ void setup()
     Serial.begin(115200);
     while (!Serial);
 
-    initBoard();
+    setupBoards();
 
     if (!rtc.begin(Wire, PCF8563_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find PCF8563 - check your wiring!");
