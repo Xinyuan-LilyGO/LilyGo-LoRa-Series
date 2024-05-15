@@ -6,6 +6,20 @@
 - [T-Beam Supreme GPS record Video](https://youtu.be/yYLgRMr5WDY)
 
 
+
+   | name                      | firmware                                |
+   | ------------------------- | --------------------------------------- |
+   | TBEAM_V1X_NMEA_RESET.bin  | [firmware](./TBEAM_V1X_NMEA_RESET.bin)  |
+   | TBEAM_V3.0_NMEA_RESET.bin | [firmware](./TBEAM_V3.0_NMEA_RESET.bin) |
+
+
+- If the above two firmwares cannot make the GPS work properly, you can try the following two firmwares. Note that the two firmwares **TBEAM_V1X_NMEA_RESET** and **TBEAM_V3.0_NMEA_RESET** are used first to reset the GPS.
+
+   | name                      | firmware                                |
+   | ------------------------- | --------------------------------------- |
+   | GPS_ reset.bin*           | [firmware](./GPS_%20reset.bin)          |
+   | GPS_BasicNMEARead.bin*    | [firmware](./GPS_BasicNMEARead.bin)     |
+
 ## How to Flash ?
 
 
