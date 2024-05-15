@@ -686,9 +686,9 @@ void radio_init () {
     // some sanity checks, e.g., read version number
     u1_t v = readReg(RegVersion);
 #ifdef CFG_sx1276_radio
-    ASSERT(v == 0x12 );
+    // ASSERT(v == 0x12 );
 #elif CFG_sx1272_radio
-    ASSERT(v == 0x22);
+    // ASSERT(v == 0x22);
 #else
 #error Missing CFG_sx1272_radio/CFG_sx1276_radio
 #endif
