@@ -2,23 +2,29 @@
 
 ## **[中文](./README_CN.MD) | English**
 
+## News:
+
+- This warehouse currently only maintains the version of LilyGo that is on sale , For the LilyGo discontinued version of the LoRa board, please jump to [Archive package](https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/releases/tag/v0.0.1) to download
+- Arduino IDE users need to configure the board to be used in the <utilities.h> file in the sketch directory before using the example. The <utilities.h> file contains the pin definitions of the board. If you do not select it, an error will occur during compilation.
+
 ## 1️⃣Product
 
-| Product                            | SOC             | Flash         | PSRAM          |
-| ---------------------------------- | --------------- | ------------- | -------------- |
-| [T-Beam Supreme L76K][1]           | ESP32-S3FN8     | 8MB(Quad-SPI) | 8MB(Quad-SPI)  |
-| [T-Beam Supreme Ublox][2]          | ESP32-S3FN8     | 8MB(Quad-SPI) | 8MB(Quad-SPI)  |
-| [T-Beam Meshtastic][3]             | ESP32-D0WDQ6-V3 | 4MB(Quad-SPI) | 8MB(Quad-SPI)  |
-| [T-Beam SoftRF][4]                 | ESP32-D0WDQ6-V3 | 4MB(Quad-SPI) | 8MB(Quad-SPI)  |
-| [T3-S3 SX1280 2.4G With out PA][5] | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
-| [T3-S3 SX1280 2.4G With PA][6]     | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
-| [T3-S3 SX1276][7]                  | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
-| [T3-S3 SX1262][8]                  | ESP32-S3FH4R2   | 4MB(Quad-SPI) | ❌              |
-| [LoRa32][8]                        | ESP32-PICO-D4   | 4MB(Quad-SPI) | ❌              |
-| [T-Motion][9]                      | STM32L073RZ     | 192 Kbyte     | (20-Kbyte RAM) |
+| Product                            | SOC              | Flash         | PSRAM          |
+| ---------------------------------- | ---------------- | ------------- | -------------- |
+| [T-Beam S3 Supreme L76K][1]        | ESP32-S3FN8      | 8MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T-Beam S3 Supreme Ublox][2]       | ESP32-S3FN8      | 8MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T-Beam Meshtastic][3]             | ESP32-D0WDQ6-V3  | 4MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T-Beam SoftRF][4]                 | ESP32-D0WDQ6-V3  | 4MB(Quad-SPI) | 8MB(Quad-SPI)  |
+| [T3-S3 SX1280 2.4G With out PA][5] | ESP32-S3FH4R2    | 4MB(Quad-SPI) | 2MB(Quad-SPI)  |
+| [T3-S3 SX1280 2.4G With PA][6]     | ESP32-S3FH4R2    | 4MB(Quad-SPI) | 2MB(Quad-SPI)  |
+| [T3-S3 SX1276][7]                  | ESP32-S3FH4R2    | 4MB(Quad-SPI) | 2MB(Quad-SPI)  |
+| [T3-S3 SX1262][8]                  | ESP32-S3FH4R2    | 4MB(Quad-SPI) | 2MB(Quad-SPI)  |
+| [LoRa32][8]                        | ESP32-PICO-D4    | 4MB(Quad-SPI) | ❌              |
+| [T-Motion][9]                      | STM32L073RZ      | 192 Kbyte     | (20-Kbyte RAM) |
+| [T3-C6][10]                        | ESP32-C6-MINI-1U | 4MB(Quad-SPI) | ❌              |
 
-[1]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905052341 "T-Beam Supreme L76K"
-[2]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905281717 "T-Beam Supreme Ublox"
+[1]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905052341 "T-Beam S3 Supreme L76K"
+[2]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905281717 "T-Beam S3 Supreme Ublox"
 [3]: https://www.lilygo.cc/products/t-beam-v1-1-esp32-lora-module "T-Beam Meshtastic"
 [4]: https://www.lilygo.cc/products/t-beam-softrf "T-Beam SoftRF"
 [5]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879656117 "T3-S3 SX1280 2.4G With out PA"
@@ -26,83 +32,64 @@
 [7]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879688885 "T3-S3 SX1276"
 [8]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879721653 "T3-S3 SX1262"
 [9]: https://www.lilygo.cc/products/t-motion-s76g-stm32-lora "T-Motion"
+[10]: https://www.lilygo.cc/products "T3-C6"
 
 ## 2️⃣Example description
 
 ```
-├─ArduinoLoRa                 # Only support SX1276/SX1278 radio module
-│ ├─LoRaReceiver
-│ └─LoRaSender
-├── Display                   # Only supports TBeam TFT Shield
-│ ├── Free_Font_Demo
-│ ├── GxEPD_U8G2_Fonts_Demo
-│ ├── TBeam_TFT_Shield
-│ ├── TFT_Char_times
-│ └── UTFT_demo
-├─GPS                         # T-Beam GPS demo examples
-│ ├─TinyGPS_Example
-│ ├─TinyGPS_FullExample
-│ ├─TinyGPS_KitchenSink
-│ ├─UBlox_BasicNMEARead       # Only support Ublox GNSS Module
-│ ├─UBlox_Recovery            # Only support Ublox GNSS Module
-│ ├─UBlox_OutputRate          # Only support Ublox GNSS Module
-│ └─UBlox_NMEAParsing         # Only support Ublox GNSS Module
-├─OLED                        #OLED demo examples
-│ ├─SH1106FontUsage
-│ ├─SH1106GraphicsTest
-│ ├─SH1106IconMenu
-│ ├─SH1106PrintUTF8
-│ ├─SSD1306SimpleDemo
-│ └─SSD1306UiDemo
-├─RadioLibExamples            # RadioLib examples,Support SX1276/78/62/80
-│ ├─SX1262
-│ │ ├─SX1262_C6_Receive_interrupt
-│ │ ├─SX1262_C6_Transmit_Interrupt
-│ │ ├─SX1262_Receive_Interrupt
-│ │ └─SX1262_Transmit_Interrupt
-│ ├─SX1268
-│ │ ├─SX1268_Receive_Interrupt
-│ │ └─SX1268_Transmit_Interrupt
-│ ├─SX1276
-│ │ ├─SX1276_Receive_Interrupt
-│ │ └─SX1276_Transmit_Interrupt
-│ ├─SX1278
-│ │ ├─SX1278_Receive
-│ │ ├─SX1278_Receive_Interrupt
-│ │ ├─SX1278_Transmit
-│ │ └─SX1278_Transmit_Interrupt
-│ ├─SX1280
-│ │ ├─Ranging
-│ │ │ ├─Ranging_Master
-│ │ │ └─Ranging_Slave
-│ │ ├─SX128x_Receive_Interrupt
-│ │ └─SX128x_Transmit_Interrupt
-│ └─TBeamAllFunction          # T-Beam all function example,Only tbeamv1.x is supported temporarily
-├── Sensor                    # Sensor examples , just support t-beams3-supreme
-│ ├── BME280_AdvancedsettingsExample
-│ ├── BME280_TestExample
-│ ├── BME280_UnifiedExample
-│ ├── PCF8563_AlarmByUnits
-│ ├── PCF8563_SimpleTime
-│ ├── PCF8563_TimeLib
-│ ├── PCF8563_TimeSynchronization
-│ ├── QMC6310_CalibrateExample
-│ ├── QMC6310_CompassExample
-│ ├── QMC6310_GetDataExample
-│ ├── QMC6310_GetPolarExample
-│ ├── QMI8658_BlockExample
-│ ├── QMI8658_GetDataExample
-│ ├── QMI8658_InterruptBlockExample
-│ ├── QMI8658_InterruptExample
-│ ├── QMI8658_LockingMechanismExample
-│ ├── QMI8658_MadgwickAHRS
-│ ├── QMI8658_PedometerExample
-│ ├── QMI8658_ReadFromFifoExample
-│ └── QMI8658_WakeOnMotion
-├─SleepTest
-└─LoRaWAN                # OTAA method Join TTN example
-     └─OTTA
-
+./examples/
+├── ArduinoLoRa                              # Only support SX1276/SX1278 radio module
+│   ├── LoRaReceiver
+│   └── LoRaSender
+├── Display                                  # Only supports TBeam TFT Shield
+│   ├── Free_Font_Demo
+│   ├── TBeam_TFT_Shield
+│   ├── TFT_Char_times
+│   └── UTFT_demo
+├── GPS                                      # T-Beam GPS demo examples
+│   ├── TinyGPS_Example
+│   ├── TinyGPS_FullExample
+│   ├── TinyGPS_KitchenSink
+│   ├── UBlox_BasicNMEARead                  # Only support Ublox GNSS Module           
+│   ├── UBlox_NMEAParsing                    # Only support Ublox GNSS Module           
+│   ├── UBlox_OutputRate                     # Only support Ublox GNSS Module      
+│   └── UBlox_Recovery                       # Only support Ublox GNSS Module      
+├── LoRaWAN                                  # LoRaWAN examples
+│   ├── LMIC_Library_OTTA
+│   └── RadioLib_ABP
+├── OLED
+│   ├── SH1106FontUsage
+│   ├── SH1106GraphicsTest
+│   ├── SH1106IconMenu
+│   ├── SH1106PrintUTF8
+│   ├── SSD1306SimpleDemo
+│   └── SSD1306UiDemo
+├── PMU                                      # T-Beam & T-Beam S3 PMU demo examples
+├── RadioLibExamples                         # RadioLib examples,Support SX1276/78/62/80...
+│   ├── Receive_Interrupt
+│   └── Transmit_Interrupt
+├── Sensor                                   # Sensor examples,only support t-beams3-supreme
+│   ├── BME280_AdvancedsettingsExample
+│   ├── BME280_TestExample
+│   ├── BME280_UnifiedExample
+│   ├── PCF8563_AlarmByUnits
+│   ├── PCF8563_SimpleTime
+│   ├── PCF8563_TimeLib
+│   ├── PCF8563_TimeSynchronization
+│   ├── QMC6310_CalibrateExample
+│   ├── QMC6310_CompassExample
+│   ├── QMC6310_GetDataExample
+│   ├── QMC6310_GetPolarExample
+│   ├── QMI8658_BlockExample
+│   ├── QMI8658_GetDataExample
+│   ├── QMI8658_InterruptBlockExample
+│   ├── QMI8658_InterruptExample
+│   ├── QMI8658_LockingMechanismExample
+│   ├── QMI8658_MadgwickAHRS
+│   ├── QMI8658_PedometerExample
+│   ├── QMI8658_ReadFromFifoExample
+│   └── QMI8658_WakeOnMotion
+└── T3S3Factory                              # T3 S3 factory test examples
 ```
 
 ## 3️⃣Arduino IDE quick start:
@@ -237,9 +224,30 @@
     
      </details>
 
+     <details>
+     <summary>Click to view T3-C6 Arduino IDE options</summary>
 
-4. Please uncomment the `utilities.h` file of each sketch according to your board model, otherwise the compilation will report an error.
-5. Upload sketch
+     | T3-S3                                | Value                                                   |
+     | ------------------------------------ | ------------------------------------------------------- |
+     | Board                                | **ESP32C6 Dev Module**                                  |
+     | Port                                 | Your port                                               |
+     | USB CDC On Boot                      | Enable                                                  |
+     | CPU Frequency                        | 160MHZ(WiFi)                                            |
+     | Core Debug Level                     | None                                                    |
+     | USB DFU On Boot                      | Disable                                                 |
+     | Erase All Flash Before Sketch Upload | Disable                                                 |
+     | Flash Mode                           | DIO                                                     |
+     | Flash Size                           | **4MB(32Mb)**                                           |
+     | Arduino Runs On                      | Core1                                                   |
+     | USB Firmware MSC On Boot             | Disable                                                 |
+     | Partition Scheme                     | **Default 4M Flash with spiffs(1.2M APP/1.5MB SPIFFS)** |
+     | Upload Speed                         | 921600                                                  |
+     | Programmer                           | **Esptool**                                             |
+
+     </details>
+
+6. Please uncomment the `utilities.h` file of each sketch according to your board model, otherwise the compilation will report an error.
+7. Upload sketch
 
 ## 4️⃣ TTN
 
@@ -268,9 +276,6 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 ##### T-Beam ESP32 datasheet
 
 - [T-Beam_V1.2 schematic](schematic/LilyGo_TBeam_V1.2.pdf)
-- [T-Beam_V1.1 schematic](schematic/LilyGo_TBeam_V1.1.pdf)
-- [T-Beam_V1.0 schematic](schematic/LilyGo_TBeam_V1.0.pdf)
--[T-Beam_V0.7 schematic](schematic/LilyGo_TBeam_V0.7.pdf)
 - [AXP192 datasheet](http://www.x-powers.com/en.php/Info/product_detail/article_id/29)
 - [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 - [GSP NEO-6/NEO-8 datasheet](https://www.u-blox.com/en/product/neo-6-series)
@@ -278,8 +283,6 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 ##### T3-S3 (ESP32S3) datasheet
 
 - [T3_S3_V1.2 schematic](schematic/T3_S3_V1.2.pdf)
-- [T3_S3_V1.1 schematic](schematic/T3_S3_V1.1.pdf)
-- [T3_S3_V1.1 schematic](schematic/T3_S3_V1.0.pdf)
 - [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 - [SX1278 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
 - [SX1276 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
@@ -289,9 +292,10 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 
 [T3_V1.6.1 schematic](schematic/T3_V1.6.1.pdf)
 
-##### LoRa32(V1.0) datasheet
+##### LoRa32(V1.3) datasheet
 
-N.A.
+[T3_V1.3 schematic](schematic/T3_V1.3.pdf)
+
 
 ##### T-Motion datasheet
 
