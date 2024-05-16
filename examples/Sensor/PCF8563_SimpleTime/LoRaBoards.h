@@ -74,9 +74,11 @@ void printResult(bool radio_online);
 
 void flashLed();
 
+#ifdef HAS_PMU
 extern XPowersLibInterface *PMU;
-extern DISPLAY_MODEL *u8g2;
 extern bool pmuInterrupt;
+#endif
+extern DISPLAY_MODEL *u8g2;
 
 #define U8G2_HOR_ALIGN_CENTER(t)    ((u8g2->getDisplayWidth() -  (u8g2->getUTF8Width(t))) / 2)
 #define U8G2_HOR_ALIGN_RIGHT(t)     ( u8g2->getDisplayWidth()  -  u8g2->getUTF8Width(t))
