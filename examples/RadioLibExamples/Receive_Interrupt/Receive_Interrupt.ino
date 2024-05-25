@@ -42,8 +42,12 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 #define CONFIG_RADIO_FREQ           2400.0
 #define CONFIG_RADIO_OUTPUT_POWER   13
 #define CONFIG_RADIO_BW             203.125
+#ifdef T3_S3_V1_2_SX1280_PA
+// PA Version power range : -18 ~ 3dBm
+#undef CONFIG_RADIO_OUTPUT_POWER
+#define CONFIG_RADIO_OUTPUT_POWER  3
+#endif
 SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
-
 #elif   defined(USING_SX1268)
 #define CONFIG_RADIO_FREQ           433.0
 #define CONFIG_RADIO_OUTPUT_POWER   22
@@ -123,7 +127,7 @@ void setup()
     *   SX1280        : Allowed values are 203.125, 406.25, 812.5 and 1625.0 kHz.
     *   LR1121        : Allowed values are 62.5, 125.0, 250.0 and 500.0 kHz.
     * * * */
-    if (radio.setBandwidth(125.0) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
+    if (radio.setBandwidth(CONFIG_RADIO_BW) == RADIOLIB_ERR_INVALID_BANDWIDTH) {
         Serial.println(F("Selected bandwidth is invalid for this module!"));
         while (true);
     }
@@ -166,7 +170,7 @@ void setup()
     * SX1278/SX1276 :  Allowed values range from -3 to 15 dBm (RFO pin) or +2 to +17 dBm (PA_BOOST pin). High power +20 dBm operation is also supported, on the PA_BOOST pin. Defaults to PA_BOOST.
     * SX1262        :  Allowed values are in range from -9 to 22 dBm. This method is virtual to allow override from the SX1261 class.
     * SX1268        :  Allowed values are in range from -9 to 22 dBm.
-    * SX1280        :  Allowed values are in range from -18 to 13 dBm.
+    * SX1280        :  Allowed values are in range from -18 to 13 dBm. PA Version range : -18 ~ 3dBm
     * LR1121        :  Allowed values are in range from -9 to 22 dBm (high-power PA) or -17 to 14 dBm (low-power PA)
     * * * */
     if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
@@ -191,10 +195,10 @@ void setup()
     * Sets preamble length for LoRa or FSK modem.
     * SX1278/SX1276 : Allowed values range from 6 to 65535 in %LoRa mode or 0 to 65535 in FSK mode.
     * SX1262/SX1268 : Allowed values range from 1 to 65535.
-    * SX1280        : Allowed values range from 1 to 65535.
+    * SX1280        : Allowed values range from 1 to 65535. preamble length is multiple of 4
     * LR1121        : Allowed values range from 1 to 65535.
     * * */
-    if (radio.setPreambleLength(15) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH) {
+    if (radio.setPreambleLength(16) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH) {
         Serial.println(F("Selected preamble length is invalid for this module!"));
         while (true);
     }
