@@ -424,11 +424,13 @@ int16_t CC1101::readData(uint8_t* data, size_t len) {
 
 int16_t CC1101::setFrequency(float freq) {
   // check allowed frequency range
-  if(!(((freq > 300.0) && (freq < 348.0)) ||
-       ((freq > 387.0) && (freq < 464.0)) ||
-       ((freq > 779.0) && (freq < 928.0)))) {
+  #if RADIOLIB_CHECK_PARAMS
+  if(!(((freq >= 300.0) && (freq <= 348.0)) ||
+       ((freq >= 387.0) && (freq <= 464.0)) ||
+       ((freq >= 779.0) && (freq <= 928.0)))) {
     return(RADIOLIB_ERR_INVALID_FREQUENCY);
   }
+  #endif
 
   // set mode to standby
   SPIsendCommand(RADIOLIB_CC1101_CMD_IDLE);
@@ -589,7 +591,7 @@ int16_t CC1101::checkOutputPower(int8_t power, int8_t* clipped) {
 }
 
 int16_t CC1101::checkOutputPower(int8_t power, int8_t* clipped, uint8_t* raw) {
-  constexpr int8_t allowedPwrs[8] = { -30, -20, -15, -10, 0, 5, 7, 10 };
+  const int8_t allowedPwrs[8] = { -30, -20, -15, -10, 0, 5, 7, 10 };
 
   if(clipped) {
     if(power <= -30) {
@@ -608,7 +610,7 @@ int16_t CC1101::checkOutputPower(int8_t power, int8_t* clipped, uint8_t* raw) {
 
   // if just a check occurs (and not requesting the raw power value), return now
   if(!raw) {
-    for(int i = 0; i < 8; i++) {
+    for(size_t i = 0; i < sizeof(allowedPwrs); i++) {
       if(allowedPwrs[i] == power) {
         return(RADIOLIB_ERR_NONE);
       }
@@ -642,35 +644,14 @@ int16_t CC1101::checkOutputPower(int8_t power, int8_t* clipped, uint8_t* raw) {
                            {0xCB, 0xC8, 0xCB, 0xC7},
                            {0xC2, 0xC0, 0xC2, 0xC0}};
 
-  switch(power) {
-    case allowedPwrs[0]:  // -30
-      *raw = paTable[0][f];
-      break;
-    case allowedPwrs[1]:  // -20
-      *raw = paTable[1][f];
-      break;
-    case allowedPwrs[2]:  // -15
-      *raw = paTable[2][f];
-      break;
-    case allowedPwrs[3]:  // -10
-      *raw = paTable[3][f];
-      break;
-    case allowedPwrs[4]:  // 0
-      *raw = paTable[4][f];
-      break;
-    case allowedPwrs[5]:  // 5
-      *raw = paTable[5][f];
-      break;
-    case allowedPwrs[6]:  // 7
-      *raw = paTable[6][f];
-      break;
-    case allowedPwrs[7]:  // 10
-      *raw = paTable[7][f];
-      break;
-    default:
-      return(RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+  for(uint8_t i = 0; i < sizeof(allowedPwrs); i++) {
+    if(power == allowedPwrs[i]) {
+      *raw = paTable[i][f];
+      return(RADIOLIB_ERR_NONE);
+    }
   }
-  return(RADIOLIB_ERR_NONE);
+  
+  return(RADIOLIB_ERR_INVALID_OUTPUT_POWER);
 }
 
 int16_t CC1101::setSyncWord(uint8_t* syncWord, uint8_t len, uint8_t maxErrBits, bool requireCarrierSense) {
@@ -1042,7 +1023,7 @@ int16_t CC1101::directMode(bool sync) {
   SPIsendCommand(RADIOLIB_CC1101_CMD_IDLE);
 
   int16_t state = 0;
-  this->directModeEnabled = sync;
+  this->directModeEnabled = true;
   if(sync) {
     // set GDO0 and GDO2 mapping
     state |= SPIsetRegValue(RADIOLIB_CC1101_REG_IOCFG0, RADIOLIB_CC1101_GDOX_SERIAL_CLOCK , 5, 0);
@@ -1101,6 +1082,9 @@ int16_t CC1101::setPacketMode(uint8_t mode, uint16_t len) {
   // set length to register
   state = SPIsetRegValue(RADIOLIB_CC1101_REG_PKTLEN, len);
   RADIOLIB_ASSERT(state);
+
+  // no longer in a direct mode
+  this->directModeEnabled = false;
 
   // update the cached values
   this->packetLength = len;

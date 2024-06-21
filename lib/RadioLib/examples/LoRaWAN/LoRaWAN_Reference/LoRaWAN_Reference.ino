@@ -46,11 +46,14 @@ void setup() {
   debug(state != RADIOLIB_ERR_NONE, F("Initialise radio failed"), state, true);
 
   // Override the default join rate
-  // uint8_t joinDR = 3;
+  uint8_t joinDR = 4;
 
-  Serial.println(F("Join ('login') to the LoRaWAN Network"));
-  state = node.beginOTAA(joinEUI, devEUI, nwkKey, appKey, true);
-  debug(state < RADIOLIB_ERR_NONE, F("Join failed"), state, true);
+  // Setup the OTAA session information
+  node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
+
+  Serial.println(F("Join ('login') the LoRaWAN Network"));
+  state = node.activateOTAA(joinDR);
+  debug(state != RADIOLIB_LORAWAN_NEW_SESSION, F("Join failed"), state, true);
 
   // Print the DevAddr
   Serial.print("[LoRaWAN] DevAddr: ");
@@ -72,7 +75,7 @@ void setup() {
 }
 
 void loop() {
-  int state = RADIOLIB_ERR_NONE;
+  int16_t state = RADIOLIB_ERR_NONE;
 
   // set battery fill level - the LoRaWAN network server
   // may periodically request this information
@@ -111,8 +114,8 @@ void loop() {
   // and also request the LinkCheck and DeviceTime MAC commands
   if(fcntUp % 64 == 0) {
     Serial.println(F("[LoRaWAN] Requesting LinkCheck and DeviceTime"));
-    node.sendMacCommandReq(RADIOLIB_LW_MAC_LINK_CHECK);
-    node.sendMacCommandReq(RADIOLIB_LW_MAC_DEVICE_TIME);
+    node.sendMacCommandReq(RADIOLIB_LORAWAN_MAC_LINK_CHECK);
+    node.sendMacCommandReq(RADIOLIB_LORAWAN_MAC_DEVICE_TIME);
     state = node.sendReceive(uplinkPayload, sizeof(uplinkPayload), Port, downlinkPayload, &downlinkSize, true, &uplinkDetails, &downlinkDetails); 
   } else {
     state = node.sendReceive(uplinkPayload, sizeof(uplinkPayload), Port, downlinkPayload, &downlinkSize);    

@@ -459,11 +459,18 @@ class SX128x: public PhysicalLayer {
 
     /*!
       \brief Sets the module to sleep mode. To wake the device up, call standby().
+      Overload for PhysicalLayer compatibility.
+      \returns \ref status_codes
+    */
+    int16_t sleep() override;
+
+    /*!
+      \brief Sets the module to sleep mode. To wake the device up, call standby().
       \param retainConfig Set to true to retain configuration and data buffer or to false
       to discard current configuration and data buffer. Defaults to true.
       \returns \ref status_codes
     */
-    int16_t sleep(bool retainConfig = true);
+    int16_t sleep(bool retainConfig);
 
     /*!
       \brief Sets the module to standby mode (overload for PhysicalLayer compatibility, uses 13 MHz RC oscillator).
@@ -623,11 +630,11 @@ class SX128x: public PhysicalLayer {
 
     /*!
       \brief Check if output power is configurable.
-      \param power Output power in dBm.
+      \param pwr Output power in dBm.
       \param clipped Clipped output power value to what is possible within the module's range.
       \returns \ref status_codes
     */
-    int16_t checkOutputPower(int8_t power, int8_t* clipped) override;
+    int16_t checkOutputPower(int8_t pwr, int8_t* clipped) override;
 
     /*!
       \brief Sets preamble length for currently active modem. Allowed values range from 1 to 65535.

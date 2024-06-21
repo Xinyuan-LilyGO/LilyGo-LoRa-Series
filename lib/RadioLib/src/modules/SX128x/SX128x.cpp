@@ -424,6 +424,10 @@ int16_t SX128x::scanChannel() {
   return(getChannelScanResult());
 }
 
+int16_t SX128x::sleep() {
+  return(SX128x::sleep(true));
+}
+
 int16_t SX128x::sleep(bool retainConfig) {
   // set RF switch (if present)
   this->mod->setRfSwitchState(Module::MODE_IDLE);
@@ -782,7 +786,6 @@ int16_t SX128x::setCodingRate(uint8_t cr, bool longInterleaving) {
 int16_t SX128x::setOutputPower(int8_t pwr) {
   // check if power value is configurable
   int16_t state = checkOutputPower(pwr, NULL);
-  Serial.println(state);
   RADIOLIB_ASSERT(state);
 
   this->power = pwr + 18;

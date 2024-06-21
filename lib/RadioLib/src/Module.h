@@ -18,9 +18,6 @@
 */
 #define END_OF_MODE_TABLE    { Module::MODE_END_OF_TABLE, {} }
 
-// default timeout for SPI transfers
-#define RADIOLIB_MODULE_SPI_TIMEOUT                             (1000)
-
 /*!
   \defgroup module_spi_command_pos Position of commands in Module::spiConfig command array.
   \{
@@ -74,7 +71,7 @@ class Module {
       value is ever increased and such an array gets extra zero
       elements (that will be interpreted as pin 0).
     */
-    static const size_t RFSWITCH_MAX_PINS = 3;
+    static const size_t RFSWITCH_MAX_PINS = 5;
 
     /*!
       \struct RfSwitchMode_t
@@ -200,6 +197,9 @@ class Module {
 
       /*! \brief Callback for validation SPI status. */
       SPIcheckStatusCb_t checkStatusCb;
+
+      /*! \brief Timeout in ms when waiting for GPIO signals. */
+      RadioLibTime_t timeout;
     };
 
     /*! \brief SPI configuration structure. The default configuration corresponds to register-access modules, such as SX127x. */
@@ -211,6 +211,7 @@ class Module {
       .statusPos = 0,
       .parseStatusCb = nullptr,
       .checkStatusCb = nullptr,
+      .timeout = 1000,
     };
 
     #if RADIOLIB_INTERRUPT_TIMING
@@ -368,10 +369,9 @@ class Module {
       \param dataIn Data that was transferred from slave to master.
       \param numBytes Number of bytes to transfer.
       \param waitForGpio Whether to wait for some GPIO at the end of transfer (e.g. BUSY line on SX126x/SX128x).
-      \param timeout GPIO wait period timeout in milliseconds.
       \returns \ref status_codes
     */
-    int16_t SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio, RadioLibTime_t timeout);
+    int16_t SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio);
 
     // pin number access methods
 
@@ -546,7 +546,7 @@ class Module {
     uint32_t gpioPin = RADIOLIB_NC;
 
     // RF switch pins and table
-    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
+    uint32_t rfSwitchPins[RFSWITCH_MAX_PINS] = { RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC };
     const RfSwitchMode_t *rfSwitchTable = nullptr;
 
     #if RADIOLIB_INTERRUPT_TIMING
