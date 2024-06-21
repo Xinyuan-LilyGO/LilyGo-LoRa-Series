@@ -148,6 +148,32 @@ void setup()
     radio.setRfSwitchTable(pins, table);
 #endif
 
+#if  defined(USING_LR1121)
+    // LR1121
+    // set RF switch configuration for Wio WM1110
+    // Wio WM1110 uses DIO5 and DIO6 for RF switching
+    static const uint32_t rfswitch_dio_pins[] = {
+        RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+        RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
+    };
+
+    static const Module::RfSwitchMode_t rfswitch_table[] = {
+        // mode                  DIO5  DIO6
+        { LR11x0::MODE_STBY,   { LOW,  LOW  } },
+        { LR11x0::MODE_RX,     { HIGH, LOW  } },
+        { LR11x0::MODE_TX,     { LOW,  HIGH } },
+        { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
+        { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
+        { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
+        { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
+        END_OF_MODE_TABLE,
+    };
+    radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
+
+    // LR1121 TCXO Voltage 2.85~3.15V
+    radio.setTCXO(3.0);
+#endif
+
     int retry = 0;
     while (1) {
         if (u8g2) {
@@ -163,7 +189,8 @@ void setup()
             u8g2->sendBuffer();
         }
         Serial.println(F("Join ('login') to the LoRaWAN Network"));
-        state = node.beginOTAA(joinEUI, devEUI, nwkKey, appKey, true);
+        node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
+        state = node.activateOTAA();
         debug(state < RADIOLIB_ERR_NONE, F("Join failed"), state, false);
         if (state == RADIOLIB_ERR_NONE) {
             break;
@@ -202,7 +229,7 @@ void loop()
         u8g2->drawStr((u8g2->getWidth() - str_w) / 2, 16, BOARD_VARIANT_NAME);
         u8g2->drawHLine(5, 21, u8g2->getWidth() - 5);
         u8g2->setCursor(0, 38);
-        u8g2->print(node.isJoined() ? "Joined." : "NoJoin");
+        u8g2->print(node.isActivated() ? "Joined." : "NoJoin");
         u8g2->print("\tTx:"); u8g2->println(++txCounter);
 #ifdef ARDUINO_ARCH_ESP32
         u8g2->setCursor(0, 54);
