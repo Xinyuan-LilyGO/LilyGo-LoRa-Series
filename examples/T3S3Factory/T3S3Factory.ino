@@ -39,7 +39,7 @@ SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO
 SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1262)
-#define CONFIG_RADIO_FREQ           868.0
+#define CONFIG_RADIO_FREQ           850.0
 #define CONFIG_RADIO_OUTPUT_POWER   22
 #define CONFIG_RADIO_BW             125.0
 
@@ -58,9 +58,17 @@ SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif   defined(USING_LR1121)
+
+// The maximum power of LR1121 2.4G band can only be set to 13 dBm
+// #define CONFIG_RADIO_FREQ           2450.0
+// #define CONFIG_RADIO_OUTPUT_POWER   13
+// #define CONFIG_RADIO_BW             125.0
+
+// The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
 #define CONFIG_RADIO_FREQ           868.0
 #define CONFIG_RADIO_OUTPUT_POWER   22
 #define CONFIG_RADIO_BW             125.0
+
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
 
@@ -242,13 +250,28 @@ void setup()
     * SX1278/SX1276 :  Allowed values range from -3 to 15 dBm (RFO pin) or +2 to +17 dBm (PA_BOOST pin). High power +20 dBm operation is also supported, on the PA_BOOST pin. Defaults to PA_BOOST.
     * SX1262        :  Allowed values are in range from -9 to 22 dBm. This method is virtual to allow override from the SX1261 class.
     * SX1268        :  Allowed values are in range from -9 to 22 dBm.
-    * SX1280        :  Allowed values are in range from -18 to 13 dBm.
-    * LR1121        :  Allowed values are in range from -9 to 22 dBm (high-power PA) or -17 to 14 dBm (low-power PA)
+    * SX1280        :  Allowed values are in range from -18 to 13 dBm. PA Version range : -18 ~ 3dBm
+    * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA)
     * * * */
+#if  defined(USING_LR1121)
+    bool useHighFreqPa = false;
+
+    if (CONFIG_RADIO_FREQ > 2000.0) {
+        // Use High-frequency Power Amplifier
+        Serial.println("Use High-frequency Power Amplifier"); 
+        useHighFreqPa = true;
+    }
+
+    if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER, useHighFreqPa) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.println(F("Selected output power is invalid for this module!"));
+        while (true);
+    }
+#else
     if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
     }
+#endif
 
 #if !defined(USING_SX1280) && !defined(USING_LR1121)
     /*
@@ -280,6 +303,35 @@ void setup()
         Serial.println(F("Selected CRC is invalid for this module!"));
         while (true);
     }
+
+
+#if  defined(USING_LR1121)
+    // LR1121
+    // set RF switch configuration for Wio WM1110
+    // Wio WM1110 uses DIO5 and DIO6 for RF switching
+    static const uint32_t rfswitch_dio_pins[] = {
+        RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+        RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
+    };
+
+    static const Module::RfSwitchMode_t rfswitch_table[] = {
+        // mode                  DIO5  DIO6
+        { LR11x0::MODE_STBY,   { LOW,  LOW  } },
+        { LR11x0::MODE_RX,     { HIGH, LOW  } },
+        { LR11x0::MODE_TX,     { LOW,  HIGH } },
+        { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
+        { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
+        { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
+        { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
+        END_OF_MODE_TABLE,
+    };
+    radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
+
+    // LR1121 TCXO Voltage 2.85~3.15V
+    radio.setTCXO(3.0);
+
+
+#endif
 
     // set the function that will be called
     // when new packet is received
@@ -415,8 +467,8 @@ void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t 
         esp_adc_cal_characteristics_t adc_chars;
         esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
         uint16_t raw = analogRead(BAT_ADC_PIN);
-        float volotage = (float)(esp_adc_cal_raw_to_voltage(raw, &adc_chars) * 2) / 1000.0;
-        sprintf(buffer, "%.2fV", volotage);
+        float voltage = (float)(esp_adc_cal_raw_to_voltage(raw, &adc_chars) * 2) / 1000.0;
+        sprintf(buffer, "%.2fV", voltage > 4.2 ? 4.2 : voltage);
         batteryRunInterval = millis();
     }
 
