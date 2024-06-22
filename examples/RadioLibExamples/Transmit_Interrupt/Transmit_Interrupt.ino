@@ -177,12 +177,10 @@ void setup()
     * SX1280        :  Allowed values are in range from -18 to 13 dBm. PA Version range : -18 ~ 3dBm
     * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA)
     * * * */
-#if  defined(USING_LR1121)
     if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
     }
-#endif
 
 #if !defined(USING_SX1280) && !defined(USING_LR1121)
     /*
