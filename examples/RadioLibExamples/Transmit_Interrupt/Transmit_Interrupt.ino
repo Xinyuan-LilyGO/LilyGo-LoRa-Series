@@ -178,19 +178,6 @@ void setup()
     * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA)
     * * * */
 #if  defined(USING_LR1121)
-    bool useHighFreqPa = false;
-
-    if (CONFIG_RADIO_FREQ > 2000.0) {
-        // Use High-frequency Power Amplifier
-        Serial.println("Use High-frequency Power Amplifier"); 
-        useHighFreqPa = true;
-    }
-
-    if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER, useHighFreqPa) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
-        Serial.println(F("Selected output power is invalid for this module!"));
-        while (true);
-    }
-#else
     if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);

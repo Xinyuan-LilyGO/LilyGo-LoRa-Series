@@ -60,14 +60,14 @@ SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 #elif   defined(USING_LR1121)
 
 // The maximum power of LR1121 2.4G band can only be set to 13 dBm
-// #define CONFIG_RADIO_FREQ           2450.0
-// #define CONFIG_RADIO_OUTPUT_POWER   13
-// #define CONFIG_RADIO_BW             125.0
+#define CONFIG_RADIO_FREQ           2450.0
+#define CONFIG_RADIO_OUTPUT_POWER   13
+#define CONFIG_RADIO_BW             125.0
 
 // The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
-#define CONFIG_RADIO_FREQ           868.0
-#define CONFIG_RADIO_OUTPUT_POWER   22
-#define CONFIG_RADIO_BW             125.0
+// #define CONFIG_RADIO_FREQ           868.0
+// #define CONFIG_RADIO_OUTPUT_POWER   22
+// #define CONFIG_RADIO_BW             125.0
 
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
@@ -254,19 +254,6 @@ void setup()
     * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA)
     * * * */
 #if  defined(USING_LR1121)
-    bool useHighFreqPa = false;
-
-    if (CONFIG_RADIO_FREQ > 2000.0) {
-        // Use High-frequency Power Amplifier
-        Serial.println("Use High-frequency Power Amplifier"); 
-        useHighFreqPa = true;
-    }
-
-    if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER, useHighFreqPa) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
-        Serial.println(F("Selected output power is invalid for this module!"));
-        while (true);
-    }
-#else
     if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
         while (true);
@@ -331,6 +318,11 @@ void setup()
     radio.setTCXO(3.0);
 
 
+    radio.transmitDirect();
+
+    while(1){
+        delay(1000);
+    }
 #endif
 
     // set the function that will be called
