@@ -315,12 +315,6 @@ void setup()
     // LR1121 TCXO Voltage 2.85~3.15V
     radio.setTCXO(3.0);
 
-
-    radio.transmitDirect();
-
-    while(1){
-        delay(1000);
-    }
 #endif
 
     // set the function that will be called
