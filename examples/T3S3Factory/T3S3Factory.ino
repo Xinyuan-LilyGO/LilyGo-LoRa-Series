@@ -448,10 +448,8 @@ void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t 
 {
     static char buffer[64];
     if (millis() - batteryRunInterval > 1000) {
-        esp_adc_cal_characteristics_t adc_chars;
-        esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-        uint16_t raw = analogRead(BAT_ADC_PIN);
-        float voltage = (float)(esp_adc_cal_raw_to_voltage(raw, &adc_chars) * 2) / 1000.0;
+        analogReadResolution(12);
+        float voltage = (analogReadMilliVolts(BAT_ADC_PIN) * 2) / 1000.0;
         sprintf(buffer, "%.2fV", voltage > 4.2 ? 4.2 : voltage);
         batteryRunInterval = millis();
     }
