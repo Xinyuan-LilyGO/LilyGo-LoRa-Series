@@ -301,6 +301,10 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 
 [T-Motion schematic](schematic/T-Motion.pdf)
 
+##### T3-C6 datasheet
+
+[T3-C6 schematic](schematic/T3-C6_V1.0.pdf)
+
 
 
 # 7️⃣ FAQ
