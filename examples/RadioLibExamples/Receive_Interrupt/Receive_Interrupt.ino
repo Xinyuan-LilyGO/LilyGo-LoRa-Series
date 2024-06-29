@@ -23,13 +23,13 @@
 #define CONFIG_RADIO_FREQ           868.0
 #define CONFIG_RADIO_OUTPUT_POWER   17
 #define CONFIG_RADIO_BW             125.0
-SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1278)
 #define CONFIG_RADIO_FREQ           433.0
 #define CONFIG_RADIO_OUTPUT_POWER   17
 #define CONFIG_RADIO_BW             125.0
-SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1262)
 #define CONFIG_RADIO_FREQ           868.0
@@ -42,12 +42,14 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 #define CONFIG_RADIO_FREQ           2400.0
 #define CONFIG_RADIO_OUTPUT_POWER   13
 #define CONFIG_RADIO_BW             203.125
-#ifdef T3_S3_V1_2_SX1280_PA
-// PA Version power range : -18 ~ 3dBm
-#undef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER  3
-#endif
 SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+
+#elif  defined(USING_SX1280PA)
+#define CONFIG_RADIO_FREQ           2400.0
+#define CONFIG_RADIO_OUTPUT_POWER   3           // PA Version power range : -18 ~ 3dBm
+#define CONFIG_RADIO_BW             203.125
+SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+
 #elif   defined(USING_SX1268)
 #define CONFIG_RADIO_FREQ           433.0
 #define CONFIG_RADIO_OUTPUT_POWER   22
@@ -186,7 +188,7 @@ void setup()
         while (true);
     }
 
-#if !defined(USING_SX1280) && !defined(USING_LR1121)
+#if !defined(USING_SX1280) && !defined(USING_LR1121) && !defined(USING_SX1280PA)
     /*
     * Sets current limit for over current protection at transmitter amplifier.
     * SX1278/SX1276 : Allowed values range from 45 to 120 mA in 5 mA steps and 120 to 240 mA in 10 mA steps.
