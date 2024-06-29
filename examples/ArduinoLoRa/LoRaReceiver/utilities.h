@@ -255,35 +255,35 @@
 #define BOARD_VARIANT_NAME          "T3 V3.0 TCXO"
 
 
-#elif   defined(T3_S3_V1_2_SX1262) ||   \
-        defined(T3_S3_V1_2_SX1276) ||   \
-        defined(T3_S3_V1_2_SX1278) ||   \
-        defined(T3_S3_V1_2_SX1280) ||   \
-        defined(T3_S3_V1_2_SX1280_PA) ||  \
-        defined(T3_S3_V1_2_LR1121)
+#elif   defined(T3_S3_V1_2_SX1262)    ||   defined(ARDUINO_LILYGO_T3S3_SX1262)   ||    \
+        defined(T3_S3_V1_2_SX1276)    ||   defined(ARDUINO_LILYGO_T3S3_SX1276)   ||    \
+        defined(T3_S3_V1_2_SX1278)    ||   defined(ARDUINO_LILYGO_T3S3_SX1278)   ||    \
+        defined(T3_S3_V1_2_SX1280)    ||   defined(ARDUINO_LILYGO_T3S3_SX1280)   ||    \
+        defined(T3_S3_V1_2_SX1280_PA) ||   defined(ARDUINO_LILYGO_T3S3_SX1280PA) ||      \
+        defined(T3_S3_V1_2_LR1121)    ||   defined(ARDUINO_LILYGO_T3S3_LR1121) 
 
 
-#if   defined(T3_S3_V1_2_SX1262)
+#if   defined(T3_S3_V1_2_SX1262) ||   defined(ARDUINO_LILYGO_T3S3_SX1262)  
 #ifndef USING_SX1262
 #define USING_SX1262
 #endif
-#elif defined(T3_S3_V1_2_SX1276)
+#elif defined(T3_S3_V1_2_SX1276) ||   defined(ARDUINO_LILYGO_T3S3_SX1276) 
 #ifndef USING_SX1276
 #define USING_SX1276
 #endif
-#elif defined(T3_S3_V1_2_SX1278)
+#elif defined(T3_S3_V1_2_SX1278) ||   defined(ARDUINO_LILYGO_T3S3_SX1278)
 #ifndef USING_SX1278
 #define USING_SX1278
 #endif
-#elif defined(T3_S3_V1_2_SX1280)
+#elif defined(T3_S3_V1_2_SX1280) ||   defined(ARDUINO_LILYGO_T3S3_SX1280)
 #ifndef USING_SX1280
 #define USING_SX1280
 #endif
-#elif defined(T3_S3_V1_2_SX1280_PA)
-#ifndef USING_SX1280
-#define USING_SX1280
+#elif defined(T3_S3_V1_2_SX1280_PA) ||   defined(ARDUINO_LILYGO_T3S3_SX1280PA)
+#ifndef USING_SX1280PA
+#define USING_SX1280PA
 #endif
-#elif defined(T3_S3_V1_2_LR1121)
+#elif defined(T3_S3_V1_2_LR1121) ||   defined(ARDUINO_LILYGO_T3S3_LR1121)
 #ifndef USING_LR1121
 #define USING_LR1121
 #endif
@@ -313,12 +313,12 @@
 
 #define RADIO_RST_PIN               8
 
-#if defined(T3_S3_V1_2_SX1262)
+#if defined(USING_SX1262)
 
 #define RADIO_DIO1_PIN              33
 #define RADIO_BUSY_PIN              34
 
-#elif defined(T3_S3_V1_2_SX1276) || defined(T3_S3_V1_2_SX1278)
+#elif defined(USING_SX1276) || defined(USING_SX1278)
 //!SX1276/78 module only
 #define RADIO_BUSY_PIN              33      //DIO1
 
@@ -329,12 +329,12 @@
 #define RADIO_DIO4_PIN              10
 #define RADIO_DIO5_PIN              36
 
-#elif defined(T3_S3_V1_2_SX1280)
+#elif defined(USING_SX1280)
 
 #define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
 #define RADIO_BUSY_PIN              36      //SX1280 BUSY = IO36
 
-#elif defined(T3_S3_V1_2_SX1280_PA)
+#elif defined(USING_SX1280PA)
 
 #define RADIO_DIO1_PIN              9       //SX1280 DIO1 = IO9
 #define RADIO_BUSY_PIN              36      //SX1280 BUSY = IO36
@@ -342,10 +342,10 @@
 #define RADIO_TX_PIN                10
 
 
-#elif defined(T3_S3_V1_2_LR1121)
+#elif defined(USING_LR1121)
 
 #define RADIO_DIO9_PIN              36      //LR1121 DIO9  = IO36
-#define RADIO_BUSY_PIN              34      //LR1121 BUSY  = IO33
+#define RADIO_BUSY_PIN              34      //LR1121 BUSY  = IO34
 
 #endif
 
