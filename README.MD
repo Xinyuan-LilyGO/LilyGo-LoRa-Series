@@ -56,7 +56,7 @@
 │   └── UBlox_Recovery                       # Only support Ublox GNSS Module      
 ├── LoRaWAN                                  # LoRaWAN examples
 │   ├── LMIC_Library_OTTA
-│   └── RadioLib_ABP
+│   └── RadioLib_OTAA
 ├── OLED
 │   ├── SH1106FontUsage
 │   ├── SH1106GraphicsTest

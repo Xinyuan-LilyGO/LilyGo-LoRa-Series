@@ -192,10 +192,10 @@ void setup()
         node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
         state = node.activateOTAA();
         debug(state < RADIOLIB_ERR_NONE, F("Join failed"), state, false);
-        if (state == RADIOLIB_ERR_NONE) {
+        if (state == RADIOLIB_ERR_NONE || state == RADIOLIB_LORAWAN_NEW_SESSION) {
             break;
         }
-        delay(3000);
+        delay(10000);
         Serial.print("Retry ");
     }
 
