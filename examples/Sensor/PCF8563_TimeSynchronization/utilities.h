@@ -229,14 +229,30 @@
 #define RADIO_MISO_PIN              19
 #define RADIO_MOSI_PIN              27
 #define RADIO_CS_PIN                18
-#define RADIO_DIO0_PIN              26
 #define RADIO_RST_PIN               23
-#define RADIO_DIO1_PIN              33
+
 // TCXO pin must be set to HIGH before enabling Radio
 #define RADIO_TCXO_ENABLE           12  //only sx1276 tcxo version
 #define RADIO_BUSY_PIN              32
 
-#define RADIO_DIO9_PIN              32
+
+#if defined(USING_SX1262)
+
+#define RADIO_DIO1_PIN              26
+#define RADIO_BUSY_PIN              32
+
+#elif defined(USING_SX1276) || defined(USING_SX1278)
+//!SX1276/78 module only
+
+#define RADIO_DIO0_PIN              26
+#define RADIO_DIO1_PIN              32
+
+#elif defined(USING_LR1121)
+
+#define RADIO_DIO9_PIN              26      //LR1121 DIO9  
+#define RADIO_BUSY_PIN              32      //LR1121 BUSY  
+
+#endif
 
 #define SDCARD_MOSI                 15
 #define SDCARD_MISO                 2
