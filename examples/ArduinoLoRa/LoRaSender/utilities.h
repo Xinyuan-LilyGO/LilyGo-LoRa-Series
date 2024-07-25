@@ -218,11 +218,8 @@
 
 
 
-#elif defined(T3_V3_0_SX1276_TCXO)
+#elif defined(T3_V3_0)
 
-#ifndef USING_SX1276
-#define USING_SX1276
-#endif
 
 #define I2C_SDA                     21
 #define I2C_SCL                     22
@@ -236,7 +233,7 @@
 #define RADIO_RST_PIN               23
 #define RADIO_DIO1_PIN              33
 // TCXO pin must be set to HIGH before enabling Radio
-#define RADIO_TCXO_ENABLE           12
+#define RADIO_TCXO_ENABLE           12  //only sx1276 tcxo version
 #define RADIO_BUSY_PIN              32
 
 #define SDCARD_MOSI                 15
@@ -252,7 +249,10 @@
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
-#define BOARD_VARIANT_NAME          "T3 V3.0 TCXO"
+#define BOARD_VARIANT_NAME          "T3 V3.0"
+
+#define BUTTON_PIN                  0
+#define BAT_ADC_PIN                 35
 
 
 #elif   defined(T3_S3_V1_2_SX1262)    ||   defined(ARDUINO_LILYGO_T3S3_SX1262)   ||    \
