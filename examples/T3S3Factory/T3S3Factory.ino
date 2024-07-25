@@ -102,11 +102,11 @@ void setFlag(void)
 void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
 {
     int state ;
-    static uint8_t framCounter = 1;
+    static uint8_t frameCounter = 1;
     switch (eventType) {
     case AceButton::kEventClicked:
-        Serial.printf("framCounter : %d\n", framCounter);
-        switch (framCounter) {
+        Serial.printf("frameCounter : %d\n", frameCounter);
+        switch (frameCounter) {
         case 0:
             break;
         case 1:
@@ -126,18 +126,99 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         default:
             break;
         }
-        framCounter++;
+        frameCounter++;
         ui.nextFrame();
-        framCounter %= 3;
+        frameCounter %= 3;
         break;
     case AceButton::kEventLongPressed:
+        Serial.println("Long pressed!");
+
+        display.clear();
+
+        digitalWrite(RADIO_RST_PIN, HIGH);
+        gpio_hold_en((gpio_num_t) RADIO_RST_PIN);
+        gpio_deep_sleep_hold_en();
+
+        radio.sleep();
+
+        display.drawString(60, 28, "Sleep");
+        display.display();
+        delay(2000);
+        display.displayOff();
+
+#ifdef BOARD_LED
+        digitalWrite(BOARD_LED, LOW);
+#endif
+
+#ifdef  RADIO_TCXO_ENABLE
+        digitalWrite(RADIO_TCXO_ENABLE, LOW);
+#endif
+
+        while (digitalRead(0) == LOW)
+            delay(1);
+
+        SPI.end();
+
+        Wire.end();
+
+        Serial.flush();
+
+        Serial.end();
+
+        pinMode(RADIO_CS_PIN, INPUT);
+        pinMode(RADIO_RST_PIN, INPUT);
+
+#ifdef RADIO_DIO0_PIN
+        pinMode(RADIO_DIO0_PIN, INPUT);
+#endif
+#ifdef RADIO_DIO1_PIN
+        pinMode(RADIO_DIO1_PIN, INPUT);
+#endif
+#ifdef RADIO_DIO9_PIN
+        pinMode(RADIO_DIO9_PIN, INPUT);
+#endif
+#ifdef RADIO_BUSY_PIN
+        pinMode(RADIO_BUSY_PIN, INPUT);
+#endif
+        pinMode(RADIO_CS_PIN, INPUT);
+        pinMode(I2C_SDA, INPUT);
+        pinMode(I2C_SCL, INPUT);
+        pinMode(OLED_RST, INPUT);
+        pinMode(RADIO_SCLK_PIN, INPUT);
+        pinMode(RADIO_MISO_PIN, INPUT);
+        pinMode(RADIO_MOSI_PIN, INPUT);
+        pinMode(SDCARD_MOSI, INPUT);
+        pinMode(SDCARD_MISO, INPUT);
+        pinMode(SDCARD_SCLK, INPUT);
+        pinMode(SDCARD_CS, INPUT);
+        pinMode(BOARD_LED, INPUT);
+        pinMode(ADC_PIN, INPUT);
+
+        // esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0);
+
+        // T3 V3.0 ext1 sleep  ~160uA
+        esp_sleep_enable_ext1_wakeup(_BV(0), ESP_EXT1_WAKEUP_ALL_LOW);
+
+        // T3 V3.0  Timer sleep ~ 160uA
+        // esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
+
+        esp_deep_sleep_start();
+
+        Serial.println("Never print()");
         break;
     }
 }
 
 void setup()
 {
+    if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_ALL) {
+        gpio_deep_sleep_hold_dis();
+        gpio_hold_dis((gpio_num_t) RADIO_RST_PIN);
+    }
+
     setupBoards();
+
+
 
     delay(1000);
 
@@ -378,7 +459,6 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
             // transmissionState = radio.startTransmit("Hello World!");
             radio.transmit((uint8_t *)&transmissionCounter, 4);
             transmissionCounter++;
-            radioRunInterval = millis();
 
             // you can also transmit byte array up to 256 bytes long
             /*
@@ -390,6 +470,8 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
         }
 
         Serial.println("Radio TX done !");
+        radioRunInterval = millis();
+
     }
 
     display->drawString(0 + x, 0 + y, "Radio Tx");
@@ -453,7 +535,7 @@ void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t 
     static char buffer[64];
     if (millis() - batteryRunInterval > 1000) {
         analogReadResolution(12);
-        float voltage = (analogReadMilliVolts(BAT_ADC_PIN) * 2) / 1000.0;
+        float voltage = (analogReadMilliVolts(ADC_PIN) * 2) / 1000.0;
         sprintf(buffer, "%.2fV", voltage > 4.2 ? 4.2 : voltage);
         batteryRunInterval = millis();
     }
@@ -463,7 +545,7 @@ void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t 
     display->drawString(0 + x, 10 + y, "Radio  ");
     display->drawString(50 + x, 10 + y, isRadioOnline & 1 ? "+" : "NA");
     display->drawString(0 + x, 20 + y, "SD   ");
-    display->drawString(50 + x, 20 + y, isSdCardOnline & 1 ? "+" : "NA");
+    display->drawString(50 + x, 20 + y, SD.cardSize() != 0 ? "+" : "NA");
     display->drawString(0 + x, 30 + y, "BAT   ");
     display->drawString(50 + x, 30 + y, buffer);
 }
