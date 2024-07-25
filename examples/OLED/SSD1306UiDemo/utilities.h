@@ -223,7 +223,7 @@
 
 #define I2C_SDA                     21
 #define I2C_SCL                     22
-#define OLED_RST                    UNUSED_PIN
+#define OLED_RST                    4
 
 #define RADIO_SCLK_PIN              5
 #define RADIO_MISO_PIN              19
@@ -326,8 +326,8 @@
 #define BOARD_LED                   37
 #define LED_ON                      HIGH
 
-#define BAT_ADC_PIN                 1
 #define BUTTON_PIN                  0
+#define ADC_PIN                     1
 
 #define RADIO_RST_PIN               8
 
