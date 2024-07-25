@@ -141,6 +141,11 @@ void setup()
 
     delay(1000);
 
+#ifdef  RADIO_TCXO_ENABLE
+    pinMode(RADIO_TCXO_ENABLE, OUTPUT);
+    digitalWrite(RADIO_TCXO_ENABLE, HIGH);
+#endif
+
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     button.init(BUTTON_PIN);
     ButtonConfig *buttonConfig = button.getButtonConfig();
