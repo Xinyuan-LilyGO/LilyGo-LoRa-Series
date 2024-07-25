@@ -236,6 +236,8 @@
 #define RADIO_TCXO_ENABLE           12  //only sx1276 tcxo version
 #define RADIO_BUSY_PIN              32
 
+#define RADIO_DIO9_PIN              32
+
 #define SDCARD_MOSI                 15
 #define SDCARD_MISO                 2
 #define SDCARD_SCLK                 14
