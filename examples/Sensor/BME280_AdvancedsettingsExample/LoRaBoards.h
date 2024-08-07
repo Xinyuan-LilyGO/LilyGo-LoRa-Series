@@ -4,7 +4,7 @@
  * @license   MIT
  * @copyright Copyright (c) 2024  ShenZhen XinYuan Electronic Technology Co., Ltd
  * @date      2024-04-25
- *
+ * @last-update 2024-08-07
  */
 
 #pragma once
@@ -60,7 +60,7 @@ typedef struct {
 } DevInfo_t;
 
 
-void setupBoards();
+void setupBoards(bool disable_u8g2 = false);
 
 bool beginSDCard();
 
@@ -73,6 +73,12 @@ bool beginPower();
 void printResult(bool radio_online);
 
 void flashLed();
+
+void scanDevices(TwoWire *w);
+
+bool beginGPS();
+
+void loopPMU();
 
 #ifdef HAS_PMU
 extern XPowersLibInterface *PMU;

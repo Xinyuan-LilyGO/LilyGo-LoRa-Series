@@ -4,6 +4,7 @@
  * @license   MIT
  * @copyright Copyright (c) 2024  ShenZhen XinYuan Electronic Technology Co., Ltd
  * @date      2024-04-24
+ * @last-update 2024-08-07
  *
  */
 
@@ -28,6 +29,11 @@ HardwareSerial  SerialGPS(GPS_RX_PIN, GPS_TX_PIN);
 
 DISPLAY_MODEL *u8g2 = NULL;
 static DevInfo_t  devInfo;
+
+#ifdef HAS_GPS
+static bool find_gps = false;
+#endif
+
 
 
 #ifdef HAS_PMU
@@ -69,7 +75,7 @@ bool beginPower()
         return false;
     }
 
-    PMU->setChargingLedMode(XPOWERS_CHG_LED_BLINK_1HZ);
+    PMU->setChargingLedMode(XPOWERS_CHG_LED_CTRL_CHG);
 
     pinMode(PMU_IRQ, INPUT_PULLUP);
     attachInterrupt(PMU_IRQ, setPmuFlag, FALLING);
@@ -199,6 +205,41 @@ bool beginPower()
         PMU->disablePowerOutput(XPOWERS_DLDO2);
         PMU->disablePowerOutput(XPOWERS_VBACKUP);
 
+
+#elif defined(T_BEAM_S3_BPF)
+
+        //gps
+        PMU->setPowerChannelVoltage(XPOWERS_ALDO4, 3300);
+        PMU->enablePowerOutput(XPOWERS_ALDO4);
+
+        //Sdcard
+        PMU->setPowerChannelVoltage(XPOWERS_ALDO2, 3300);
+        PMU->enablePowerOutput(XPOWERS_ALDO2);
+
+        // Extern Power source
+        PMU->setPowerChannelVoltage(XPOWERS_DCDC3, 3300);
+        PMU->enablePowerOutput(XPOWERS_DCDC3);
+
+        PMU->setPowerChannelVoltage(XPOWERS_DCDC5, 3300);
+        PMU->enablePowerOutput(XPOWERS_DCDC5);
+
+        PMU->setPowerChannelVoltage(XPOWERS_ALDO1, 3300);
+        PMU->enablePowerOutput(XPOWERS_ALDO1);
+
+        //not use channel
+        PMU->disablePowerOutput(XPOWERS_BLDO1);
+        PMU->disablePowerOutput(XPOWERS_BLDO2);
+        PMU->disablePowerOutput(XPOWERS_DCDC4);
+        PMU->disablePowerOutput(XPOWERS_DCDC2);
+        PMU->disablePowerOutput(XPOWERS_DCDC4);
+        PMU->disablePowerOutput(XPOWERS_DCDC5);
+        PMU->disablePowerOutput(XPOWERS_DLDO1);
+        PMU->disablePowerOutput(XPOWERS_DLDO2);
+        PMU->disablePowerOutput(XPOWERS_VBACKUP);
+
+
+#endif
+
         // Set constant current charge current limit
         PMU->setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
 
@@ -218,7 +259,6 @@ bool beginPower()
             // XPOWERS_AXP2101_PKEY_NEGATIVE_IRQ | XPOWERS_AXP2101_PKEY_POSITIVE_IRQ   |   //POWER KEY
         );
 
-#endif
     }
 
     PMU->enableSystemVoltageMeasure();
@@ -290,8 +330,64 @@ bool beginPower()
 
 void disablePeripherals()
 {
+    if (!PMU)return;
+
+#if defined(T_BEAM_S3_BPF)
+    PMU->disablePowerOutput(XPOWERS_ALDO4); //gps
+    PMU->disablePowerOutput(XPOWERS_ALDO2); //Sdcard
+    PMU->disablePowerOutput(XPOWERS_DCDC3); // Extern Power source
+    PMU->disablePowerOutput(XPOWERS_DCDC5);
+    PMU->disablePowerOutput(XPOWERS_ALDO1);
+#endif
 
 
+}
+
+void loopPMU()
+{
+#ifdef HAS_PMU
+    if (!PMU) {
+        return;
+    }
+    if (!pmuInterrupt) {
+        return;
+    }
+
+    pmuInterrupt = false;
+    // Get PMU Interrupt Status Register
+    uint32_t status = PMU->getIrqStatus();
+    Serial.print("STATUS => HEX:");
+    Serial.print(status, HEX);
+    Serial.print(" BIN:");
+    Serial.println(status, BIN);
+
+    if (PMU->isVbusInsertIrq()) {
+        Serial.println("isVbusInsert");
+    }
+    if (PMU->isVbusRemoveIrq()) {
+        Serial.println("isVbusRemove");
+    }
+    if (PMU->isBatInsertIrq()) {
+        Serial.println("isBatInsert");
+    }
+    if (PMU->isBatRemoveIrq()) {
+        Serial.println("isBatRemove");
+    }
+    if (PMU->isPekeyShortPressIrq()) {
+        Serial.println("isPekeyShortPress");
+    }
+    if (PMU->isPekeyLongPressIrq()) {
+        Serial.println("isPekeyLongPress");
+    }
+    if (PMU->isBatChagerDoneIrq()) {
+        Serial.println("isBatChagerDone");
+    }
+    if (PMU->isBatChagerStartIrq()) {
+        Serial.println("isBatChagerStart");
+    }
+    // Clear PMU Interrupt Status Register
+    PMU->clearIrqStatus();
+#endif
 }
 
 bool beginDisplay()
@@ -339,8 +435,12 @@ bool beginSDCard()
 
 void beginWiFi()
 {
-
-
+    if (!WiFi.softAP(BOARD_VARIANT_NAME)) {
+        log_e("Soft AP creation failed.");
+    }
+    IPAddress myIP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(myIP);
 }
 
 
@@ -449,13 +549,13 @@ void getChipInfo()
 
 
 
-void setupBoards()
+void setupBoards(bool disable_u8g2 )
 {
     Serial.begin(115200);
 
-    Serial.println("setupBoards");
+    // while (!Serial);
 
-    Serial.begin(115200);
+    Serial.println("setupBoards");
 
     getChipInfo();
 
@@ -474,6 +574,7 @@ void setupBoards()
 
 #ifdef I2C_SDA
     Wire.begin(I2C_SDA, I2C_SCL);
+    scanDevices(&Wire);
 #endif
 
 #ifdef I2C1_SDA
@@ -531,13 +632,25 @@ void setupBoards()
     SerialGPS.println("@GSR"); delay(300);
 #endif
 
+
+#ifdef RADIO_LDO_EN
+    pinMode(RADIO_LDO_EN, OUTPUT);
+    digitalWrite(RADIO_LDO_EN, HIGH);
+#endif
+
     beginPower();
 
     beginSDCard();
 
-    beginDisplay();
+    if (!disable_u8g2) {
+        beginDisplay();
+    }
 
     beginWiFi();
+
+#ifdef HAS_GPS
+    find_gps = beginGPS();
+#endif
 
     Serial.println("init done . ");
 }
@@ -566,6 +679,10 @@ void printResult(bool radio_online)
     Serial.println(( PMU ) ? "+" : "-");
 #endif
 
+#ifdef HAS_GPS
+    Serial.print("GPS          : ");
+    Serial.println(( find_gps ) ? "+" : "-");
+#endif
 
     if (u8g2) {
 
@@ -589,6 +706,7 @@ void printResult(bool radio_online)
 
         u8g2->sendBuffer();
 
+        delay(2000);
     }
 #endif
 }
@@ -615,5 +733,112 @@ void flashLed()
 }
 
 
+void scanDevices(TwoWire *w)
+{
+    uint8_t err, addr;
+    int nDevices = 0;
+    uint32_t start = 0;
+
+    Serial.println("I2C Devices scanning");
+    for (addr = 1; addr < 127; addr++) {
+        start = millis();
+        w->beginTransmission(addr); delay(2);
+        err = w->endTransmission();
+        if (err == 0) {
+            nDevices++;
+            switch (addr) {
+            case 0x77:
+            case 0x76:
+                Serial.println("\tFind BMX280 Sensor!");
+                break;
+            case 0x34:
+                Serial.println("\tFind AXP192/AXP2101 PMU!");
+                break;
+            case 0x3C:
+                Serial.println("\tFind SSD1306/SH1106 dispaly!");
+                break;
+            case 0x51:
+                Serial.println("\tFind PCF8563 RTC!");
+                break;
+            case 0x1C:
+                Serial.println("\tFind QMC6310 MAG Sensor!");
+                break;
+            default:
+                Serial.print("\tI2C device found at address 0x");
+                if (addr < 16) {
+                    Serial.print("0");
+                }
+                Serial.print(addr, HEX);
+                Serial.println(" !");
+                break;
+            }
+
+        } else if (err == 4) {
+            Serial.print("Unknow error at address 0x");
+            if (addr < 16) {
+                Serial.print("0");
+            }
+            Serial.println(addr, HEX);
+        }
+    }
+    if (nDevices == 0)
+        Serial.println("No I2C devices found\n");
+
+    Serial.println("Scan devices done.");
+    Serial.println("\n");
+}
 
 
+#ifdef HAS_GPS
+bool beginGPS()
+{
+    SerialGPS.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    bool result = false;
+    uint32_t startTimeout ;
+    for (int i = 0; i < 3; ++i) {
+        SerialGPS.write("$PCAS03,0,0,0,0,0,0,0,0,0,0,,,0,0*02\r\n");
+        delay(5);
+        // Get version information
+        startTimeout = millis() + 3000;
+        Serial.print("Try to init L76K . Wait stop .");
+        while (SerialGPS.available()) {
+            Serial.print(".");
+            SerialGPS.readString();
+            if (millis() > startTimeout) {
+                Serial.println("Wait L76K stop NMEA timeout!");
+                return false;
+            }
+        };
+        Serial.println();
+        SerialGPS.flush();
+        delay(200);
+
+        SerialGPS.write("$PCAS06,0*1B\r\n");
+        startTimeout = millis() + 500;
+        String ver = "";
+        while (!SerialGPS.available()) {
+            if (millis() > startTimeout) {
+                Serial.println("Get L76K timeout!");
+                return false;
+            }
+        }
+        SerialGPS.setTimeout(10);
+        ver = SerialGPS.readStringUntil('\n');
+        if (ver.startsWith("$GPTXT,01,01,02")) {
+            Serial.println("L76K GNSS init succeeded, using L76K GNSS Module\n");
+            result = true;
+            break;
+        }
+        delay(500);
+    }
+    // Initialize the L76K Chip, use GPS + GLONASS
+    SerialGPS.write("$PCAS04,5*1C\r\n");
+    delay(250);
+    // only ask for RMC and GGA
+    SerialGPS.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n");
+    delay(250);
+    // Switch to Vehicle Mode, since SoftRF enables Aviation < 2g
+    SerialGPS.write("$PCAS11,3*1E\r\n");
+    return result;
+}
+#endif

@@ -4,7 +4,7 @@
  * @license   MIT
  * @copyright Copyright (c) 2024  ShenZhen XinYuan Electronic Technology Co., Ltd
  * @date      2024-05-12
- *
+ * @last-update 2024-08-07
  */
 #pragma once
 
@@ -36,6 +36,8 @@
 // #define T_MOTION
 
 // #define T3_C6
+
+// #define T_BEAM_S3_BPF
 
 
 #define UNUSED_PIN                   (0)
@@ -278,14 +280,14 @@
         defined(T3_S3_V1_2_SX1278)    ||   defined(ARDUINO_LILYGO_T3S3_SX1278)   ||    \
         defined(T3_S3_V1_2_SX1280)    ||   defined(ARDUINO_LILYGO_T3S3_SX1280)   ||    \
         defined(T3_S3_V1_2_SX1280_PA) ||   defined(ARDUINO_LILYGO_T3S3_SX1280PA) ||      \
-        defined(T3_S3_V1_2_LR1121)    ||   defined(ARDUINO_LILYGO_T3S3_LR1121) 
+        defined(T3_S3_V1_2_LR1121)    ||   defined(ARDUINO_LILYGO_T3S3_LR1121)
 
 
-#if   defined(T3_S3_V1_2_SX1262) ||   defined(ARDUINO_LILYGO_T3S3_SX1262)  
+#if   defined(T3_S3_V1_2_SX1262) ||   defined(ARDUINO_LILYGO_T3S3_SX1262)
 #ifndef USING_SX1262
 #define USING_SX1262
 #endif
-#elif defined(T3_S3_V1_2_SX1276) ||   defined(ARDUINO_LILYGO_T3S3_SX1276) 
+#elif defined(T3_S3_V1_2_SX1276) ||   defined(ARDUINO_LILYGO_T3S3_SX1276)
 #ifndef USING_SX1276
 #define USING_SX1276
 #endif
@@ -509,6 +511,72 @@
 #define BOARD_VARIANT_NAME                             "T3-C6"
 
 #define USING_DIO2_AS_RF_SWITCH
+
+
+#elif defined(T_BEAM_S3_BPF)
+
+
+#ifndef USING_SX1278
+#define USING_SX1278
+#endif
+
+#define I2C_SDA                     8
+#define I2C_SCL                     9
+
+#define PMU_IRQ                     4
+
+#define GPS_RX_PIN                  5
+#define GPS_TX_PIN                  6
+#define GPS_PPS_PIN                 7
+
+#define BUTTON_PIN                  0
+#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define BUTTON_CONUT                (2)
+#define BUTTON_ARRAY                {BUTTON_PIN,3}
+
+#define RADIO_SCLK_PIN              (41)
+#define RADIO_MISO_PIN              (42)
+#define RADIO_MOSI_PIN              (2)
+#define RADIO_CS_PIN                (1)
+#define RADIO_RST_PIN               (18)
+
+#define RADIO_DIO0_PIN              (14)
+#define RADIO_DIO1_PIN              (21)
+#define RADIO_DIO2_PIN              (15)
+
+#define RADIO_TCXO_ENABLE           (17)
+#define RADIO_LDO_EN                (16)
+#define RADIO_BUSY_PIN              (RADIO_DIO1_PIN)
+
+#define SPI_MOSI                    (11)
+#define SPI_SCK                     (12)
+#define SPI_MISO                    (13)
+#define SPI_CS                      (10)
+
+#define SDCARD_MOSI                 SPI_MOSI
+#define SDCARD_MISO                 SPI_MISO
+#define SDCARD_SCLK                 SPI_SCK
+#define SDCARD_CS                   SPI_CS
+
+#define PIN_NONE                    (-1)
+
+#define GPS_BAUD_RATE               9600
+
+#define HAS_SDCARD
+#define HAS_GPS
+#define HAS_DISPLAY
+#define HAS_PMU
+
+#define __HAS_SPI1__
+#define __HAS_SENSOR__
+
+#define PMU_WIRE_PORT               Wire
+#define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
+#define BOARD_VARIANT_NAME          "T-Beam BPF"
+
+
+
+
 #else
 #error "When using it for the first time, please define the board model in <utilities.h>"
 #endif
