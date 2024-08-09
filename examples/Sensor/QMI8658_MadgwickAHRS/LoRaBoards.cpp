@@ -651,7 +651,9 @@ void setupBoards(bool disable_u8g2 )
     beginWiFi();
 
 #ifdef HAS_GPS
+#ifdef T_BEAM_S3_BPF
     find_gps = beginGPS();
+#endif
 #endif
 
     Serial.println("init done . ");
@@ -682,8 +684,10 @@ void printResult(bool radio_online)
 #endif
 
 #ifdef HAS_GPS
+#ifdef T_BEAM_S3_BPF
     Serial.print("GPS          : ");
     Serial.println(( find_gps ) ? "+" : "-");
+#endif
 #endif
 
     if (u8g2) {
