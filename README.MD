@@ -335,7 +335,7 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 # 7️⃣ FAQ
 
 1. T-Beam Supreme GPS backup power comes from 18650 battery. If you remove the 18650 battery, you will not be able to get GPS hot start. If you need to use GPS hot start, please connect the 18650 battery.
-2. There is no data output from the GPS. [Refer to GPS factory reset](firmware/NMEA_Reset/README.MD)
+2. There is no data output from the GPS. [Refer to GPS factory reset](firmware/GPS_Reset/README.MD)
 3. How to find the pin definition?
      <details>
      <summary>
