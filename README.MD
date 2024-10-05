@@ -19,10 +19,11 @@
 | [T3-S3 SX1280 2.4G With PA][6]     | ESP32-S3FH4R2          | 4MB(Quad-SPI)  | 2MB(Quad-SPI)  |
 | [T3-S3 SX1276][7]                  | ESP32-S3FH4R2          | 4MB(Quad-SPI)  | 2MB(Quad-SPI)  |
 | [T3-S3 SX1262][8]                  | ESP32-S3FH4R2          | 4MB(Quad-SPI)  | 2MB(Quad-SPI)  |
-| [LoRa32][8]                        | ESP32-PICO-D4          | 4MB(Quad-SPI)  | ❌              |
+| [LoRa32 V1.3][8]                   | ESP32-D0WDQ6-V3        | 4MB(Quad-SPI)  | ❌              |
+| [LoRa32 V2.1][11]                  | ESP32-PICO-D4          | 4MB(Quad-SPI)  | ❌              |
 | [T-Motion][9]                      | STM32L073RZ            | 192 Kbyte      | (20-Kbyte RAM) |
-| [T3-C6][10]                        | ESP32-C6-MINI-1U       | 4MB(Quad-SPI)  | ❌              |
-| [T-Beam BPF][11]                   | ESP32-S3-WROOM-1-N16R8 | 16MB(Quad-SPI) | 8MB(OPI)       |
+| [T-Lora C6][10]                    | ESP32-C6-MINI-1U       | 4MB(Quad-SPI)  | ❌              |
+| [T-Beam BPF][12]                   | ESP32-S3-WROOM-1-N16R8 | 16MB(Quad-SPI) | 8MB(OPI)       |
 
 [1]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905052341 "T-Beam S3 Supreme L76K"
 [2]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905281717 "T-Beam S3 Supreme Ublox"
@@ -31,10 +32,11 @@
 [5]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879656117 "T3-S3 SX1280 2.4G With out PA"
 [6]: https://www.lilygo.cc/products/t3s3-v1-0?variant=43043715678389 "T3-S3 SX1280 2.4G With PA"
 [7]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879688885 "T3-S3 SX1276"
-[8]: https://www.lilygo.cc/products/t3s3-v1-0?variant=42586879721653 "T3-S3 SX1262"
+[8]: https://www.lilygo.cc/products/lora-v1-3 "LoRa V1.3"
 [9]: https://www.lilygo.cc/products/t-motion-s76g-stm32-lora "T-Motion"
-[10]: https://www.lilygo.cc/products/t-lora-c6 "T3-C6"
-[11]: https://www.lilygo.cc/products "T-Beam BPF"
+[10]: https://www.lilygo.cc/products/t-lora-c6 "T-Lora C6"
+[11]: https://www.lilygo.cc/products/lora32-v2-1_1-6 "LoRa32 V2.1_1.6"
+[12]: https://www.lilygo.cc/products "T-Beam BPF"
 
 ## 2️⃣Example description
 
@@ -261,7 +263,7 @@
      | Core Debug Level                     | None                                |
      | USB DFU On Boot                      | Disable                             |
      | Erase All Flash Before Sketch Upload | Disable                             |
-     | Flash Mode                           | QIO 80Mhz                                 |
+     | Flash Mode                           | QIO 80Mhz                           |
      | Flash Size                           | **16MB(128Mb)**                     |
      | Arduino Runs On                      | Core1                               |
      | USB Firmware MSC On Boot             | Disable                             |
