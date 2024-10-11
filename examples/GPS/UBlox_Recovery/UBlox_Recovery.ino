@@ -109,27 +109,91 @@ bool recovery()
 }
 
 
+bool setupGPS()
+{
+    // L76K GPS USE 9600 BAUDRATE
+    // SerialGPS.begin(9600, SERIAL_8N1, BOARD_GPS_RX_PIN, BOARD_GPS_TX_PIN);
+    SerialGPS.updateBaudRate(9600);
+    bool result = false;
+    uint32_t startTimeout ;
+    for (int i = 0; i < 3; ++i) {
+        SerialGPS.write("$PCAS03,0,0,0,0,0,0,0,0,0,0,,,0,0*02\r\n");
+        delay(5);
+        // Get version information
+        startTimeout = millis() + 500;
+        SerialGPS.setTimeout(500);
+        Serial.print("Try to init L76K . Wait stop .");
+        while (SerialGPS.available()) {
+            Serial.print(".");
+            SerialGPS.readString();
+            if (millis() > startTimeout) {
+                Serial.println("\nWait L76K stop NMEA timeout!");
+                return false;
+            }
+        };
+        Serial.println();
+        SerialGPS.flush();
+        delay(200);
+
+        SerialGPS.write("$PCAS06,0*1B\r\n");
+        startTimeout = millis() + 500;
+        String ver = "";
+        while (!SerialGPS.available()) {
+            if (millis() > startTimeout) {
+                Serial.println("Get L76K timeout!");
+                return false;
+            }
+        }
+        SerialGPS.setTimeout(10);
+        ver = SerialGPS.readStringUntil('\n');
+        if (ver.startsWith("$GPTXT,01,01,02")) {
+            Serial.println("L76K GNSS init succeeded, using L76K GNSS Module\n");
+            result = true;
+            break;
+        }
+        delay(500);
+    }
+    // Initialize the L76K Chip, use GPS + GLONASS
+    SerialGPS.write("$PCAS04,5*1C\r\n");
+    delay(250);
+    SerialGPS.write("$PCAS03,1,1,1,1,1,1,1,1,1,1,,,0,0*26\r\n");
+    delay(250);
+    // Switch to Vehicle Mode, since SoftRF enables Aviation < 2g
+    SerialGPS.write("$PCAS11,3*1E\r\n");
+    return result;
+}
+
 void setup()
 {
 
     setupBoards();
 
-    if (recovery()) {
-        Serial.println("recovery successes!");
-    } else {
-        Serial.println("recovery failed!");
+    //ESP32S3  Arduino IDE : Tools -> USB CDC On Boot -> Enabled
+    uint32_t baudrate[] = {9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 4800};
+    if (!setupGPS()) {
+        // Set u-blox m10q gps baudrate 38400
+        for ( int i = 0; i < sizeof(baudrate) / sizeof(baudrate[0]); ++i) {
+            Serial.printf("Try use %u bps recover gps.\n", baudrate[i]);
+            SerialGPS.updateBaudRate(baudrate[i]);
+            for (int j = 0; j < 3; ++j) {
+                Serial.printf("Retry : %d \n", j);
+                if (!recovery()) {
+                    Serial.printf("GPS baudrate: %u bps failed!\n", baudrate[i]);
+                } else {
+                    Serial.println("recover gps successfully");
+                    return ;
+                }
+            }
+        }
     }
-
 }
 
 void loop()
 {
-    while (1) {
-        while (Serial.available()) {
-            SerialGNSS.write(Serial.read());
-        }
-        while (SerialGNSS.available()) {
-            Serial.write(SerialGNSS.read());
-        }
+    while (Serial.available()) {
+        SerialGNSS.write(Serial.read());
+    }
+    while (SerialGNSS.available()) {
+        Serial.write(SerialGNSS.read());
     }
 }

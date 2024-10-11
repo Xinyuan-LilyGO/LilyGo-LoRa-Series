@@ -642,13 +642,13 @@ void setupBoards(bool disable_u8g2 )
 
     beginPower();
 
-    beginSDCard();
+    // beginSDCard();
 
-    if (!disable_u8g2) {
-        beginDisplay();
-    }
+    // if (!disable_u8g2) {
+    //     beginDisplay();
+    // }
 
-    beginWiFi();
+    // beginWiFi();
 
 #ifdef HAS_GPS
 #ifdef T_BEAM_S3_BPF
