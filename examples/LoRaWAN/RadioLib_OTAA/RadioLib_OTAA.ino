@@ -25,16 +25,6 @@
 #include <RadioLib.h>
 #include "LoRaBoards.h"
 
-// !!!!! APP EUI
-#define RADIOLIB_LORAWAN_JOIN_EUI  0xAABB112233445566
-// !!!!! DEV EUI
-#define RADIOLIB_LORAWAN_DEV_EUI   0x70B3D57ED0066FDA
-// !!!!! APP EUI
-#define RADIOLIB_LORAWAN_APP_KEY   0xAA, 0xBB, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66
-// !!! APP KEY
-#define RADIOLIB_LORAWAN_NWK_KEY   0xF2, 0x84, 0x31, 0x0F, 0x82, 0x65, 0x99, 0x4F, 0x70, 0xCB, 0x88, 0x74, 0xFA, 0xD6, 0x71, 0xA2
-
-
 #if  defined(USING_SX1276)
 SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 #elif defined(USING_SX1262)
@@ -45,6 +35,21 @@ SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
 
+// joinEUI - previous versions of LoRaWAN called this AppEUI
+// for development purposes you can use all zeros - see wiki for details
+#define RADIOLIB_LORAWAN_JOIN_EUI  0x0000000000000000
+
+
+// the Device EUI & two keys can be generated on the TTN console
+#ifndef RADIOLIB_LORAWAN_DEV_EUI   // Replace with your Device EUI
+#define RADIOLIB_LORAWAN_DEV_EUI   0x---------------
+#endif
+#ifndef RADIOLIB_LORAWAN_APP_KEY   // Replace with your App Key 
+#define RADIOLIB_LORAWAN_APP_KEY   0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--
+#endif
+#ifndef RADIOLIB_LORAWAN_NWK_KEY   // Put your Nwk Key here
+#define RADIOLIB_LORAWAN_NWK_KEY   0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--, 0x--
+#endif
 
 // how often to send an uplink - consider legal & FUP constraints - see notes
 const uint32_t uplinkIntervalSeconds = 5UL * 60UL;    // minutes x seconds
@@ -69,15 +74,87 @@ uint8_t nwkKey[] = { RADIOLIB_LORAWAN_NWK_KEY };
 // create the LoRaWAN node
 LoRaWANNode node(&radio, &Region, subBand);
 
-// helper function to display any issues
-void debug(bool isFail, const __FlashStringHelper *message, int state, bool Freeze)
+
+// result code to text - these are error codes that can be raised when using LoRaWAN
+// however, RadioLib has many more - see https://jgromes.github.io/RadioLib/group__status__codes.html for a complete list
+String stateDecode(const int16_t result)
 {
-    if (isFail) {
+    switch (result) {
+    case RADIOLIB_ERR_NONE:
+        return "ERR_NONE";
+    case RADIOLIB_ERR_CHIP_NOT_FOUND:
+        return "ERR_CHIP_NOT_FOUND";
+    case RADIOLIB_ERR_PACKET_TOO_LONG:
+        return "ERR_PACKET_TOO_LONG";
+    case RADIOLIB_ERR_RX_TIMEOUT:
+        return "ERR_RX_TIMEOUT";
+    case RADIOLIB_ERR_CRC_MISMATCH:
+        return "ERR_CRC_MISMATCH";
+    case RADIOLIB_ERR_INVALID_BANDWIDTH:
+        return "ERR_INVALID_BANDWIDTH";
+    case RADIOLIB_ERR_INVALID_SPREADING_FACTOR:
+        return "ERR_INVALID_SPREADING_FACTOR";
+    case RADIOLIB_ERR_INVALID_CODING_RATE:
+        return "ERR_INVALID_CODING_RATE";
+    case RADIOLIB_ERR_INVALID_FREQUENCY:
+        return "ERR_INVALID_FREQUENCY";
+    case RADIOLIB_ERR_INVALID_OUTPUT_POWER:
+        return "ERR_INVALID_OUTPUT_POWER";
+    case RADIOLIB_ERR_NETWORK_NOT_JOINED:
+        return "RADIOLIB_ERR_NETWORK_NOT_JOINED";
+    case RADIOLIB_ERR_DOWNLINK_MALFORMED:
+        return "RADIOLIB_ERR_DOWNLINK_MALFORMED";
+    case RADIOLIB_ERR_INVALID_REVISION:
+        return "RADIOLIB_ERR_INVALID_REVISION";
+    case RADIOLIB_ERR_INVALID_PORT:
+        return "RADIOLIB_ERR_INVALID_PORT";
+    case RADIOLIB_ERR_NO_RX_WINDOW:
+        return "RADIOLIB_ERR_NO_RX_WINDOW";
+    case RADIOLIB_ERR_INVALID_CID:
+        return "RADIOLIB_ERR_INVALID_CID";
+    case RADIOLIB_ERR_UPLINK_UNAVAILABLE:
+        return "RADIOLIB_ERR_UPLINK_UNAVAILABLE";
+    case RADIOLIB_ERR_COMMAND_QUEUE_FULL:
+        return "RADIOLIB_ERR_COMMAND_QUEUE_FULL";
+    case RADIOLIB_ERR_COMMAND_QUEUE_ITEM_NOT_FOUND:
+        return "RADIOLIB_ERR_COMMAND_QUEUE_ITEM_NOT_FOUND";
+    case RADIOLIB_ERR_JOIN_NONCE_INVALID:
+        return "RADIOLIB_ERR_JOIN_NONCE_INVALID";
+    case RADIOLIB_ERR_N_FCNT_DOWN_INVALID:
+        return "RADIOLIB_ERR_N_FCNT_DOWN_INVALID";
+    case RADIOLIB_ERR_A_FCNT_DOWN_INVALID:
+        return "RADIOLIB_ERR_A_FCNT_DOWN_INVALID";
+    case RADIOLIB_ERR_DWELL_TIME_EXCEEDED:
+        return "RADIOLIB_ERR_DWELL_TIME_EXCEEDED";
+    case RADIOLIB_ERR_CHECKSUM_MISMATCH:
+        return "RADIOLIB_ERR_CHECKSUM_MISMATCH";
+    case RADIOLIB_ERR_NO_JOIN_ACCEPT:
+        return "RADIOLIB_ERR_NO_JOIN_ACCEPT";
+    case RADIOLIB_LORAWAN_SESSION_RESTORED:
+        return "RADIOLIB_LORAWAN_SESSION_RESTORED";
+    case RADIOLIB_LORAWAN_NEW_SESSION:
+        return "RADIOLIB_LORAWAN_NEW_SESSION";
+    case RADIOLIB_ERR_NONCES_DISCARDED:
+        return "RADIOLIB_ERR_NONCES_DISCARDED";
+    case RADIOLIB_ERR_SESSION_DISCARDED:
+        return "RADIOLIB_ERR_SESSION_DISCARDED";
+    }
+    return "See https://jgromes.github.io/RadioLib/group__status__codes.html";
+}
+
+// helper function to display any issues
+void debug(bool failed, const __FlashStringHelper *message, int state, bool halt)
+{
+    if (failed) {
         Serial.print(message);
-        Serial.print("(");
+        Serial.print(" - ");
+        Serial.print(stateDecode(state));
+        Serial.print(" (");
         Serial.print(state);
         Serial.println(")");
-        while (Freeze);
+        while (halt) {
+            delay(1);
+        }
     }
 }
 
@@ -93,8 +170,6 @@ void arrayDump(uint8_t *buffer, uint16_t len)
     }
     Serial.println();
 }
-
-static uint32_t txCounter = 0;
 
 
 void setup()
@@ -116,10 +191,10 @@ void setup()
 
     Serial.println(F("Initialise the radio"));
 
-    int state = radio.begin();
+    int16_t state = 0;  // return value for calls to RadioLib
+    Serial.println(F("Initialise the radio"));
+    state = radio.begin();
     debug(state != RADIOLIB_ERR_NONE, F("Initialise radio failed"), state, true);
-    printResult(state == RADIOLIB_ERR_NONE);
-    delay(2000);
 
 #ifdef USING_DIO2_AS_RF_SWITCH
 #ifdef USING_SX1262
@@ -174,38 +249,60 @@ void setup()
     radio.setTCXO(3.0);
 #endif
 
-    int retry = 0;
-    while (1) {
-        if (u8g2) {
-            u8g2->clearBuffer();
-            u8g2->setFont(u8g2_font_NokiaLargeBold_tf );
-            uint16_t str_w =  u8g2->getStrWidth(BOARD_VARIANT_NAME);
-            u8g2->drawStr((u8g2->getWidth() - str_w) / 2, 16, BOARD_VARIANT_NAME);
-            u8g2->drawHLine(5, 21, u8g2->getWidth() - 5);
+    // Override the default join rate
+    uint8_t joinDR = 4;
 
-            u8g2->setCursor(0, 38);
-            u8g2->print("Join LoRaWAN :");
-            u8g2->println(String(retry++));
-            u8g2->sendBuffer();
-        }
-        Serial.println(F("Join ('login') to the LoRaWAN Network"));
-        node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
-        state = node.activateOTAA();
-        debug(state < RADIOLIB_ERR_NONE, F("Join failed"), state, false);
-        if (state == RADIOLIB_ERR_NONE || state == RADIOLIB_LORAWAN_NEW_SESSION) {
-            break;
-        }
-        delay(10000);
-        Serial.print("Retry ");
+    // Setup the OTAA session information
+    node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
+
+    Serial.println(F("Join ('login') the LoRaWAN Network"));
+    state = node.activateOTAA(joinDR);
+    debug(state != RADIOLIB_LORAWAN_NEW_SESSION, F("Join failed"), state, true);
+
+    // Print the DevAddr
+    Serial.print("[LoRaWAN] DevAddr: ");
+    Serial.println((unsigned long)node.getDevAddr(), HEX);
+
+    // Enable the ADR algorithm (on by default which is preferable)
+    node.setADR(true);
+
+    // Set a datarate to start off with
+    node.setDatarate(5);
+
+    // Manages uplink intervals to the TTN Fair Use Policy
+    node.setDutyCycle(true, 1250);
+
+    // Enable the dwell time limits - 400ms is the limit for the US
+    node.setDwellTime(true, 400);
+
+    Serial.println(F("Ready!\n"));
+
+    if (u8g2) {
+        u8g2->clearBuffer();
+        u8g2->setFont(u8g2_font_NokiaLargeBold_tf );
+        uint16_t str_w =  u8g2->getStrWidth(BOARD_VARIANT_NAME);
+        u8g2->drawStr((u8g2->getWidth() - str_w) / 2, 16, BOARD_VARIANT_NAME);
+        u8g2->drawHLine(5, 21, u8g2->getWidth() - 5);
+
+        u8g2->setCursor(0, 38);
+        u8g2->print("Join LoRaWAN Ready!");
+        u8g2->sendBuffer();
     }
-
-    Serial.println(F("Joined!\n"));
 }
 
 
 void loop()
 {
-    Serial.println(F("Sending uplink"));
+    int16_t state = RADIOLIB_ERR_NONE;
+
+    // set battery fill level - the LoRaWAN network server
+    // may periodically request this information
+    // 0 = external power source
+    // 1 = lowest (empty battery)
+    // 254 = highest (full battery)
+    // 255 = unable to measure
+    uint8_t battLevel = 146;
+    node.setDeviceStatus(battLevel);
 
     // This is the place to gather the sensor inputs
     // Instead of reading any real sensor, we just generate some random numbers as example
@@ -218,37 +315,105 @@ void loop()
     uplinkPayload[1] = highByte(value2);   // See notes for high/lowByte functions
     uplinkPayload[2] = lowByte(value2);
 
-    // Perform an uplink
-    int state = node.sendReceive(uplinkPayload, sizeof(uplinkPayload));
-    debug((state != RADIOLIB_LORAWAN_NO_DOWNLINK) && (state != RADIOLIB_ERR_NONE), F("Error in sendReceive"), state, false);
+    uint8_t downlinkPayload[10];  // Make sure this fits your plans!
+    size_t  downlinkSize;         // To hold the actual payload size received
 
-    if (u8g2) {
-        u8g2->clearBuffer();
-        u8g2->setFont(u8g2_font_NokiaLargeBold_tf );
-        uint16_t str_w =  u8g2->getStrWidth(BOARD_VARIANT_NAME);
-        u8g2->drawStr((u8g2->getWidth() - str_w) / 2, 16, BOARD_VARIANT_NAME);
-        u8g2->drawHLine(5, 21, u8g2->getWidth() - 5);
-        u8g2->setCursor(0, 38);
-        u8g2->print(node.isActivated() ? "Joined." : "NoJoin");
-        u8g2->print("\tTx:"); u8g2->println(++txCounter);
-#ifdef ARDUINO_ARCH_ESP32
-        u8g2->setCursor(0, 54);
-        u8g2->println("MAC:"); u8g2->println(ESP.getEfuseMac(), HEX);
-#endif
-        u8g2->sendBuffer();
+    // you can also retrieve additional information about an uplink or
+    // downlink by passing a reference to LoRaWANEvent_t structure
+    LoRaWANEvent_t uplinkDetails;
+    LoRaWANEvent_t downlinkDetails;
+
+    uint8_t fPort = 10;
+
+    // Retrieve the last uplink frame counter
+    uint32_t fCntUp = node.getFCntUp();
+
+    // Send a confirmed uplink on the second uplink
+    // and also request the LinkCheck and DeviceTime MAC commands
+    Serial.println(F("Sending uplink"));
+    if (fCntUp == 1) {
+        Serial.println(F("and requesting LinkCheck and DeviceTime"));
+        node.sendMacCommandReq(RADIOLIB_LORAWAN_MAC_LINK_CHECK);
+        node.sendMacCommandReq(RADIOLIB_LORAWAN_MAC_DEVICE_TIME);
+        state = node.sendReceive(uplinkPayload, sizeof(uplinkPayload), fPort, downlinkPayload, &downlinkSize, true, &uplinkDetails, &downlinkDetails);
+    } else {
+        state = node.sendReceive(uplinkPayload, sizeof(uplinkPayload), fPort, downlinkPayload, &downlinkSize, false, &uplinkDetails, &downlinkDetails);
+    }
+    debug(state < RADIOLIB_ERR_NONE, F("Error in sendReceive"), state, false);
+
+    // Check if a downlink was received
+    // (state 0 = no downlink, state 1/2 = downlink in window Rx1/Rx2)
+    if (state > 0) {
+        Serial.println(F("Received a downlink"));
+        // Did we get a downlink with data for us
+        if (downlinkSize > 0) {
+            Serial.println(F("Downlink data: "));
+            arrayDump(downlinkPayload, downlinkSize);
+        } else {
+            Serial.println(F("<MAC commands only>"));
+        }
+
+        // print RSSI (Received Signal Strength Indicator)
+        Serial.print(F("[LoRaWAN] RSSI:\t\t"));
+        Serial.print(radio.getRSSI());
+        Serial.println(F(" dBm"));
+
+        // print SNR (Signal-to-Noise Ratio)
+        Serial.print(F("[LoRaWAN] SNR:\t\t"));
+        Serial.print(radio.getSNR());
+        Serial.println(F(" dB"));
+
+        // print extra information about the event
+        Serial.println(F("[LoRaWAN] Event information:"));
+        Serial.print(F("[LoRaWAN] Confirmed:\t"));
+        Serial.println(downlinkDetails.confirmed);
+        Serial.print(F("[LoRaWAN] Confirming:\t"));
+        Serial.println(downlinkDetails.confirming);
+        Serial.print(F("[LoRaWAN] Datarate:\t"));
+        Serial.println(downlinkDetails.datarate);
+        Serial.print(F("[LoRaWAN] Frequency:\t"));
+        Serial.print(downlinkDetails.freq, 3);
+        Serial.println(F(" MHz"));
+        Serial.print(F("[LoRaWAN] Frame count:\t"));
+        Serial.println(downlinkDetails.fCnt);
+        Serial.print(F("[LoRaWAN] Port:\t\t"));
+        Serial.println(downlinkDetails.fPort);
+        Serial.print(F("[LoRaWAN] Time-on-air: \t"));
+        Serial.print(node.getLastToA());
+        Serial.println(F(" ms"));
+        Serial.print(F("[LoRaWAN] Rx window: \t"));
+        Serial.println(state);
+
+        uint8_t margin = 0;
+        uint8_t gwCnt = 0;
+        if (node.getMacLinkCheckAns(&margin, &gwCnt) == RADIOLIB_ERR_NONE) {
+            Serial.print(F("[LoRaWAN] LinkCheck margin:\t"));
+            Serial.println(margin);
+            Serial.print(F("[LoRaWAN] LinkCheck count:\t"));
+            Serial.println(gwCnt);
+        }
+
+        uint32_t networkTime = 0;
+        uint8_t fracSecond = 0;
+        if (node.getMacDeviceTimeAns(&networkTime, &fracSecond, true) == RADIOLIB_ERR_NONE) {
+            Serial.print(F("[LoRaWAN] DeviceTime Unix:\t"));
+            Serial.println(networkTime);
+            Serial.print(F("[LoRaWAN] DeviceTime second:\t1/"));
+            Serial.println(fracSecond);
+        }
+
+    } else {
+        Serial.println(F("[LoRaWAN] No downlink received"));
     }
 
+    // wait before sending another packet
+    uint32_t minimumDelay = uplinkIntervalSeconds * 1000UL;
+    uint32_t interval = node.timeUntilUplink();     // calculate minimum duty cycle delay (per FUP & law!)
+    uint32_t delayMs = max(interval, minimumDelay); // cannot send faster than duty cycle allows
 
-    Serial.print(F("Uplink complete, next in "));
-    Serial.print(uplinkIntervalSeconds);
-    Serial.println(F(" seconds"));
+    Serial.print(F("[LoRaWAN] Next uplink in "));
+    Serial.print(delayMs / 1000);
+    Serial.println(F(" seconds\n"));
 
-#ifdef BOARD_LED
-    digitalWrite(BOARD_LED, LED_ON);
-    delay(200);
-    digitalWrite(BOARD_LED, !LED_ON);
-#endif
-
-    // Wait until next uplink - observing legal & TTN FUP constraints
-    delay(uplinkIntervalSeconds * 1000UL);  // delay needs milli-seconds
+    delay(delayMs);
 }
