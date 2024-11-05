@@ -1,24 +1,24 @@
 /*
-   RadioLib SX127x Transmit with Frequency Hopping Example
+  RadioLib SX127x Transmit with Frequency Hopping Example
 
-   This example transmits packets using SX1278 LoRa radio module.
-   Each packet contains up to 255 bytes of data, in the form of:
-    - Arduino String
-    - null-terminated char array (C-string)
-    - arbitrary binary data (byte array)
+  This example transmits packets using SX1278 LoRa radio module.
+  Each packet contains up to 255 bytes of data, in the form of:
+  - Arduino String
+  - null-terminated char array (C-string)
+  - arbitrary binary data (byte array)
 
-   Other modules from SX127x/RFM9x family can also be used.
+  Other modules from SX127x/RFM9x family can also be used.
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx127xrfm9x---lora-modem
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx127xrfm9x---lora-modem
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 
-   SX127x supports FHSS or Frequency Hopping Spread Spectrum.
-   Once a hopping period is set and a transmission is started, the radio
-   will begin triggering interrupts every hop period where the radio frequency
-   is changed to the next channel.
+  SX127x supports FHSS or Frequency Hopping Spread Spectrum.
+  Once a hopping period is set and a transmission is started, the radio
+  will begin triggering interrupts every hop period where the radio frequency
+  is changed to the next channel.
 */
 
 #include <RadioLib.h>
@@ -30,9 +30,13 @@
 // DIO1 pin:  3
 SX1278 radio = new Module(10, 2, 9, 3);
 
-// or using RadioShield
-// https://github.com/jgromes/RadioShield
-//SX1278 radio = RadioShield.ModuleA;
+// or detect the pinout automatically using RadioBoards
+// https://github.com/radiolib-org/RadioBoards
+/*
+#define RADIO_BOARD_AUTO
+#include <RadioBoards.h>
+Radio radio = new RadioModule();
+*/
 
 // flag to indicate that a packet was received
 volatile bool transmittedFlag = false;
@@ -93,18 +97,19 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set hop period in symbols
   // this will also enable FHSS
+  Serial.print(F("[SX1278] Setting hopping period ... "));
   state = radio.setFHSSHoppingPeriod(9);
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set the function to call when transmission is finished
@@ -147,7 +152,7 @@ void loop() {
     hopsCompleted = 0;
 
     // return to home channel before the next transaction
-    radio.setFrequency(channels[radio.getFHSSChannel() % numberOfChannels]);
+    radio.setFrequency(channels[0]);
 
     // wait a second before transmitting again
     delay(1000);

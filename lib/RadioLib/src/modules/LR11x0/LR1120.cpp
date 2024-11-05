@@ -1,4 +1,6 @@
 #include "LR1120.h"
+#include <math.h>
+
 #if !RADIOLIB_EXCLUDE_LR11X0
 
 LR1120::LR1120(Module* mod) : LR11x0(mod) {
@@ -7,7 +9,7 @@ LR1120::LR1120(Module* mod) : LR11x0(mod) {
 
 int16_t LR1120::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, int8_t power, uint16_t preambleLength, float tcxoVoltage) {
   // execute common part
-  int16_t state = LR11x0::begin(bw, sf, cr, syncWord, preambleLength, tcxoVoltage);
+  int16_t state = LR11x0::begin(bw, sf, cr, syncWord, preambleLength, tcxoVoltage, freq > 1000.0);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -31,9 +33,9 @@ int16_t LR1120::beginGFSK(float freq, float br, float freqDev, float rxBw, int8_
   return(state);
 }
 
-int16_t LR1120::beginLRFHSS(float freq, uint8_t bw, uint8_t cr, int8_t power, float tcxoVoltage) {
+int16_t LR1120::beginLRFHSS(float freq, uint8_t bw, uint8_t cr, bool narrowGrid, int8_t power, float tcxoVoltage) {
   // execute common part
-  int16_t state = LR11x0::beginLRFHSS(bw, cr, tcxoVoltage);
+  int16_t state = LR11x0::beginLRFHSS(bw, cr, narrowGrid, tcxoVoltage);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
@@ -45,26 +47,27 @@ int16_t LR1120::beginLRFHSS(float freq, uint8_t bw, uint8_t cr, int8_t power, fl
 }
 
 int16_t LR1120::setFrequency(float freq) {
-  return(this->setFrequency(freq, true));
+  return(this->setFrequency(freq, false));
 }
 
-int16_t LR1120::setFrequency(float freq, bool calibrate, float band) {
+int16_t LR1120::setFrequency(float freq, bool skipCalibration, float band) {
   if(!(((freq >= 150.0) && (freq <= 960.0)) ||
     ((freq >= 1900.0) && (freq <= 2200.0)) ||
     ((freq >= 2400.0) && (freq <= 2500.0)))) {
       return(RADIOLIB_ERR_INVALID_FREQUENCY);
   }
 
-  // calibrate image rejection
+  // check if we need to recalibrate image
   int16_t state;
-  if(calibrate) {
-    state = LR11x0::calibImage(freq - band, freq + band);
+  if(!skipCalibration && (fabsf(freq - this->freqMHz) >= RADIOLIB_LR11X0_CAL_IMG_FREQ_TRIG_MHZ)) {
+    state = LR11x0::calibrateImageRejection(freq - band, freq + band);
     RADIOLIB_ASSERT(state);
   }
 
   // set frequency
   state = LR11x0::setRfFrequency((uint32_t)(freq*1000000.0f));
   RADIOLIB_ASSERT(state);
+  this->freqMHz = freq;
   this->highFreq = (freq > 1000.0);
   return(RADIOLIB_ERR_NONE);
 }
@@ -126,6 +129,21 @@ int16_t LR1120::checkOutputPower(int8_t power, int8_t* clipped, bool forceHighPo
   
   }
   return(RADIOLIB_ERR_NONE);
+}
+
+int16_t LR1120::setModem(ModemType_t modem) {
+  switch(modem) {
+    case(ModemType_t::LoRa): {
+      return(this->begin());
+    } break;
+    case(ModemType_t::FSK): {
+      return(this->beginGFSK());
+    } break;
+    case(ModemType_t::LRFHSS): {
+      return(this->beginLRFHSS());
+    } break;
+  }
+  return(RADIOLIB_ERR_WRONG_MODEM);
 }
 
 #endif

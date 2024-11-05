@@ -103,10 +103,13 @@
 #define RADIOLIB_LR11X0_CMD_WIFI_READ_COUNTRY_CODE_RESULTS      (0x030A)
 #define RADIOLIB_LR11X0_CMD_WIFI_CFG_TIMESTAMP_AP_PHONE         (0x030B)
 #define RADIOLIB_LR11X0_CMD_WIFI_READ_VERSION                   (0x0320)
+#define RADIOLIB_LR11X0_CMD_GNSS_READ_RSSI                      (0x0222)
 #define RADIOLIB_LR11X0_CMD_GNSS_SET_CONSTELLATION_TO_USE       (0x0400)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_CONSTELLATION_TO_USE      (0x0401)
 #define RADIOLIB_LR11X0_CMD_GNSS_SET_ALMANAC_UPDATE             (0x0402)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_ALMANAC_UPDATE            (0x0403)
+#define RADIOLIB_LR11X0_CMD_GNSS_SET_FREQ_SEARCH_SPACE          (0x0404)
+#define RADIOLIB_LR11X0_CMD_GNSS_READ_FREQ_SEARCH_SPACE         (0x0405)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_VERSION                   (0x0406)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_SUPPORTED_CONSTELLATIONS  (0x0407)
 #define RADIOLIB_LR11X0_CMD_GNSS_SET_MODE                       (0x0408)
@@ -116,6 +119,7 @@
 #define RADIOLIB_LR11X0_CMD_GNSS_GET_RESULT_SIZE                (0x040C)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_RESULTS                   (0x040D)
 #define RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_FULL_UPDATE            (0x040E)
+#define RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_READ_ADDR_SIZE         (0x040F)
 #define RADIOLIB_LR11X0_CMD_GNSS_SET_ASSISTANCE_POSITION        (0x0410)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_ASSISTANCE_POSITION       (0x0411)
 #define RADIOLIB_LR11X0_CMD_GNSS_PUSH_SOLVER_MSG                (0x0414)
@@ -124,24 +128,28 @@
 #define RADIOLIB_LR11X0_CMD_GNSS_GET_NB_SV_DETECTED             (0x0417)
 #define RADIOLIB_LR11X0_CMD_GNSS_GET_SV_DETECTED                (0x0418)
 #define RADIOLIB_LR11X0_CMD_GNSS_GET_CONSUMPTION                (0x0419)
+#define RADIOLIB_LR11X0_CMD_GNSS_READ_ALMANAC_PER_SATELLITE     (0x041A)
 #define RADIOLIB_LR11X0_CMD_GNSS_GET_SV_VISIBLE                 (0x041F)
+#define RADIOLIB_LR11X0_CMD_GNSS_GET_SV_VISIBLE_DOPPLER         (0x0420)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_LAST_SCAN_MODE_LAUNCHED   (0x0426)
 #define RADIOLIB_LR11X0_CMD_GNSS_FETCH_TIME                     (0x0432)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_TIME                      (0x0434)
 #define RADIOLIB_LR11X0_CMD_GNSS_RESET_TIME                     (0x0435)
 #define RADIOLIB_LR11X0_CMD_GNSS_RESET_POSITION                 (0x0437)
+#define RADIOLIB_LR11X0_CMD_GNSS_READ_WEEK_NUMBER_ROLLOWER      (0x0438)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_DEMOD_STATUS              (0x0439)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_CUMUL_TIMING              (0x044A)
 #define RADIOLIB_LR11X0_CMD_GNSS_SET_TIME                       (0x044B)
+#define RADIOLIB_LR11X0_CMD_GNSS_CONFIG_DELAY_RESET_AP          (0x044D)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_DOPPLER_SOLVER_RES        (0x044F)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_DELAY_RESET_AP            (0x0453)
-#define RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_UPDATE_FROM_SAT        (0x0455)
+#define RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_UPDATE_FROM_SAT        (0x0454)
+#define RADIOLIB_LR11X0_CMD_GNSS_READ_KEEP_SYNC_STATUS          (0x0456)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_ALMANAC_STATUS            (0x0457)
 #define RADIOLIB_LR11X0_CMD_GNSS_CONFIG_ALMANAC_UPDATE_PERIOD   (0x0463)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_ALMANAC_UPDATE_PERIOD     (0x0464)
-#define RADIOLIB_LR11X0_CMD_GNSS_CONFIG_DELAY_RESET_AP          (0x0465)
 #define RADIOLIB_LR11X0_CMD_GNSS_GET_SV_WARM_START              (0x0466)
-#define RADIOLIB_LR11X0_CMD_GNSS_READ_WN_ROLLOVER               (0x0467)
+#define RADIOLIB_LR11X0_CMD_GNSS_GET_SV_SYNC                    (0x0466)
 #define RADIOLIB_LR11X0_CMD_GNSS_READ_WARM_START_STATUS         (0x0469)
 #define RADIOLIB_LR11X0_CMD_GNSS_WRITE_BIT_MASK_SAT_ACTIVATED   (0x0472)
 #define RADIOLIB_LR11X0_CMD_CRYPTO_SET_KEY                      (0x0502)
@@ -168,6 +176,7 @@
 // LR11X0 register map
 #define RADIOLIB_LR11X0_REG_SF6_SX127X_COMPAT                   (0x00F20414)
 #define RADIOLIB_LR11X0_REG_LORA_HIGH_POWER_FIX                 (0x00F30054)
+#define RADIOLIB_LR11X0_REG_LNA_MODE                            (0x00F3008C)
 // TODO add fix for br 600/1200 bps
 
 // LR11X0 SPI command variables
@@ -224,6 +233,7 @@
 #define RADIOLIB_LR11X0_CALIBRATE_HF_RC                         (0x01UL << 1)   //  1     1                high frequency RC
 #define RADIOLIB_LR11X0_CALIBRATE_LF_RC                         (0x01UL << 0)   //  0     0                low frequency RC
 #define RADIOLIB_LR11X0_CALIBRATE_ALL                           (0x3FUL << 0)   //  5     0                everything
+#define RADIOLIB_LR11X0_CAL_IMG_FREQ_TRIG_MHZ                   (20.0)
 
 // RADIOLIB_LR11X0_CMD_SET_REG_MODE
 #define RADIOLIB_LR11X0_REG_MODE_LDO                            (0x00UL << 0)   //  0     0     regulator mode: LDO in all modes
@@ -240,11 +250,13 @@
 #define RADIOLIB_LR11X0_RFSW_DIO8_DISABLED                      (0x00UL << 3)   //  4     0                DIO8 disabled (default)
 #define RADIOLIB_LR11X0_RFSW_DIO10_ENABLED                      (0x01UL << 4)   //  4     0     RF switch: DIO10 enabled
 #define RADIOLIB_LR11X0_RFSW_DIO10_DISABLED                     (0x00UL << 4)   //  4     0                DIO10 disabled (default)
-#define RADIOLIB_LR11X0_DIO5                                    (0)
-#define RADIOLIB_LR11X0_DIO6                                    (1)
-#define RADIOLIB_LR11X0_DIO7                                    (2)
-#define RADIOLIB_LR11X0_DIO8                                    (3)
-#define RADIOLIB_LR11X0_DIO10                                   (4)
+#define RADIOLIB_LR11X0_DIOx(X)                                 ((X) | RFSWITCH_PIN_FLAG)
+#define RADIOLIB_LR11X0_DIOx_VAL(X)                             ((X) & ~RFSWITCH_PIN_FLAG)
+#define RADIOLIB_LR11X0_DIO5                                    (RADIOLIB_LR11X0_DIOx(0))
+#define RADIOLIB_LR11X0_DIO6                                    (RADIOLIB_LR11X0_DIOx(1))
+#define RADIOLIB_LR11X0_DIO7                                    (RADIOLIB_LR11X0_DIOx(2))
+#define RADIOLIB_LR11X0_DIO8                                    (RADIOLIB_LR11X0_DIOx(3))
+#define RADIOLIB_LR11X0_DIO10                                   (RADIOLIB_LR11X0_DIOx(4))
 
 // RADIOLIB_LR11X0_CMD_SET_DIO_IRQ_PARAMS
 #define RADIOLIB_LR11X0_IRQ_TX_DONE                             (0x01UL << 2)   //  31    0     interrupt: packet transmitted
@@ -265,7 +277,8 @@
 #define RADIOLIB_LR11X0_IRQ_FSK_LEN_ERROR                       (0x01UL << 24)  //  31    0                FSK packet received with length error
 #define RADIOLIB_LR11X0_IRQ_FSK_ADDR_ERROR                      (0x01UL << 25)  //  31    0                FSK packet received with address error
 #define RADIOLIB_LR11X0_IRQ_LORA_RX_TIMESTAMP                   (0x01UL << 27)  //  31    0                last LoRa symbol was received (timestamp source)
-#define RADIOLIB_LR11X0_IRQ_ALL                                 (0x0BF80FFCUL)  //  31    0                all interrupts
+#define RADIOLIB_LR11X0_IRQ_GNSS_ABORT                          (0x01UL << 28)  //  31    0                GNSS scan aborted
+#define RADIOLIB_LR11X0_IRQ_ALL                                 (0x1BF80FFCUL)  //  31    0                all interrupts
 #define RADIOLIB_LR11X0_IRQ_NONE                                (0x00UL << 0)   //  31    0                no interrupts
 
 // RADIOLIB_LR11X0_CMD_CONFIG_LF_LOCK
@@ -355,6 +368,9 @@
 #define RADIOLIB_LR11X0_LORA_BW_125_0                           (0x04UL << 0)   //  7     0                     125.0 kHz
 #define RADIOLIB_LR11X0_LORA_BW_250_0                           (0x05UL << 0)   //  7     0                     250.0 kHz
 #define RADIOLIB_LR11X0_LORA_BW_500_0                           (0x06UL << 0)   //  7     0                     500.0 kHz
+#define RADIOLIB_LR11X0_LORA_BW_203_125                         (0x0DUL << 0)   //  7     0                     203.0 kHz (2.4GHz only)
+#define RADIOLIB_LR11X0_LORA_BW_406_25                          (0x0EUL << 0)   //  7     0                     406.0 kHz (2.4GHz only)
+#define RADIOLIB_LR11X0_LORA_BW_812_50                          (0x0FUL << 0)   //  7     0                     812.0 kHz (2.4GHz only)
 #define RADIOLIB_LR11X0_LORA_CR_4_5_SHORT                       (0x01UL << 0)   //  7     0     coding rate: 4/5 with short interleaver
 #define RADIOLIB_LR11X0_LORA_CR_4_6_SHORT                       (0x02UL << 0)   //  7     0                  4/6 with short interleaver
 #define RADIOLIB_LR11X0_LORA_CR_4_7_SHORT                       (0x03UL << 0)   //  7     0                  4/7 with short interleaver
@@ -540,7 +556,7 @@
 #define RADIOLIB_LR11X0_GNSS_CONTEXT_ERR_FLASH                  (0x03UL << 0)   //  7     4                 flash integrity error
 #define RADIOLIB_LR11X0_GNSS_CONTEXT_ERR_ALMANAC_UPD            (0x04UL << 0)   //  7     4                 almanac update not allowed
 #define RADIOLIB_LR11X0_GNSS_CONTEXT_FREQ_SPACE_250_HZ          (0x00UL << 0)   //  8     7     frequency search space: 250 Hz
-#define RADIOLIB_LR11X0_GNSS_CONTEXT_FREQ_SPACE_500_HZ          (0x01UL << 0)   //  8     7                             500 H
+#define RADIOLIB_LR11X0_GNSS_CONTEXT_FREQ_SPACE_500_HZ          (0x01UL << 0)   //  8     7                             500 Hz
 #define RADIOLIB_LR11X0_GNSS_CONTEXT_FREQ_SPACE_1000_HZ         (0x02UL << 0)   //  8     7                             1000 Hz
 #define RADIOLIB_LR11X0_GNSS_CONTEXT_FREQ_SPACE_2000_HZ         (0x03UL << 0)   //  8     7                             2000 Hz
 
@@ -551,6 +567,65 @@
 // RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_FULL_UPDATE
 #define RADIOLIB_LR11X0_GNSS_ALMANAC_HEADER_ID                  (0x80UL << 0)   //  7     0     starting byte of GNSS almanac header
 #define RADIOLIB_LR11X0_GNSS_ALMANAC_BLOCK_SIZE                 (20)
+
+// RADIOLIB_LR11X0_CMD_GNSS_FETCH_TIME
+#define RADIOLIB_LR11X0_GNSS_EFFORT_LOW                         (0x00UL << 0)   //  7     0     GNSS effort mode: low sensitivity
+#define RADIOLIB_LR11X0_GNSS_EFFORT_MID                         (0x01UL << 0)   //  7     0                        medium sensitivity
+#define RADIOLIB_LR11X0_GNSS_FETCH_TIME_OPT_TOW                 (0x00UL << 0)   //  7     0     time fetch options: ToW only, requires WN to demodulated beforehand
+#define RADIOLIB_LR11X0_GNSS_FETCH_TIME_OPT_TOW_WN              (0x01UL << 0)   //  7     0                         ToW and WN
+#define RADIOLIB_LR11X0_GNSS_FETCH_TIME_OPT_TOW_WN_ROLL         (0x02UL << 0)   //  7     0                         ToW, WN and rollover
+
+// RADIOLIB_LR11X0_CMD_GNSS_READ_DEMOD_STATUS
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_NOT_POSSIBLE          (-21)           //  7     0     GNSS demodulation status: not possible to demodulate
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_SAT_LOST              (-20)           //  7     0                               satellite lost
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_ALMANAC_DEMOD_ERROR   (-19)           //  7     0                               almanac demodulation error
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_TOO_LATE              (-18)           //  7     0                               woke up after preamble (demodulation started too late)
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_20_MS_FAIL            (-17)           //  7     0                               20ms real-time clock failed
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_WAKE_UP_FAIL          (-16)           //  7     0                               wake up sync failed
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_WN_INVALID            (-15)           //  7     0                               week number not validated
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_NO_ACTIVE_SAT         (-14)           //  7     0                               no active satellite selected in satellite list
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_SLEEP_TOO_LONG        (-13)           //  7     0                               sleep time too long
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_TOW_INVALID           (-12)           //  7     0                               wrong time-of-week demodulated
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_PREAMBLE_INVALID      (-11)           //  7     0                               preamble not validated
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_DISABLED              (-10)           //  7     0                               demodulator disabled
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_EXTR_FAILED           (-9)            //  7     0                               demodulator extraction failed
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_NO_BIT_CHANGE         (-8)            //  7     0                               no bit change found during demodulation start
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_NO_BIT_CHANGE_ADV     (-7)            //  7     0                               no bit change found during advanced scan
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_NO_SAT_FOUND          (-6)            //  7     0                               no satellites found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_SYNC_LOST             (-5)            //  7     0                               word sync lost
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_PARITY_NOT_ENOUGH     (-3)            //  7     0                               parity check fail (not enough)
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_PARITY_TOO_MANY       (-2)            //  7     0                               parity check fail (too many)
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_NO_PARITY             (-1)            //  7     0                               parity check fail (no parity found)
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_WORD_SYNC_NONE        (0)             //  7     0                               word sync search not started
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_WORD_SYNC_POT         (1)             //  7     0                               potential word sync found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_WORD_SYNC_OK          (2)             //  7     0                               word sync found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_TOW_FOUND             (3)             //  7     0                               time-of-week found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_WN_FOUND              (4)             //  7     0                               week number and time-of-week found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_ALM_FOUND_UNSAVED     (5)             //  7     0                               almanac found but not saved
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_HALF_ALM_SAVED        (6)             //  7     0                               half of almanac found and saved
+#define RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_FULL_ALM_SAVED        (7)             //  7     0                               full almanac found and saved
+#define RADIOLIB_LR11X0_GNSS_DEMOD_INFO_WORD_SYNC_FOUND         (0x01UL << 0)   //  7     0     GNSS demodulation info: word synchronization found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_INFO_TOW_FOUND               (0x01UL << 1)   //  7     0                             time-of-week found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_INFO_WN_DEMODED              (0x01UL << 2)   //  7     0                             week number demodulated
+#define RADIOLIB_LR11X0_GNSS_DEMOD_INFO_WN_FOUND                (0x01UL << 3)   //  7     0                             week number found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_INFO_SUBFRAME_1_FOUND        (0x01UL << 4)   //  7     0                             subframe 1 found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_INFO_SUBFRAME_4_FOUND        (0x01UL << 5)   //  7     0                             subframe 4 found
+#define RADIOLIB_LR11X0_GNSS_DEMOD_INFO_SUBFRAME_5_FOUND        (0x01UL << 6)   //  7     0                             subframe 5 found
+
+// RADIOLIB_LR11X0_CMD_GNSS_READ_ALMANAC_STATUS
+#define RADIOLIB_LR11X0_GNSS_ALMANAC_STATUS_UP_TO_DATE          (0)             //  7     0     GPS/BeiDou almanac status: all satellites up-to-date
+#define RADIOLIB_LR11X0_GNSS_ALMANAC_STATUS_OUTDATED            (1)             //  7     0                                at least one satellite needs update
+
+// RADIOLIB_LR11X0_CMD_GNSS_READ_DOPPLER_SOLVER_RES
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_NONE                    (0)             //  7     0     internal 2D solver error: no error
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_RES_HIGH                (1)             //  7     0                               residue too high
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_NOT_CONVERGED           (2)             //  7     0                               not converged on solution
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_NOT_ENOUGH_SV           (3)             //  7     0                               not enough satellites
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_ILL_MATRIX              (4)             //  7     0                               matrix error (?)
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_TIME                    (5)             //  7     0                               time error
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_ALM_PART_OLD            (6)             //  7     0                               part of almanac too old or not available
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_INCONSISTENT            (7)             //  7     0                               not consistent with history (?)
+#define RADIOLIB_LR11X0_GNSS_SOLVER_ERR_ALM_OLD                 (8)             //  7     0                               all of almanac too old
 
 // RADIOLIB_LR11X0_CMD_CRYPTO_SET_KEY
 #define RADIOLIB_LR11X0_CRYPTO_STATUS_SUCCESS                   (0x00UL << 0)   //  7     0     crypto engine status: success
@@ -571,6 +646,11 @@
 
 // RADIOLIB_LR11X0_REG_LORA_HIGH_POWER_FIX
 #define RADIOLIB_LR11X0_LORA_HIGH_POWER_FIX                     (0x00UL << 30)  //  30    30    fix for errata
+
+// RADIOLIB_LR11X0_REG_LNA_MODE
+#define RADIOLIB_LR11X0_LNA_MODE_SINGLE_RFI_N                   (0x01UL << 4)   //  7     4     LNA mode: single-ended RFI_N
+#define RADIOLIB_LR11X0_LNA_MODE_SINGLE_RFI_P                   (0x02UL << 4)   //  7     4               single-ended RFI_P
+#define RADIOLIB_LR11X0_LNA_MODE_DIFFERENTIAL                   (0x03UL << 4)   //  7     4               differential (default)
 
 /*!
   \struct LR11x0WifiResult_t
@@ -700,8 +780,90 @@ struct LR11x0VersionInfo_t {
   uint8_t almanacGNSS;
 };
 
+/*!
+  \struct LR11x0GnssResult_t
+  \brief Structure to report information results of a GNSS scan.
+*/
 struct LR11x0GnssResult_t {
+  /*! \brief Demodulator status. One of RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_* */
+  int8_t demodStat;
+  
+  /*! \brief Number of satellites detected during the scan. */
+  uint8_t numSatsDet;
 
+  /*! \brief Result size, used when passing data to LoRa cloud. */
+  uint16_t resSize;
+};
+
+/*!
+  \struct LR11x0GnssPosition_t
+  \brief Structure to report position from LR11x0 internal solver.
+*/
+struct LR11x0GnssPosition_t {
+  /*! \brief Latitude in degrees. */
+  float latitude;
+
+  /*! \brief Longitude in degrees. */
+  float longitude;
+
+  /*! \brief Accuracy of this result. */
+  uint16_t accuracy;
+
+  /*! \brief Number of satellites used to solve this position. */
+  uint8_t numSatsUsed;
+};
+
+/*!
+  \struct LR11x0GnssSatellite_t
+  \brief Structure to save information about a satellite found during GNSS scan.
+*/
+struct LR11x0GnssSatellite_t {
+  /*! \brief Satellite vehicle (SV) identifier. */
+  uint8_t svId;
+
+  /*! \brief C/N0 in dB. */
+  uint8_t c_n0;
+
+  /*! \brief Doppler shift of the signal in Hz. */
+  int16_t doppler;
+};
+
+/*!
+  \struct LR11x0GnssAlmanacStatusPart_t
+  \brief Structure to save information about one constellation of the GNSS almanac.
+*/
+struct LR11x0GnssAlmanacStatusPart_t {
+  int8_t status;
+  uint32_t timeUntilSubframe;
+  uint8_t numSubframes;
+  uint8_t nextSubframe4SvId;
+  uint8_t nextSubframe5SvId;
+  uint8_t nextSubframeStart;
+  uint8_t numUpdateNeeded;
+  uint32_t flagsUpdateNeeded[2];
+  uint32_t flagsActive[2];
+};
+
+/*!
+  \struct LR11x0GnssAlmanacStatus_t
+  \brief Structure to save information about the GNSS almanac.
+  This is not the actual almanac, just some context information about it.
+*/
+struct LR11x0GnssAlmanacStatus_t {
+  /*! \brief GPS part of the almanac */
+  LR11x0GnssAlmanacStatusPart_t gps;
+
+  /*! \brief BeiDou part of the almanac */
+  LR11x0GnssAlmanacStatusPart_t beidou;
+
+  /*! \brief Extra flags present for BeiDou only */
+  uint32_t beidouSvNoAlmanacFlags[2];
+
+  /*! \brief Next almanac ID */
+  uint8_t nextAlmanacId;
+
+  /*! \brief Timestamp of when almanac status was retrieved - timeUntilSubframe is relative to this value. */
+  RadioLibTime_t start;
 };
 
 /*!
@@ -759,9 +921,10 @@ class LR11x0: public PhysicalLayer {
       \param syncWord 1-byte LoRa sync word.
       \param preambleLength LoRa preamble length in symbols
       \param tcxoVoltage TCXO reference voltage to be set.
+      \param high defaults to false for Sub-GHz band, true for frequencies above 1GHz
       \returns \ref status_codes
     */
-    int16_t begin(float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, uint16_t preambleLength, float tcxoVoltage);
+    int16_t begin(float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, uint16_t preambleLength, float tcxoVoltage, bool high = false);
 
     /*!
       \brief Initialization method for FSK modem.
@@ -778,10 +941,19 @@ class LR11x0: public PhysicalLayer {
       \brief Initialization method for LR-FHSS modem.
       \param bw LR-FHSS bandwidth, one of RADIOLIB_LR11X0_LR_FHSS_BW_* values.
       \param cr LR-FHSS coding rate, one of RADIOLIB_LR11X0_LR_FHSS_CR_* values.
+      \param narrowGrid Whether to use narrow (3.9 kHz) or wide (25.39 kHz) grid spacing.
       \param tcxoVoltage TCXO reference voltage to be set.
       \returns \ref status_codes
     */
-    int16_t beginLRFHSS(uint8_t bw, uint8_t cr, float tcxoVoltage);
+    int16_t beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid, float tcxoVoltage);
+
+    /*!
+      \brief Initialization method for GNSS scanning.
+      \param constellations GNSS constellations to use (GPS, BeiDou or both). Defaults to both.
+      \param tcxoVoltage TCXO reference voltage to be set.
+      \returns \ref status_codes
+    */
+    int16_t beginGNSS(uint8_t constellations = RADIOLIB_LR11X0_GNSS_CONSTELLATION_GPS | RADIOLIB_LR11X0_GNSS_CONSTELLATION_BEIDOU, float tcxoVoltage = 1.6);
 
     /*!
       \brief Reset method. Will reset the chip to the default state using RST pin.
@@ -797,7 +969,7 @@ class LR11x0: public PhysicalLayer {
       \param addr Address to send the data to. Will only be added if address filtering was enabled.
       \returns \ref status_codes
     */
-    int16_t transmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t transmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Blocking binary receive method.
@@ -830,12 +1002,10 @@ class LR11x0: public PhysicalLayer {
 
     /*!
       \brief Performs scan for LoRa transmission in the current channel. Detects both preamble and payload.
-      \param symbolNum Number of symbols for CAD detection.
-      \param detPeak Peak value for CAD detection.
-      \param detMin Minimum value for CAD detection.
+      \param config CAD configuration structure.
       \returns \ref status_codes
     */
-    int16_t scanChannel(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin);
+    int16_t scanChannel(const ChannelScanConfig_t &config) override;
 
     /*!
       \brief Sets the module to standby mode (overload for PhysicalLayer compatibility, uses 13 MHz RC oscillator).
@@ -911,7 +1081,7 @@ class LR11x0: public PhysicalLayer {
       \param addr Address to send the data to. Will only be added if address filtering was enabled.
       \returns \ref status_codes
     */
-    int16_t startTransmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t startTransmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Clean up after transmission is done.
@@ -965,14 +1135,12 @@ class LR11x0: public PhysicalLayer {
     int16_t startChannelScan() override;
 
     /*!
-      \brief Interrupt-driven channel activity detection method. IRQ1 will be activated
+      \brief Interrupt-driven channel activity detection method. IRQ pin will be activated
       when LoRa preamble is detected, or upon timeout.
-      \param symbolNum Number of symbols for CAD detection. 
-      \param detPeak Peak value for CAD detection.
-      \param detMin Minimum value for CAD detection.
+      \param config CAD configuration structure.
       \returns \ref status_codes
     */
-    int16_t startChannelScan(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin);
+    int16_t startChannelScan(const ChannelScanConfig_t &config) override;
 
     /*!
       \brief Read the channel scan result
@@ -983,11 +1151,12 @@ class LR11x0: public PhysicalLayer {
     // configuration methods
 
     /*!
-      \brief Sets LoRa bandwidth. Allowed values are 62.5, 125.0, 250.0 and 500.0 kHz.
+      \brief Sets LoRa bandwidth. Allowed values are 62.5, 125.0, 250.0 and 500.0 kHz. (default, high = false)
       \param bw LoRa bandwidth to be set in kHz.
+      \param high if set to true, allowed bandwidth is 203.125, 406.25 and 812.5 kHz, frequency must be above 1GHz
       \returns \ref status_codes
     */
-    int16_t setBandwidth(float bw);
+    int16_t setBandwidth(float bw, bool high = false);
 
     /*!
       \brief Sets LoRa spreading factor. Allowed values range from 5 to 12.
@@ -1207,18 +1376,24 @@ class LR11x0: public PhysicalLayer {
     RadioLibTime_t calculateRxTimeout(RadioLibTime_t timeoutUs) override;
 
     /*!
-      \brief Create the flags that make up RxDone and RxTimeout used for receiving downlinks
-      \param irqFlags The flags for which IRQs must be triggered
-      \param irqMask Mask indicating which IRQ triggers a DIO
-      \returns \ref status_codes
+      \brief Read currently active IRQ flags.
+      \returns IRQ flags.
     */
-    int16_t irqRxDoneRxTimeout(uint32_t &irqFlags, uint32_t &irqMask) override;
+    uint32_t getIrqFlags() override;
 
     /*!
-      \brief Check whether the IRQ bit for RxTimeout is set
-      \returns Whether RxTimeout IRQ is set
+      \brief Set interrupt on IRQ pin to be sent on a specific IRQ bit (e.g. RxTimeout, CadDone).
+      \param irq Module-specific IRQ flags.
+      \returns \ref status_codes
     */
-    bool isRxTimeout() override;
+    int16_t setIrqFlags(uint32_t irq) override;
+
+    /*!
+      \brief Clear interrupt on a specific IRQ bit (e.g. RxTimeout, CadDone).
+      \param irq Module-specific IRQ flags.
+      \returns \ref status_codes
+    */
+    int16_t clearIrqFlags(uint32_t irq) override;
 
     /*!
       \brief Get one truly random byte from RSSI noise.
@@ -1266,6 +1441,21 @@ class LR11x0: public PhysicalLayer {
 
     /*! \copydoc Module::setRfSwitchTable */
     void setRfSwitchTable(const uint32_t (&pins)[Module::RFSWITCH_MAX_PINS], const Module::RfSwitchMode_t table[]);
+
+    /*!
+      \brief Forces LoRa low data rate optimization. Only available in LoRa mode. After calling this method, LDRO will always be set to
+      the provided value, regardless of symbol length. To re-enable automatic LDRO configuration, call LR11x0::autoLDRO()
+      \param enable Force LDRO to be always enabled (true) or disabled (false).
+      \returns \ref status_codes
+    */
+    int16_t forceLDRO(bool enable);
+
+    /*!
+      \brief Re-enables automatic LDRO configuration. Only available in LoRa mode. After calling this method, LDRO will be enabled automatically
+      when symbol length exceeds 16 ms.
+      \returns \ref status_codes
+    */
+    int16_t autoLDRO();
 
     /*!
       \brief Sets LR-FHSS configuration.
@@ -1358,14 +1548,79 @@ class LR11x0: public PhysicalLayer {
       \returns \ref status_codes
     */
     int16_t updateFirmware(const uint32_t* image, size_t size, bool nonvolatile = true);
-
+    
+    /*!
+      \brief Method to check whether the device is capable of performing a GNSS scan.
+      \returns \ref status_codes
+    */
     int16_t isGnssScanCapable();
 
-    int16_t gnssScan(uint16_t* resSize);
+    /*!
+      \brief Performs GNSS scan.
+      \param res Pointer to LR11x0GnssPosition_t structure to populate.
+      Will not be saved if set to NULL, defaults to NULL.
+      \returns \ref status_codes
+    */
+    int16_t gnssScan(LR11x0GnssResult_t* res = NULL);
 
-    int16_t getGnssScanResult(uint16_t size);
+    /*!
+      \brief Read information about the almanac.
+      \param stat Pointer to structure to save the almanac status into.
+      This is not the actual almanac, just a structure providing information about it.
+      \returns \ref status_codes
+    */
+    int16_t getGnssAlmanacStatus(LR11x0GnssAlmanacStatus_t *stat);
+
+    /*!
+      \brief Blocking wait until the next subframe with almanac data is available.
+      Used to control timing during almanac update from satellite.
+      \param stat Pointer to structure containing the almanac status read by getGnssAlmanacStatus.
+      This is not the actual almanac, just a structure providing information about it.
+      \param constellation Constellation to wait for, one of RADIOLIB_LR11X0_GNSS_CONSTELLATION_*.
+      Constellations cannot be updated at the same time, but rather must be updated sequentially!
+      \returns \ref status_codes
+    */
+    int16_t gnssDelayUntilSubframe(LR11x0GnssAlmanacStatus_t *stat, uint8_t constellation);
+
+    /*!
+      \brief Perform almanac update. Must be called immediately after gnssDelayUntilSubframe.
+      \param constellation Constellation to update, one of RADIOLIB_LR11X0_GNSS_CONSTELLATION_*.
+      Constellations cannot be updated at the same time, but rather must be updated sequentially!
+      \returns \ref status_codes
+    */
+    int16_t updateGnssAlmanac(uint8_t constellation);
     
-    int16_t getGnssPosition(float* lat, float* lon, bool filtered);
+    /*!
+      \brief Get GNSS position. Called after gnssScan to retrieve the position calculated by the internal solver.
+      \param pos Pointer to LR11x0GnssPosition_t structure to populate.
+      \param filtered Whether to save the filtered, or unfiltered values. Defaults to true (filtered).
+      \returns \ref status_codes
+    */
+    int16_t getGnssPosition(LR11x0GnssPosition_t* pos, bool filtered = true);
+
+    /*!
+      \brief Get GNSS satellites found during the last scan.
+      \param sats Pointer to array of LR11x0GnssSatellite_t structures to populate.
+      \param numSats Number of satellites to read. Can be retrieved from LR11x0GnssResult_t passed to gnssScan.
+      \returns \ref status_codes
+    */
+    int16_t getGnssSatellites(LR11x0GnssSatellite_t* sats, uint8_t numSats);
+
+    /*!
+      \brief Get modem currently in use by the radio.
+      \param modem Pointer to a variable to save the retrieved configuration into.
+      \returns \ref status_codes
+    */
+    int16_t getModem(ModemType_t* modem) override;
+
+    /*!
+      \brief Perform image rejection calibration for the specified frequency band.
+      WARNING: Use at your own risk! Setting incorrect values may lead to decreased performance
+      \param freqMin Frequency band lower bound.
+      \param freqMax Frequency band upper bound.
+      \returns \ref status_codes
+    */
+    int16_t calibrateImageRejection(float freqMin, float freqMax);
     
 #if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
@@ -1386,9 +1641,9 @@ class LR11x0: public PhysicalLayer {
     int16_t clearErrors(void);
     int16_t calibrate(uint8_t params);
     int16_t setRegMode(uint8_t mode);
-    int16_t calibImage(float freq1, float freq2);
     int16_t setDioAsRfSwitch(uint8_t en, uint8_t stbyCfg, uint8_t rxCfg, uint8_t txCfg, uint8_t txHpCfg, uint8_t txHfCfg, uint8_t gnssCfg, uint8_t wifiCfg);
     int16_t setDioIrqParams(uint32_t irq1, uint32_t irq2);
+    int16_t setDioIrqParams(uint32_t irq);
     int16_t clearIrq(uint32_t irq);
     int16_t configLfClock(uint8_t setup);
     int16_t setTcxoMode(uint8_t tune, uint32_t delay);
@@ -1466,10 +1721,13 @@ class LR11x0: public PhysicalLayer {
     int16_t wifiCfgTimestampAPphone(uint32_t timestamp);
     int16_t wifiReadVersion(uint8_t* major, uint8_t* minor);
 
+    int16_t gnssReadRssi(int8_t* rssi);
     int16_t gnssSetConstellationToUse(uint8_t mask);
     int16_t gnssReadConstellationToUse(uint8_t* mask);
     int16_t gnssSetAlmanacUpdate(uint8_t mask);
     int16_t gnssReadAlmanacUpdate(uint8_t* mask);
+    int16_t gnssSetFreqSearchSpace(uint8_t freq);
+    int16_t gnssReadFreqSearchSpace(uint8_t* freq);
     int16_t gnssReadVersion(uint8_t* fw, uint8_t* almanac);
     int16_t gnssReadSupportedConstellations(uint8_t* mask);
     int16_t gnssSetMode(uint8_t mode);
@@ -1481,19 +1739,23 @@ class LR11x0: public PhysicalLayer {
     int16_t gnssPushDmMsg(uint8_t* payload, size_t len);
     int16_t gnssGetContextStatus(uint8_t* fwVersion, uint32_t* almanacCrc, uint8_t* errCode, uint8_t* almUpdMask, uint8_t* freqSpace);
     int16_t gnssGetNbSvDetected(uint8_t* nbSv);
-    int16_t gnssGetSvDetected(uint8_t* svId, uint8_t* snr, uint16_t* doppler, size_t nbSv);
+    int16_t gnssGetSvDetected(uint8_t* svId, uint8_t* snr, int16_t* doppler, size_t nbSv);
     int16_t gnssGetConsumption(uint32_t* cpu, uint32_t* radio);
     int16_t gnssGetResultSize(uint16_t* size);
     int16_t gnssReadResults(uint8_t* result, uint16_t size);
     int16_t gnssAlmanacFullUpdateHeader(uint16_t date, uint32_t globalCrc);
     int16_t gnssAlmanacFullUpdateSV(uint8_t svn, uint8_t* svnAlmanac);
-    int16_t gnssGetSvVisible(uint32_t time, float lat, float lon, uint8_t constellation, uint8_t* nbSv);
+    int16_t gnssAlmanacReadAddrSize(uint32_t* addr, uint16_t* size);
+    int16_t gnssAlmanacReadSV(uint8_t svId, uint8_t* almanac);
+    int16_t gnssGetNbSvVisible(uint32_t time, float lat, float lon, uint8_t constellation, uint8_t* nbSv);
+    int16_t gnssGetSvVisible(uint8_t nbSv, uint8_t** svId, int16_t** doppler, int16_t** dopplerErr);
     int16_t gnssPerformScan(uint8_t effort, uint8_t resMask, uint8_t nbSvMax);
     int16_t gnssReadLastScanModeLaunched(uint8_t* lastScanMode);
     int16_t gnssFetchTime(uint8_t effort, uint8_t opt);
     int16_t gnssReadTime(uint8_t* err, uint32_t* time, uint32_t* nbUs, uint32_t* timeAccuracy);
     int16_t gnssResetTime(void);
     int16_t gnssResetPosition(void);
+    int16_t gnssReadWeekNumberRollover(uint8_t* status, uint8_t* rollover);
     int16_t gnssReadDemodStatus(int8_t* status, uint8_t* info);
     int16_t gnssReadCumulTiming(uint32_t* timing, uint8_t* constDemod);
     int16_t gnssSetTime(uint32_t time, uint16_t accuracy);
@@ -1501,13 +1763,15 @@ class LR11x0: public PhysicalLayer {
     int16_t gnssReadDelayResetAP(uint32_t* delay);
     int16_t gnssAlmanacUpdateFromSat(uint8_t effort, uint8_t bitMask);
     int16_t gnssReadAlmanacStatus(uint8_t* status);
+    int16_t gnssReadKeepSyncStatus(uint8_t mask, uint8_t* nbSvVisible, uint32_t* elapsed);
     int16_t gnssConfigAlmanacUpdatePeriod(uint8_t bitMask, uint8_t svType, uint16_t period);
     int16_t gnssReadAlmanacUpdatePeriod(uint8_t bitMask, uint8_t svType, uint16_t* period);
     int16_t gnssConfigDelayResetAP(uint32_t delay);
     int16_t gnssGetSvWarmStart(uint8_t bitMask, uint8_t* sv, uint8_t nbVisSat);
-    int16_t gnssReadWNRollover(uint8_t* status, uint8_t* rollover);
     int16_t gnssReadWarmStartStatus(uint8_t bitMask, uint8_t* nbVisSat, uint32_t* timeElapsed);
+    int16_t gnssGetSvSync(uint8_t mask, uint8_t nbSv, uint8_t* syncList);
     int16_t gnssWriteBitMaskSatActivated(uint8_t bitMask, uint32_t* bitMaskActivated0, uint32_t* bitMaskActivated1);
+    void gnssAbort();
 
     int16_t cryptoSetKey(uint8_t keyId, uint8_t* key);
     int16_t cryptoDeriveKey(uint8_t srcKeyId, uint8_t dstKeyId, uint8_t* key);
@@ -1537,6 +1801,7 @@ class LR11x0: public PhysicalLayer {
   protected:
 #endif
     uint8_t chipType = 0;
+    float freqMHz = 0;
 
 #if !RADIOLIB_GODMODE
   private:
@@ -1557,7 +1822,7 @@ class LR11x0: public PhysicalLayer {
     uint16_t preambleLengthGFSK = 0;
 
     // cached LR-FHSS parameters
-    uint8_t lrFhssCr = 0, lrFhssBw = 0, lrFhssHdrCount = 0;
+    uint8_t lrFhssCr = 0, lrFhssBw = 0, lrFhssHdrCount = 0, lrFhssGrid = 0;
     uint16_t lrFhssHopSeq = 0;
 
     float dataRateMeasured = 0;
@@ -1570,7 +1835,7 @@ class LR11x0: public PhysicalLayer {
     bool findChip(uint8_t ver);
     int16_t config(uint8_t modem);
     int16_t setPacketMode(uint8_t mode, uint8_t len);
-    int16_t startCad(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin);
+    int16_t startCad(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin, uint8_t exitMode, RadioLibTime_t timeout);
     int16_t setHeaderType(uint8_t hdrType, size_t len = 0xFF);
 
     // common methods to avoid some copy-paste

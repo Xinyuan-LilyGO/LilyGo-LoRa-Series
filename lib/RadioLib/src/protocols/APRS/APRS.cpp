@@ -24,6 +24,11 @@ int16_t APRSClient::begin(char sym, char* callsign, uint8_t ssid, bool alt) {
     table = '/';
   }
 
+  // callsign is only processed for LoRa APRS
+  if(!callsign) {
+    return(RADIOLIB_ERR_NONE);
+  }
+
   if(strlen(callsign) > RADIOLIB_AX25_MAX_CALLSIGN_LEN) {
     return(RADIOLIB_ERR_INVALID_CALLSIGN);
   }
@@ -43,7 +48,7 @@ int16_t APRSClient::sendPosition(char* destCallsign, uint8_t destSSID, char* lat
     len += strlen(time);
   }
   #if !RADIOLIB_STATIC_ONLY
-    char* info = new char[len + 1];
+    char* info = new char[len + 2];
   #else
     char info[RADIOLIB_STATIC_ARRAY_SIZE];
   #endif
@@ -71,6 +76,7 @@ int16_t APRSClient::sendPosition(char* destCallsign, uint8_t destSSID, char* lat
 
   // send the frame
   info[len] = '\0';
+  RADIOLIB_DEBUG_PROTOCOL_PRINTLN("APRS Info: %s, length = %d", info, (int)len);
   int16_t state = sendFrame(destCallsign, destSSID, info);
   #if !RADIOLIB_STATIC_ONLY
     delete[] info;
@@ -254,6 +260,12 @@ int16_t APRSClient::sendFrame(char* destCallsign, uint8_t destSSID, char* info) 
                       RADIOLIB_AX25_CONTROL_UNNUMBERED_FRAME,
                       RADIOLIB_AX25_PID_NO_LAYER_3, const_cast<char*>(info));
 
+    // optionally set repeaters
+    if(this->repCalls && this->repSSIDs && this->numReps) {
+      int16_t state = frameUI.setRepeaters(this->repCalls, this->repSSIDs, this->numReps);
+      RADIOLIB_ASSERT(state);
+    }
+
     return(axClient->sendFrame(&frameUI));
   
   } else if(this->phyLayer != nullptr) {
@@ -268,6 +280,18 @@ int16_t APRSClient::sendFrame(char* destCallsign, uint8_t destSSID, char* info) 
   } 
   
   return(RADIOLIB_ERR_WRONG_MODEM);
+}
+
+void APRSClient::useRepeaters(char** repeaterCallsigns, uint8_t* repeaterSSIDs, uint8_t numRepeaters) {
+  this->repCalls = repeaterCallsigns;
+  this->repSSIDs = repeaterSSIDs;
+  this->numReps = numRepeaters;
+}
+
+void APRSClient::dropRepeaters() {
+  this->repCalls = NULL;
+  this->repSSIDs = NULL;
+  this->numReps = 0;
 }
 
 #endif

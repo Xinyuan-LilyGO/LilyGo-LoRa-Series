@@ -1,20 +1,20 @@
 /*
-   RadioLib APRS Position over LoRa Example
+  RadioLib APRS Position over LoRa Example
 
-   This example sends APRS position reports 
-   using SX1278's LoRa modem.
+  This example sends APRS position reports 
+  using SX1278's LoRa modem.
 
-   Other modules that can be used for APRS:
-    - SX127x/RFM9x
-    - SX126x/LLCC68
-    - SX128x
-    - LR11x0
+  Other modules that can be used for APRS:
+  - SX127x/RFM9x
+  - SX126x/LLCC68
+  - SX128x
+  - LR11x0
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 */
 
 // include the library
@@ -27,9 +27,13 @@
 // DIO1 pin:  3
 SX1278 radio = new Module(10, 2, 9, 3);
 
-// or using RadioShield
-// https://github.com/jgromes/RadioShield
-//SX1278 radio = RadioShield.ModuleA;
+// or detect the pinout automatically using RadioBoards
+// https://github.com/radiolib-org/RadioBoards
+/*
+#define RADIO_BOARD_AUTO
+#include <RadioBoards.h>
+Radio radio = new RadioModule();
+*/
 
 // create APRS client instance using the LoRa radio
 APRSClient aprs(&radio);
@@ -54,7 +58,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while(true);
+    while (true) { delay(10); }
   }
 
   // initialize APRS client
@@ -62,13 +66,14 @@ void setup() {
   // symbol:                      '>' (car)
   // callsign                     "N7LEM"
   // SSID                         1
-  state = aprs.begin('>', "N7LEM", 1);
+  char source[] = "N7LEM";
+  state = aprs.begin('>', source, 1);
   if(state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while(true);
+    while (true) { delay(10); }
   }
 }
 
@@ -77,7 +82,12 @@ void loop() {
   
   // send a location with message and timestamp
   // SSID is set to 1, as APRS over LoRa uses WIDE1-1 path by default
-  int state = aprs.sendPosition("GPS", 1, "4911.67N", "01635.96E", "I'm here!", "093045z");
+  char destination[] = "GPS";
+  char latitude[] = "4911.67N";
+  char longitude[] = "01635.96E";
+  char message[] = "I'm here!";
+  char timestamp[] = "093045z";
+  int state = aprs.sendPosition(destination, 1, latitude, longitude, message, timestamp);
   delay(500);
 
   // you can also send Mic-E encoded messages

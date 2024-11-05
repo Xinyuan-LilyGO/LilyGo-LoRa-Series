@@ -45,11 +45,11 @@ SX127x, RFM9x, SX126x, RF69, SX1231, CC1101, nRF24L01, RFM2x, Si443x and SX128x
 SX127x, RFM9x, RF69, SX1231, CC1101, nRF24L01, RFM2x and Si443x
 * [__LoRaWAN__](https://lora-alliance.org/) using LoRa for modules:  
 SX127x, RFM9x, SX126x, LR11x0 and SX128x  
-  * NOTE: LoRaWAN support is currently in beta, feedback via [Issues](https://github.com/jgromes/RadioLib/issues) and [Discussions](https://github.com/jgromes/RadioLib/discussions) is appreciated!
 
 ### Supported Arduino platforms:
 * __Arduino__  
   * [__AVR__](https://github.com/arduino/ArduinoCore-avr) - Arduino Uno, Mega, Leonardo, Pro Mini, Nano etc.
+    * NOTE: Arduino boards based on ATmega328 (Uno, Pro Mini, Nano etc.) and smaller are NOT recommended. This is because the ATmega328 MCU is very constrained in terms of program and memory size, so the library will end up taking most of the space available. 
   * [__mbed__](https://github.com/arduino/ArduinoCore-mbed) - Arduino Nano 33 BLE and Arduino Portenta H7
   * [__megaAVR__](https://github.com/arduino/ArduinoCore-megaavr) - Arduino Uno WiFi Rev.2 and Nano Every
   * [__SAM__](https://github.com/arduino/ArduinoCore-sam) - Arduino Due

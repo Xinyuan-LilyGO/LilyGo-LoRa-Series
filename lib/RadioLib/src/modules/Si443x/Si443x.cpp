@@ -71,7 +71,7 @@ void Si443x::reset() {
   this->mod->hal->delay(100);
 }
 
-int16_t Si443x::transmit(uint8_t* data, size_t len, uint8_t addr) {
+int16_t Si443x::transmit(const uint8_t* data, size_t len, uint8_t addr) {
   // calculate timeout (5ms + 500 % of expected time-on-air)
   RadioLibTime_t timeout = 5 + (uint32_t)((((float)(len * 8)) / this->bitRate) * 5);
 
@@ -226,7 +226,7 @@ void Si443x::clearPacketSentAction() {
   this->clearIrqAction();
 }
 
-int16_t Si443x::startTransmit(uint8_t* data, size_t len, uint8_t addr) {
+int16_t Si443x::startTransmit(const uint8_t* data, size_t len, uint8_t addr) {
   // check packet length
   if(len > RADIOLIB_SI443X_MAX_PACKET_LENGTH) {
     return(RADIOLIB_ERR_PACKET_TOO_LONG);
@@ -252,7 +252,7 @@ int16_t Si443x::startTransmit(uint8_t* data, size_t len, uint8_t addr) {
   (void)addr;
 
   // write packet to FIFO
-  this->mod->SPIwriteRegisterBurst(RADIOLIB_SI443X_REG_FIFO_ACCESS, data, len);
+  this->mod->SPIwriteRegisterBurst(RADIOLIB_SI443X_REG_FIFO_ACCESS, const_cast<uint8_t*>(data), len);
 
   // set RF switch (if present)
   this->mod->setRfSwitchState(Module::MODE_TX);
@@ -426,63 +426,63 @@ int16_t Si443x::setRxBandwidth(float rxBw) {
 
   // this is the "Lord help thee who tread 'ere" section - no way to approximate this mess
   /// \todo float tolerance equality as macro?
-  } else if(fabs(rxBw - 142.8) <= 0.001) {
+  } else if(fabsf(rxBw - 142.8) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 1;
     filterSet = 4;
-  } else if(fabs(rxBw - 167.8) <= 0.001) {
+  } else if(fabsf(rxBw - 167.8) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 1;
     filterSet = 5;
-  } else if(fabs(rxBw - 181.1) <= 0.001) {
+  } else if(fabsf(rxBw - 181.1) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 1;
     filterSet = 6;
-  } else if(fabs(rxBw - 191.5) <= 0.001) {
+  } else if(fabsf(rxBw - 191.5) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 15;
-  } else if(fabs(rxBw - 225.1) <= 0.001) {
+  } else if(fabsf(rxBw - 225.1) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 1;
-  } else if(fabs(rxBw - 248.8) <= 0.001) {
+  } else if(fabsf(rxBw - 248.8) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 2;
-  } else if(fabs(rxBw - 269.3) <= 0.001) {
+  } else if(fabsf(rxBw - 269.3) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 3;
-  } else if(fabs(rxBw - 284.8) <= 0.001) {
+  } else if(fabsf(rxBw - 284.8) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 4;
-  } else if(fabs(rxBw -335.5) <= 0.001) {
+  } else if(fabsf(rxBw -335.5) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 8;
-  } else if(fabs(rxBw - 391.8) <= 0.001) {
+  } else if(fabsf(rxBw - 391.8) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 9;
-  } else if(fabs(rxBw - 420.2) <= 0.001) {
+  } else if(fabsf(rxBw - 420.2) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 10;
-  } else if(fabs(rxBw - 468.4) <= 0.001) {
+  } else if(fabsf(rxBw - 468.4) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 11;
-  } else if(fabs(rxBw - 518.8) <= 0.001) {
+  } else if(fabsf(rxBw - 518.8) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 12;
-  } else if(fabs(rxBw - 577.0) <= 0.001) {
+  } else if(fabsf(rxBw - 577.0) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 13;
-  } else if(fabs(rxBw - 620.7) <= 0.001) {
+  } else if(fabsf(rxBw - 620.7) <= 0.001) {
     bypass = RADIOLIB_SI443X_BYPASS_DEC_BY_3_ON;
     decRate = 0;
     filterSet = 14;

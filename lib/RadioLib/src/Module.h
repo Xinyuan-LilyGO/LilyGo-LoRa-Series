@@ -3,6 +3,7 @@
 
 #include "TypeDef.h"
 #include "Hal.h"
+#include "utils/Utils.h"
 
 #if defined(RADIOLIB_BUILD_ARDUINO)
   #include <SPI.h>
@@ -17,6 +18,13 @@
   end of the table. See \ref setRfSwitchTable for details.
 */
 #define END_OF_MODE_TABLE    { Module::MODE_END_OF_TABLE, {} }
+
+/*!
+  \def RFSWITCH_PIN_FLAG Bit flag used to mark unused pins in RF switch pin map. This can be either
+  unconnected pin marked with RADIOLIB_NC, or a pin controlled by the radio (e.g. DIOx pins on LR11x0),
+  as opposed to an MCU-controlled GPIO pin.
+*/
+#define RFSWITCH_PIN_FLAG                                       (0x01UL << 31)
 
 /*!
   \defgroup module_spi_command_pos Position of commands in Module::spiConfig command array.
@@ -505,25 +513,7 @@ class Module {
     */
     void waitForMicroseconds(RadioLibTime_t start, RadioLibTime_t len);
 
-    /*!
-      \brief Function to reflect bits within a byte.
-      \param in The input to reflect.
-      \param bits Number of bits to reflect.
-      \return The reflected input.
-    */
-    static uint32_t reflect(uint32_t in, uint8_t bits);
-
     #if RADIOLIB_DEBUG
-    /*!
-      \brief Function to dump data as hex into the debug port.
-      \param level RadioLib debug level, set to NULL to not print.
-      \param data Data to dump.
-      \param len Number of bytes to dump.
-      \param width Word width (1 for uint8_t, 2 for uint16_t, 4 for uint32_t).
-      \param be Print multi-byte data as big endian. Defaults to false.
-    */
-    static void hexdump(const char* level, uint8_t* data, size_t len, uint32_t offset = 0, uint8_t width = 1, bool be = false);
-
     /*!
       \brief Function to dump device registers as hex into the debug port.
       \param level RadioLib debug level, set to NULL to not print.
@@ -531,10 +521,6 @@ class Module {
       \param len Number of bytes to dump.
     */
     void regdump(const char* level, uint16_t start, size_t len);
-    #endif
-
-    #if RADIOLIB_DEBUG and defined(RADIOLIB_BUILD_ARDUINO)
-    static size_t serialPrintf(const char* format, ...);
     #endif
 
 #if !RADIOLIB_GODMODE

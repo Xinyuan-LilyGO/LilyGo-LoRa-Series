@@ -61,10 +61,27 @@ class SX1268: public SX126x {
     */
     int16_t beginFSK(float freq = 434.0, float br = 4.8, float freqDev = 5.0, float rxBw = 156.2, int8_t power = 10, uint16_t preambleLength = 16, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
 
+    /*!
+      \brief Initialization method for LR-FHSS modem. This modem only supports transmission!
+      \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
+      \param bw LR-FHSS bandwidth, one of RADIOLIB_SX126X_LR_FHSS_BW_* values. Defaults to 722.66 kHz.
+      \param cr LR-FHSS coding rate, one of RADIOLIB_SX126X_LR_FHSS_CR_* values. Defaults to 2/3 coding rate.
+      \param narrowGrid Whether to use narrow (3.9 kHz) or wide (25.39 kHz) grid spacing. Defaults to true (narrow/non-FCC) grid.
+      \param power Output power in dBm. Defaults to 10 dBm.
+      \param tcxoVoltage TCXO reference voltage to be set. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, either set this value to 0, or set SX126x::XTAL to true.
+      \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
+      \returns \ref status_codes
+    */
+    int16_t beginLRFHSS(float freq = 434.0, uint8_t bw = RADIOLIB_SX126X_LR_FHSS_BW_722_66, uint8_t cr = RADIOLIB_SX126X_LR_FHSS_CR_2_3, bool narrowGrid = true, int8_t power = 10, float tcxoVoltage = 1.6, bool useRegulatorLDO = false);
+    
     // configuration methods
 
     /*!
       \brief Sets carrier frequency. Allowed values are in range from 410.0 to 810.0 MHz.
+      Will automatically perform image calibration if the frequency changes by
+      more than RADIOLIB_SX126X_CAL_IMG_FREQ_TRIG MHz.
       \param freq Carrier frequency to be set in MHz.
       \returns \ref status_codes
     */
@@ -72,11 +89,13 @@ class SX1268: public SX126x {
 
     /*!
       \brief Sets carrier frequency. Allowed values are in range from 150.0 to 960.0 MHz.
+      Will automatically perform image calibration if the frequency changes by
+      more than RADIOLIB_SX126X_CAL_IMG_FREQ_TRIG_MHZ.
       \param freq Carrier frequency to be set in MHz.
-      \param calibrate Run image calibration.
+      \param skipCalibration Skip automated image calibration.
       \returns \ref status_codes
     */
-    int16_t setFrequency(float freq, bool calibrate);
+    int16_t setFrequency(float freq, bool skipCalibration);
 
     /*!
       \brief Sets output power. Allowed values are in range from -9 to 22 dBm.
@@ -92,6 +111,14 @@ class SX1268: public SX126x {
       \returns \ref status_codes
     */
     int16_t checkOutputPower(int8_t power, int8_t* clipped) override;
+    
+    /*!
+      \brief Set modem for the radio to use. Will perform full reset and reconfigure the radio
+      using its default parameters.
+      \param modem Modem type to set - FSK, LoRa or LR-FHSS.
+      \returns \ref status_codes
+    */
+    int16_t setModem(ModemType_t modem) override;
 
 #if !RADIOLIB_GODMODE
   private:

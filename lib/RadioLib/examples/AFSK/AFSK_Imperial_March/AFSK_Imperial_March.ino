@@ -1,21 +1,21 @@
 /*
-   RadioLib AFSK Imperial March Example
+  RadioLib AFSK Imperial March Example
 
-   This example shows how to EXECUTE ORDER 66
+  This example shows how to EXECUTE ORDER 66
 
-   Other modules that can be used for AFSK:
-    - SX127x/RFM9x
-    - RF69
-    - SX1231
-    - CC1101
-    - Si443x/RFM2x
-    - SX126x/LLCC68 (only devices without TCXO!)
+  Other modules that can be used for AFSK:
+  - SX127x/RFM9x
+  - RF69
+  - SX1231
+  - CC1101
+  - Si443x/RFM2x
+  - SX126x/LLCC68
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 */
 
 // include the library
@@ -58,7 +58,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while(true);
+    while (true) { delay(10); }
   }
 
   // initialize AFSK client
@@ -69,7 +69,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while(true);
+    while (true) { delay(10); }
   }
 }
 

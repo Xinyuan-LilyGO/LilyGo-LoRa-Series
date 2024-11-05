@@ -1,17 +1,11 @@
 #include "Module.h"
 
 // the following is probably only needed on non-Arduino builds
-#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
-#if RADIOLIB_DEBUG
-// needed for debug print
-#include <stdarg.h>
-#endif
-
 #if defined(RADIOLIB_BUILD_ARDUINO)
-#include "ArduinoHal.h"
+#include "hal/Arduino/ArduinoHal.h"
 
 Module::Module(uint32_t cs, uint32_t irq, uint32_t rst, uint32_t gpio) : csPin(cs), irqPin(irq), rstPin(rst), gpioPin(gpio) {
   this->hal = new ArduinoHal();
@@ -339,18 +333,20 @@ int16_t Module::SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write
   }
 
   // ensure GPIO is low
-  if(this->gpioPin == RADIOLIB_NC) {
-    this->hal->delay(50);
-  } else {
-    RadioLibTime_t start = this->hal->millis();
-    while(this->hal->digitalRead(this->gpioPin)) {
-      this->hal->yield();
-      if(this->hal->millis() - start >= this->spiConfig.timeout) {
-        RADIOLIB_DEBUG_BASIC_PRINTLN("GPIO pre-transfer timeout, is it connected?");
-        #if !RADIOLIB_STATIC_ONLY
-          delete[] buffOut;
-        #endif
-        return(RADIOLIB_ERR_SPI_CMD_TIMEOUT);
+  if(waitForGpio) {
+    if(this->gpioPin == RADIOLIB_NC) {
+      this->hal->delay(50);
+    } else {
+      RadioLibTime_t start = this->hal->millis();
+      while(this->hal->digitalRead(this->gpioPin)) {
+        this->hal->yield();
+        if(this->hal->millis() - start >= this->spiConfig.timeout) {
+          RADIOLIB_DEBUG_BASIC_PRINTLN("GPIO pre-transfer timeout, is it connected?");
+          #if !RADIOLIB_STATIC_ONLY
+            delete[] buffOut;
+          #endif
+          return(RADIOLIB_ERR_SPI_CMD_TIMEOUT);
+        }
       }
     }
   }
@@ -459,69 +455,7 @@ void Module::waitForMicroseconds(RadioLibTime_t start, RadioLibTime_t len) {
   #endif
 }
 
-uint32_t Module::reflect(uint32_t in, uint8_t bits) {
-  uint32_t res = 0;
-  for(uint8_t i = 0; i < bits; i++) {
-    res |= (((in & ((uint32_t)1 << i)) >> i) << (bits - i - 1));
-  }
-  return(res);
-}
-
 #if RADIOLIB_DEBUG
-void Module::hexdump(const char* level, uint8_t* data, size_t len, uint32_t offset, uint8_t width, bool be) {
-  size_t rem_len = len;
-  for(size_t i = 0; i < len; i+=16) {
-    char str[120];
-    sprintf(str, "%07" PRIx32 "  ", (uint32_t)i+offset);
-    size_t line_len = 16;
-    if(rem_len < line_len) {
-      line_len = rem_len;
-    }
-    for(size_t j = 0; j < line_len; j+=width) {
-      if(width > 1) {
-        int m = 0;
-        int step = width/2;
-        if(be) {
-          step *= -1;
-        }
-        for(int32_t k = width - 1; k >= -width + 1; k+=step) {
-          sprintf(&str[8 + (j+m)*3], "%02x ", data[i+j+k+m]);
-          m++;
-        }
-      } else {
-        sprintf(&str[8 + (j)*3], "%02x ", data[i+j]);
-      }
-    }
-    for(size_t j = line_len; j < 16; j++) {
-      sprintf(&str[8 + j*3], "   ");
-    }
-    str[56] = '|';
-    str[57] = ' ';
-
-    // at this point we need to start escaping "%" characters
-    char* strPtr = &str[58];
-    for(size_t j = 0; j < line_len; j++) {
-      char c = data[i+j];
-      if((c < ' ') || (c > '~')) {
-        c = '.';
-      } else if(c == '%') {
-        *strPtr++ = '%';
-      }
-      sprintf(strPtr++, "%c", c);
-      
-    }
-    for(size_t j = line_len; j < 16; j++) {
-      sprintf(strPtr++, "   ");
-    }
-    if(level) {
-      RADIOLIB_DEBUG_PRINT(level);
-    }
-    RADIOLIB_DEBUG_PRINT(str);
-    RADIOLIB_DEBUG_PRINTLN();
-    rem_len -= 16;
-  }
-}
-
 void Module::regdump(const char* level, uint16_t start, size_t len) {
   #if RADIOLIB_STATIC_ONLY
     uint8_t buff[RADIOLIB_STATIC_ARRAY_SIZE];
@@ -529,36 +463,10 @@ void Module::regdump(const char* level, uint16_t start, size_t len) {
     uint8_t* buff = new uint8_t[len];
   #endif
   SPIreadRegisterBurst(start, len, buff);
-  hexdump(level, buff, len, start);
+  rlb_hexdump(level, buff, len, start);
   #if !RADIOLIB_STATIC_ONLY
     delete[] buff;
   #endif
-}
-#endif
-
-#if RADIOLIB_DEBUG && defined(RADIOLIB_BUILD_ARDUINO)
-// https://github.com/esp8266/Arduino/blob/65579d29081cb8501e4d7f786747bf12e7b37da2/cores/esp8266/Print.cpp#L50
-size_t Module::serialPrintf(const char* format, ...) {
-  va_list arg;
-  va_start(arg, format);
-  char temp[64];
-  char* buffer = temp;
-  size_t len = vsnprintf(temp, sizeof(temp), format, arg);
-  va_end(arg);
-  if (len > sizeof(temp) - 1) {
-    buffer = new char[len + 1];
-    if (!buffer) {
-      return 0;
-    }
-    va_start(arg, format);
-    vsnprintf(buffer, len + 1, format, arg);
-    va_end(arg);
-  }
-  len = RADIOLIB_DEBUG_PORT.write(reinterpret_cast<const uint8_t*>(buffer), len);
-  if (buffer != temp) {
-    delete[] buffer;
-  }
-  return len;
 }
 #endif
 
@@ -581,15 +489,17 @@ void Module::setRfSwitchPins(uint32_t rxEn, uint32_t txEn) {
 void Module::setRfSwitchTable(const uint32_t (&pins)[RFSWITCH_MAX_PINS], const RfSwitchMode_t table[]) {
   memcpy(this->rfSwitchPins, pins, sizeof(this->rfSwitchPins));
   this->rfSwitchTable = table;
-  for(size_t i = 0; i < RFSWITCH_MAX_PINS; i++)
+  for(size_t i = 0; i < RFSWITCH_MAX_PINS; i++) {
     this->hal->pinMode(pins[i], this->hal->GpioModeOutput);
+  }
 }
 
 const Module::RfSwitchMode_t *Module::findRfSwitchMode(uint8_t mode) const {
   const RfSwitchMode_t *row = this->rfSwitchTable;
-  while (row && row->mode != MODE_END_OF_TABLE) {
-    if (row->mode == mode)
+  while(row && row->mode != MODE_END_OF_TABLE) {
+    if(row->mode == mode) {
       return row;
+    }
     ++row;
   }
   return nullptr;
@@ -606,8 +516,9 @@ void Module::setRfSwitchState(uint8_t mode) {
   const uint32_t *value = &row->values[0];
   for(size_t i = 0; i < RFSWITCH_MAX_PINS; i++) {
     uint32_t pin = this->rfSwitchPins[i];
-    if (pin != RADIOLIB_NC)
+    if(!(pin & RFSWITCH_PIN_FLAG)) {
       this->hal->digitalWrite(pin, *value);
+    }
     ++value;
   }
 }

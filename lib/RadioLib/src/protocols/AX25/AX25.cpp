@@ -1,5 +1,7 @@
 #include "AX25.h"
+
 #include <string.h>
+
 #if !RADIOLIB_EXCLUDE_AX25
 
 AX25Frame::AX25Frame(const char* destCallsign, uint8_t destSSID, const char* srcCallsign, uint8_t srcSSID, uint8_t control)
@@ -369,7 +371,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
 
   // flip bit order
   for(size_t i = 0; i < frameBuffLen; i++) {
-    frameBuff[i] = Module::reflect(frameBuff[i], 8);
+    frameBuff[i] = rlb_reflect(frameBuff[i], 8);
   }
 
   // calculate
@@ -402,7 +404,7 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
       uint16_t stuffedFrameBuffPos = stuffedFrameBuffLenBits + 7 - 2*(stuffedFrameBuffLenBits%8);
       if((frameBuff[i] >> shift) & 0x01) {
         // copy 1 and increment counter
-        SET_BIT_IN_ARRAY(stuffedFrameBuff, stuffedFrameBuffPos);
+        SET_BIT_IN_ARRAY_MSB(stuffedFrameBuff, stuffedFrameBuffPos);
         stuffedFrameBuffLenBits++;
         count++;
 
@@ -412,14 +414,14 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
           stuffedFrameBuffPos = stuffedFrameBuffLenBits + 7 - 2*(stuffedFrameBuffLenBits%8);
 
           // insert 0 and reset counter
-          CLEAR_BIT_IN_ARRAY(stuffedFrameBuff, stuffedFrameBuffPos);
+          CLEAR_BIT_IN_ARRAY_MSB(stuffedFrameBuff, stuffedFrameBuffPos);
           stuffedFrameBuffLenBits++;
           count = 0;
         }
 
       } else {
         // copy 0 and reset counter
-        CLEAR_BIT_IN_ARRAY(stuffedFrameBuff, stuffedFrameBuffPos);
+        CLEAR_BIT_IN_ARRAY_MSB(stuffedFrameBuff, stuffedFrameBuffPos);
         stuffedFrameBuffLenBits++;
         count = 0;
       }
@@ -454,20 +456,20 @@ int16_t AX25Client::sendFrame(AX25Frame* frame) {
   for(size_t i = preambleLen + 1; i < stuffedFrameBuffLen*8; i++) {
     size_t currBitPos = i + 7 - 2*(i%8);
     size_t prevBitPos = (i - 1) + 7 - 2*((i - 1)%8);
-    if(TEST_BIT_IN_ARRAY(stuffedFrameBuff, currBitPos)) {
+    if(TEST_BIT_IN_ARRAY_MSB(stuffedFrameBuff, currBitPos)) {
       // bit is 1, no change, copy previous bit
-      if(TEST_BIT_IN_ARRAY(stuffedFrameBuff, prevBitPos)) {
-        SET_BIT_IN_ARRAY(stuffedFrameBuff, currBitPos);
+      if(TEST_BIT_IN_ARRAY_MSB(stuffedFrameBuff, prevBitPos)) {
+        SET_BIT_IN_ARRAY_MSB(stuffedFrameBuff, currBitPos);
       } else {
-        CLEAR_BIT_IN_ARRAY(stuffedFrameBuff, currBitPos);
+        CLEAR_BIT_IN_ARRAY_MSB(stuffedFrameBuff, currBitPos);
       }
 
     } else {
       // bit is 0, transition, copy inversion of the previous bit
-      if(TEST_BIT_IN_ARRAY(stuffedFrameBuff, prevBitPos)) {
-        CLEAR_BIT_IN_ARRAY(stuffedFrameBuff, currBitPos);
+      if(TEST_BIT_IN_ARRAY_MSB(stuffedFrameBuff, prevBitPos)) {
+        CLEAR_BIT_IN_ARRAY_MSB(stuffedFrameBuff, currBitPos);
       } else {
-        SET_BIT_IN_ARRAY(stuffedFrameBuff, currBitPos);
+        SET_BIT_IN_ARRAY_MSB(stuffedFrameBuff, currBitPos);
       }
     }
   }

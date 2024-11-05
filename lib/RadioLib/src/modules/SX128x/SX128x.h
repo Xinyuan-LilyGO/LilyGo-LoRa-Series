@@ -22,6 +22,7 @@
 #define RADIOLIB_SX128X_CMD_READ_REGISTER                       0x19
 #define RADIOLIB_SX128X_CMD_WRITE_BUFFER                        0x1A
 #define RADIOLIB_SX128X_CMD_READ_BUFFER                         0x1B
+#define RADIOLIB_SX128X_CMD_SAVE_CONTEXT                        0xD5
 #define RADIOLIB_SX128X_CMD_SET_SLEEP                           0x84
 #define RADIOLIB_SX128X_CMD_SET_STANDBY                         0x80
 #define RADIOLIB_SX128X_CMD_SET_FS                              0xC1
@@ -186,6 +187,7 @@
 #define RADIOLIB_SX128X_CAD_ON_4_SYMB                           0x40        //  7     0                                   4
 #define RADIOLIB_SX128X_CAD_ON_8_SYMB                           0x60        //  7     0                                   8
 #define RADIOLIB_SX128X_CAD_ON_16_SYMB                          0x80        //  7     0                                   16
+#define RADIOLIB_SX128X_CAD_PARAM_DEFAULT                       RADIOLIB_SX128X_CAD_ON_8_SYMB
 
 //RADIOLIB_SX128X_CMD_SET_MODULATION_PARAMS
 #define RADIOLIB_SX128X_BLE_GFSK_BR_2_000_BW_2_4                0x04        //  7     0   GFSK/BLE bit rate and bandwidth setting: 2.0 Mbps   2.4 MHz
@@ -327,7 +329,6 @@
 #define RADIOLIB_SX128X_IRQ_SYNC_WORD_VALID                     0x0004      //  2     2                     sync word valid
 #define RADIOLIB_SX128X_IRQ_RX_DONE                             0x0002      //  1     1                     Rx done
 #define RADIOLIB_SX128X_IRQ_TX_DONE                             0x0001      //  0     0                     Tx done
-#define RADIOLIB_SX128X_IRQ_RX_DEFAULT                          0x4062      //  15    0                     default for Rx (RX_DONE, RX_TX_TIMEOUT, CRC_ERROR and HEADER_ERROR)
 #define RADIOLIB_SX128X_IRQ_NONE                                0x0000      //  15    0                     none
 #define RADIOLIB_SX128X_IRQ_ALL                                 0xFFFF      //  15    0                     all
 
@@ -426,7 +427,7 @@ class SX128x: public PhysicalLayer {
       \param addr Address to send the data to. Unsupported, compatibility only.
       \returns \ref status_codes
     */
-    int16_t transmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t transmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Blocking binary receive method.
@@ -456,6 +457,13 @@ class SX128x: public PhysicalLayer {
       \returns \ref status_codes
     */
     int16_t scanChannel() override;
+
+    /*!
+      \brief Performs scan for LoRa transmission in the current channel. Detects both preamble and payload.
+      \param config CAD configuration structure.
+      \returns \ref status_codes
+    */
+    int16_t scanChannel(const ChannelScanConfig_t &config) override;
 
     /*!
       \brief Sets the module to sleep mode. To wake the device up, call standby().
@@ -530,7 +538,7 @@ class SX128x: public PhysicalLayer {
       \param addr Address to send the data to. Unsupported, compatibility only.
       \returns \ref status_codes
     */
-    int16_t startTransmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t startTransmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Clean up after transmission is done.
@@ -553,12 +561,12 @@ class SX128x: public PhysicalLayer {
       set to RADIOLIB_SX128X_RX_TIMEOUT_NONE for no timeout (Rx single mode).
       If timeout other than infinite is set, signal will be generated on DIO1.
 
-      \param irqFlags Sets the IRQ flags, defaults to RADIOLIB_SX128X_IRQ_RX_DEFAULT.
-      \param irqMask Sets the mask of IRQ flags that will trigger DIO1, defaults to RADIOLIB_SX128X_IRQ_RX_DONE.
+      \param irqFlags Sets the IRQ flags, defaults to RX done, RX timeout, CRC error and header error. 
+      \param irqMask Sets the mask of IRQ flags that will trigger DIO1, defaults to RX done.
       \param len Only for PhysicalLayer compatibility, not used.
       \returns \ref status_codes
     */
-    int16_t startReceive(uint16_t timeout, uint32_t irqFlags = RADIOLIB_SX128X_IRQ_RX_DEFAULT, uint32_t irqMask = RADIOLIB_SX128X_IRQ_RX_DONE, size_t len = 0);
+    int16_t startReceive(uint16_t timeout, RadioLibIrqFlags_t irqFlags = RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RadioLibIrqFlags_t irqMask = RADIOLIB_IRQ_RX_DEFAULT_MASK, size_t len = 0);
 
     /*!
       \brief Reads the current IRQ status.
@@ -577,11 +585,39 @@ class SX128x: public PhysicalLayer {
     int16_t readData(uint8_t* data, size_t len) override;
     
     /*!
+      \brief Read currently active IRQ flags.
+      \returns IRQ flags.
+    */
+    uint32_t getIrqFlags() override;
+
+    /*!
+      \brief Set interrupt on DIO1 to be sent on a specific IRQ bit (e.g. RxTimeout, CadDone).
+      \param irq Module-specific IRQ flags.
+      \returns \ref status_codes
+    */
+    int16_t setIrqFlags(uint32_t irq) override;
+
+    /*!
+      \brief Clear interrupt on a specific IRQ bit (e.g. RxTimeout, CadDone).
+      \param irq Module-specific IRQ flags.
+      \returns \ref status_codes
+    */
+    int16_t clearIrqFlags(uint32_t irq) override;
+
+    /*!
       \brief Interrupt-driven channel activity detection method. DIO1 will be activated
-      when LoRa preamble is detected, or upon timeout. Defaults to CAD parameter values recommended by AN1200.48.
+      when LoRa preamble is detected, or upon timeout.
       \returns \ref status_codes
     */
     int16_t startChannelScan() override;
+
+    /*!
+      \brief Interrupt-driven channel activity detection method. DIO1 will be activated
+      when LoRa preamble is detected, or upon timeout.
+      \param config CAD configuration structure.
+      \returns \ref status_codes
+    */
+    int16_t startChannelScan(const ChannelScanConfig_t &config) override;
 
     /*!
       \brief Read the channel scan result
@@ -635,6 +671,21 @@ class SX128x: public PhysicalLayer {
       \returns \ref status_codes
     */
     int16_t checkOutputPower(int8_t pwr, int8_t* clipped) override;
+    
+    /*!
+      \brief Set modem for the radio to use. Will perform full reset and reconfigure the radio
+      using its default parameters.
+      \param modem Modem type to set - FSK, LoRa or LR-FHSS.
+      \returns \ref status_codes
+    */
+    int16_t setModem(ModemType_t modem) override;
+
+    /*!
+      \brief Get modem currently in use by the radio.
+      \param modem Pointer to a variable to save the retrieved configuration into.
+      \returns \ref status_codes
+    */
+    int16_t getModem(ModemType_t* modem) override;
 
     /*!
       \brief Sets preamble length for currently active modem. Allowed values range from 1 to 65535.
@@ -642,6 +693,13 @@ class SX128x: public PhysicalLayer {
       \returns \ref status_codes
     */
     int16_t setPreambleLength(uint32_t preambleLength);
+
+    /*!
+      \brief Set data rate.
+      \param dr Data rate struct. Interpretation depends on currently active modem (FSK or LoRa).
+      \returns \ref status_codes
+    */
+    int16_t setDataRate(DataRate_t dr) override;
 
     /*!
       \brief Sets FSK or FLRC bit rate. Allowed values are 125, 250, 400, 500, 800, 1000,
@@ -727,6 +785,13 @@ class SX128x: public PhysicalLayer {
     float getRSSI() override;
 
     /*!
+      \brief Gets RSSI (Recorded Signal Strength Indicator).
+      \param packet Whether to read last packet RSSI, or the current value.
+      \returns RSSI value in dBm.
+    */
+    float getRSSI(bool packet);
+
+    /*!
       \brief Gets SNR (Signal to Noise Ratio) of the last received packet. Only available for LoRa or ranging modem.
       \returns SNR of the last received packet in dB.
     */
@@ -744,6 +809,14 @@ class SX128x: public PhysicalLayer {
       \returns Length of last received packet in bytes.
     */
     size_t getPacketLength(bool update = true) override;
+
+    /*!
+      \brief Query modem for the packet length of received payload and Rx buffer offset.
+      \param update Update received packet length. Will return cached value when set to false.
+      \param offset Pointer to variable to store the Rx buffer offset.
+      \returns Length of last received packet in bytes.
+    */
+    size_t getPacketLength(bool update, uint8_t* offset);
 
     /*!
       \brief Get expected time-on-air for a given size of payload.
@@ -820,10 +893,10 @@ class SX128x: public PhysicalLayer {
     int16_t writeRegister(uint16_t addr, uint8_t* data, uint8_t numBytes);
     int16_t readRegister(uint16_t addr, uint8_t* data, uint8_t numBytes);
     int16_t writeBuffer(uint8_t* data, uint8_t numBytes, uint8_t offset = 0x00);
-    int16_t readBuffer(uint8_t* data, uint8_t numBytes);
+    int16_t readBuffer(uint8_t* data, uint8_t numBytes, uint8_t offset = 0x00);
     int16_t setTx(uint16_t periodBaseCount = RADIOLIB_SX128X_TX_TIMEOUT_NONE, uint8_t periodBase = RADIOLIB_SX128X_PERIOD_BASE_15_625_US);
     int16_t setRx(uint16_t periodBaseCount, uint8_t periodBase = RADIOLIB_SX128X_PERIOD_BASE_15_625_US);
-    int16_t setCad();
+    int16_t setCad(uint8_t symbolNum);
     uint8_t getPacketType();
     int16_t setRfFrequency(uint32_t frf);
     int16_t setTxParams(uint8_t pwr, uint8_t rampTime = RADIOLIB_SX128X_PA_RAMP_10_US);

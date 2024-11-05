@@ -1,21 +1,21 @@
 /*
-   RadioLib CC1101 Settings Example
+  RadioLib CC1101 Settings Example
 
-   This example shows how to change all the properties of RF69 radio.
-   RadioLib currently supports the following settings:
-    - pins (SPI slave select, digital IO 0, digital IO 1)
-    - carrier frequency
-    - bit rate
-    - receiver bandwidth
-    - allowed frequency deviation
-    - output power during transmission
-    - sync word
+  This example shows how to change all the properties of RF69 radio.
+  RadioLib currently supports the following settings:
+  - pins (SPI slave select, digital IO 0, digital IO 1)
+  - carrier frequency
+  - bit rate
+  - receiver bandwidth
+  - allowed frequency deviation
+  - output power during transmission
+  - sync word
 
-    For default module settings, see the wiki page
-    https://github.com/jgromes/RadioLib/wiki/Default-configuration#cc1101
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration#cc1101
 
-    For full API reference, see the GitHub Pages
-    https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 */
 
 // include the library
@@ -35,9 +35,13 @@ CC1101 radio1 = new Module(10, 2, RADIOLIB_NC, 3);
 // GDO2 pin:  5 (optional)
 CC1101 radio2 = new Module(9, 4, RADIOLIB_NC, 5);
 
-// or using RadioShield
-// https://github.com/jgromes/RadioShield
-//CC1101 radio3 = RadioShield.ModuleB;
+// or detect the pinout automatically using RadioBoards
+// https://github.com/radiolib-org/RadioBoards
+/*
+#define RADIO_BOARD_AUTO
+#include <RadioBoards.h>
+Radio radio3 = new RadioModule();
+*/
 
 void setup() {
   Serial.begin(9600);
@@ -50,7 +54,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // initialize CC1101 with non-default settings
@@ -67,7 +71,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // you can also change the settings at runtime
@@ -76,42 +80,42 @@ void setup() {
   // set carrier frequency to 433.5 MHz
   if (radio1.setFrequency(433.5) == RADIOLIB_ERR_INVALID_FREQUENCY) {
     Serial.println(F("[CC1101] Selected frequency is invalid for this module!"));
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set bit rate to 100.0 kbps
   state = radio1.setBitRate(100.0);
   if (state == RADIOLIB_ERR_INVALID_BIT_RATE) {
     Serial.println(F("[CC1101] Selected bit rate is invalid for this module!"));
-    while (true);
+    while (true) { delay(10); }
   } else if (state == RADIOLIB_ERR_INVALID_BIT_RATE_BW_RATIO) {
     Serial.println(F("[CC1101] Selected bit rate to bandwidth ratio is invalid!"));
     Serial.println(F("[CC1101] Increase receiver bandwidth to set this bit rate."));
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set receiver bandwidth to 250.0 kHz
   if (radio1.setRxBandwidth(250.0) == RADIOLIB_ERR_INVALID_RX_BANDWIDTH) {
     Serial.println(F("[CC1101] Selected receiver bandwidth is invalid for this module!"));
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set allowed frequency deviation to 10.0 kHz
   if (radio1.setFrequencyDeviation(10.0) == RADIOLIB_ERR_INVALID_FREQUENCY_DEVIATION) {
     Serial.println(F("[CC1101] Selected frequency deviation is invalid for this module!"));
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set output power to 5 dBm
   if (radio1.setOutputPower(5) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
     Serial.println(F("[CC1101] Selected output power is invalid for this module!"));
-    while (true);
+    while (true) { delay(10); }
   }
 
   // 2 bytes can be set as sync word
   if (radio1.setSyncWord(0x01, 0x23) == RADIOLIB_ERR_INVALID_SYNC_WORD) {
     Serial.println(F("[CC1101] Selected sync word is invalid for this module!"));
-    while (true);
+    while (true) { delay(10); }
   }
 
 }

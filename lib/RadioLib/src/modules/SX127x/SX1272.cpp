@@ -102,11 +102,11 @@ int16_t SX1272::setBandwidth(float bw) {
   uint8_t newBandwidth;
 
   // check allowed bandwidth values
-  if(fabs(bw - 125.0) <= 0.001) {
+  if(fabsf(bw - 125.0) <= 0.001) {
     newBandwidth = RADIOLIB_SX1272_BW_125_00_KHZ;
-  } else if(fabs(bw - 250.0) <= 0.001) {
+  } else if(fabsf(bw - 250.0) <= 0.001) {
     newBandwidth = RADIOLIB_SX1272_BW_250_00_KHZ;
-  } else if(fabs(bw - 500.0) <= 0.001) {
+  } else if(fabsf(bw - 500.0) <= 0.001) {
     newBandwidth = RADIOLIB_SX1272_BW_500_00_KHZ;
   } else {
     return(RADIOLIB_ERR_INVALID_BANDWIDTH);
@@ -583,6 +583,19 @@ void SX1272::errataFix(bool rx) {
   // see SX1272/73 Errata, section 2.2 for details
   Module* mod = this->getMod();
   mod->SPIsetRegValue(0x31, 0b10000000, 7, 7);
+}
+
+int16_t SX1272::setModem(ModemType_t modem) {
+  switch(modem) {
+    case(ModemType_t::LoRa): {
+      return(this->begin());
+    } break;
+    case(ModemType_t::FSK): {
+      return(this->beginFSK());
+    } break;
+    default:
+      return(RADIOLIB_ERR_WRONG_MODEM);
+  }
 }
 
 #endif

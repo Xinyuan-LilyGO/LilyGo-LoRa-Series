@@ -1,16 +1,16 @@
 /*
-   RadioLib STM32WLx Channel Activity Detection Example
+  RadioLib STM32WLx Channel Activity Detection Example
 
-   This example uses STM32WLx to scan the current LoRa
-   channel and detect ongoing LoRa transmissions.
-   Unlike SX127x CAD, SX126x/STM32WLx can detect any part
-   of LoRa transmission, not just the preamble.
+  This example uses STM32WLx to scan the current LoRa
+  channel and detect ongoing LoRa transmissions.
+  Unlike SX127x CAD, SX126x/STM32WLx can detect any part
+  of LoRa transmission, not just the preamble.
 
-   For default module settings, see the wiki page
-   https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx126x---lora-modem
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx126x---lora-modem
 
-   For full API reference, see the GitHub Pages
-   https://jgromes.github.io/RadioLib/
+  For full API reference, see the GitHub Pages
+  https://jgromes.github.io/RadioLib/
 */
 
 // include the library
@@ -48,7 +48,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // set the function that will be called

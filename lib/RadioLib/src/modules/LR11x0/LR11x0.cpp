@@ -11,15 +11,25 @@
 LR11x0::LR11x0(Module* mod) : PhysicalLayer(RADIOLIB_LR11X0_FREQUENCY_STEP_SIZE, RADIOLIB_LR11X0_MAX_PACKET_LENGTH) {
   this->mod = mod;
   this->XTAL = false;
+  this->irqMap[RADIOLIB_IRQ_TX_DONE] = RADIOLIB_LR11X0_IRQ_TX_DONE;
+  this->irqMap[RADIOLIB_IRQ_RX_DONE] = RADIOLIB_LR11X0_IRQ_RX_DONE;
+  this->irqMap[RADIOLIB_IRQ_PREAMBLE_DETECTED] = RADIOLIB_LR11X0_IRQ_PREAMBLE_DETECTED;
+  this->irqMap[RADIOLIB_IRQ_SYNC_WORD_VALID] = RADIOLIB_LR11X0_IRQ_SYNC_WORD_HEADER_VALID;
+  this->irqMap[RADIOLIB_IRQ_HEADER_VALID] = RADIOLIB_LR11X0_IRQ_SYNC_WORD_HEADER_VALID;
+  this->irqMap[RADIOLIB_IRQ_HEADER_ERR] = RADIOLIB_LR11X0_IRQ_HEADER_ERR;
+  this->irqMap[RADIOLIB_IRQ_CRC_ERR] = RADIOLIB_LR11X0_IRQ_CRC_ERR;
+  this->irqMap[RADIOLIB_IRQ_CAD_DONE] = RADIOLIB_LR11X0_IRQ_CAD_DONE;
+  this->irqMap[RADIOLIB_IRQ_CAD_DETECTED] = RADIOLIB_LR11X0_IRQ_CAD_DETECTED;
+  this->irqMap[RADIOLIB_IRQ_TIMEOUT] = RADIOLIB_LR11X0_IRQ_TIMEOUT;
 }
 
-int16_t LR11x0::begin(float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, uint16_t preambleLength, float tcxoVoltage) {
+int16_t LR11x0::begin(float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, uint16_t preambleLength, float tcxoVoltage, bool high) {
   // set module properties and perform initial setup
   int16_t state = this->modSetup(tcxoVoltage, RADIOLIB_LR11X0_PACKET_TYPE_LORA);
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
-  state = setBandwidth(bw);
+  state = setBandwidth(bw, high);
   RADIOLIB_ASSERT(state);
 
   state = setSpreadingFactor(sf);
@@ -88,10 +98,13 @@ int16_t LR11x0::beginGFSK(float br, float freqDev, float rxBw, uint16_t preamble
   return(RADIOLIB_ERR_NONE);
 }
 
-int16_t LR11x0::beginLRFHSS(uint8_t bw, uint8_t cr, float tcxoVoltage) {
+int16_t LR11x0::beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid, float tcxoVoltage) {
   // set module properties and perform initial setup
   int16_t state = this->modSetup(tcxoVoltage, RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS);
   RADIOLIB_ASSERT(state);
+
+  // set grid spacing
+  this->lrFhssGrid = narrowGrid ? RADIOLIB_LR11X0_LR_FHSS_GRID_STEP_NON_FCC : RADIOLIB_LR11X0_LR_FHSS_GRID_STEP_FCC;
 
   // configure publicly accessible settings
   state = setLrFhssConfig(bw, cr);
@@ -105,6 +118,34 @@ int16_t LR11x0::beginLRFHSS(uint8_t bw, uint8_t cr, float tcxoVoltage) {
 
   // set fixed configuration
   return(setModulationParamsLrFhss(RADIOLIB_LR11X0_LR_FHSS_BIT_RATE_RAW, RADIOLIB_LR11X0_LR_FHSS_SHAPING_GAUSSIAN_BT_1_0));
+}
+
+int16_t LR11x0::beginGNSS(uint8_t constellations, float tcxoVoltage) {
+  // set module properties and perform initial setup - packet type does not matter
+  int16_t state = this->modSetup(tcxoVoltage, RADIOLIB_LR11X0_PACKET_TYPE_LORA);
+  RADIOLIB_ASSERT(state);
+
+  state = this->clearErrors();
+  RADIOLIB_ASSERT(state);
+
+  state = this->configLfClock(RADIOLIB_LR11X0_LF_BUSY_RELEASE_DISABLED | RADIOLIB_LR11X0_LF_CLK_XOSC);
+  RADIOLIB_ASSERT(state);
+
+  uint16_t errs = 0;
+  state = this->getErrors(&errs);
+  RADIOLIB_ASSERT(state);
+  if(errs & 0x40) {
+    RADIOLIB_DEBUG_BASIC_PRINTLN("LF_XOSC_START_ERR");
+    return(RADIOLIB_ERR_SPI_CMD_FAILED);
+  }
+
+  state = this->gnssSetConstellationToUse(constellations);
+  RADIOLIB_ASSERT(state);
+
+  state = setRegulatorLDO();
+  RADIOLIB_ASSERT(state);
+
+  return(RADIOLIB_ERR_NONE);
 }
 
 int16_t LR11x0::reset() {
@@ -130,7 +171,7 @@ int16_t LR11x0::reset() {
   return(RADIOLIB_ERR_NONE);
 }
 
-int16_t LR11x0::transmit(uint8_t* data, size_t len, uint8_t addr) {
+int16_t LR11x0::transmit(const uint8_t* data, size_t len, uint8_t addr) {
    // set mode to standby
   int16_t state = standby();
   RADIOLIB_ASSERT(state);
@@ -206,11 +247,8 @@ int16_t LR11x0::receive(uint8_t* data, size_t len) {
     timeout = (RadioLibTime_t)(((maxLen * 8.0) / brBps) * 1000.0 * 5.0);
   
   } else if(modem == RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS) {
-    size_t maxLen = len;
-    if(len == 0) { 
-      maxLen = 0xFF;
-    }
-    timeout = (RadioLibTime_t)(((maxLen * 8.0) / (RADIOLIB_LR11X0_LR_FHSS_BIT_RATE)) * 1000.0 * 5.0);
+    // this modem cannot receive
+    return(RADIOLIB_ERR_WRONG_MODEM);
 
   } else {
     return(RADIOLIB_ERR_UNKNOWN);
@@ -278,12 +316,23 @@ int16_t LR11x0::receiveDirect() {
 }
 
 int16_t LR11x0::scanChannel() {
-  return(this->scanChannel(RADIOLIB_LR11X0_CAD_PARAM_DEFAULT, RADIOLIB_LR11X0_CAD_PARAM_DEFAULT, RADIOLIB_LR11X0_CAD_PARAM_DEFAULT));
+  ChannelScanConfig_t cfg = {
+    .cad = {
+      .symNum = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .detPeak = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .detMin = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .exitMode = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .timeout = 0,
+      .irqFlags = RADIOLIB_IRQ_CAD_DEFAULT_FLAGS,
+      .irqMask = RADIOLIB_IRQ_CAD_DEFAULT_MASK,
+    },
+  };
+  return(this->scanChannel(cfg));
 }
 
-int16_t LR11x0::scanChannel(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin) {
+int16_t LR11x0::scanChannel(const ChannelScanConfig_t &config) {
   // set mode to CAD
-  int state = startChannelScan(symbolNum, detPeak, detMin);
+  int state = startChannelScan(config);
   RADIOLIB_ASSERT(state);
 
   // wait for channel activity detected or timeout
@@ -363,7 +412,7 @@ void LR11x0::clearPacketSentAction() {
   this->clearIrqAction();
 }
 
-int16_t LR11x0::startTransmit(uint8_t* data, size_t len, uint8_t addr) {
+int16_t LR11x0::startTransmit(const uint8_t* data, size_t len, uint8_t addr) {
   // suppress unused variable warning
   (void)addr;
 
@@ -395,18 +444,18 @@ int16_t LR11x0::startTransmit(uint8_t* data, size_t len, uint8_t addr) {
   RADIOLIB_ASSERT(state);
 
   // set DIO mapping
-  state = setDioIrqParams(RADIOLIB_LR11X0_IRQ_TX_DONE | RADIOLIB_LR11X0_IRQ_TIMEOUT, 0);
+  state = setDioIrqParams(RADIOLIB_LR11X0_IRQ_TX_DONE | RADIOLIB_LR11X0_IRQ_TIMEOUT);
   RADIOLIB_ASSERT(state);
 
   if(modem == RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS) {
     // in LR-FHSS mode, the packet is built by the device
-    // TODO add configurable grid step and device offset
-    state = lrFhssBuildFrame(this->lrFhssHdrCount, this->lrFhssCr, RADIOLIB_LR11X0_LR_FHSS_GRID_STEP_FCC, true, this->lrFhssBw, this->lrFhssHopSeq, 0, data, len);
+    // TODO add configurable device offset
+    state = lrFhssBuildFrame(this->lrFhssHdrCount, this->lrFhssCr, this->lrFhssGrid, true, this->lrFhssBw, this->lrFhssHopSeq, 0, const_cast<uint8_t*>(data), len);
     RADIOLIB_ASSERT(state);
 
   } else {
     // write packet to buffer
-    state = writeBuffer8(data, len);
+    state = writeBuffer8(const_cast<uint8_t*>(data), len);
     RADIOLIB_ASSERT(state);
 
   }
@@ -439,11 +488,10 @@ int16_t LR11x0::finishTransmit() {
 }
 
 int16_t LR11x0::startReceive() {
-  return(this->startReceive(RADIOLIB_LR11X0_RX_TIMEOUT_INF, RADIOLIB_LR11X0_IRQ_RX_DONE, 0, 0));
+  return(this->startReceive(RADIOLIB_LR11X0_RX_TIMEOUT_INF, RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RADIOLIB_IRQ_RX_DEFAULT_MASK, 0));
 }
 
 int16_t LR11x0::startReceive(uint32_t timeout, uint32_t irqFlags, uint32_t irqMask, size_t len) {
-  (void)irqMask;
   (void)len;
   
   // check active modem
@@ -452,18 +500,16 @@ int16_t LR11x0::startReceive(uint32_t timeout, uint32_t irqFlags, uint32_t irqMa
   state = getPacketType(&modem);
   RADIOLIB_ASSERT(state);
   if((modem != RADIOLIB_LR11X0_PACKET_TYPE_LORA) && 
-     (modem != RADIOLIB_LR11X0_PACKET_TYPE_GFSK) &&
-     (modem != RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS)) {
+     (modem != RADIOLIB_LR11X0_PACKET_TYPE_GFSK)) {
     return(RADIOLIB_ERR_WRONG_MODEM);
   }
 
   // set DIO mapping
-  uint32_t irq = irqFlags;
+  uint32_t irq = irqMask;
   if(timeout != RADIOLIB_LR11X0_RX_TIMEOUT_INF) {
-    irq |= RADIOLIB_LR11X0_IRQ_TIMEOUT;
+    irq |= (1UL << RADIOLIB_IRQ_TIMEOUT);
   }
-
-  state = setDioIrqParams(irq, RADIOLIB_LR11X0_IRQ_NONE);
+  state = setDioIrqParams(getIrqMapped(irqFlags & irq));
   RADIOLIB_ASSERT(state);
 
   // clear interrupt flags
@@ -502,15 +548,15 @@ int16_t LR11x0::readData(uint8_t* data, size_t len) {
   state = getPacketType(&modem);
   RADIOLIB_ASSERT(state);
   if((modem != RADIOLIB_LR11X0_PACKET_TYPE_LORA) && 
-     (modem != RADIOLIB_LR11X0_PACKET_TYPE_GFSK) &&
-     (modem != RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS)) {
+     (modem != RADIOLIB_LR11X0_PACKET_TYPE_GFSK)) {
     return(RADIOLIB_ERR_WRONG_MODEM);
   }
 
   // check integrity CRC
   uint32_t irq = getIrqStatus();
   int16_t crcState = RADIOLIB_ERR_NONE;
-  if((irq & RADIOLIB_LR11X0_IRQ_CRC_ERR) || (irq & RADIOLIB_LR11X0_IRQ_HEADER_ERR)) {
+  // Report CRC mismatch when there's a payload CRC error, or a header error and no valid header (to avoid false alarm from previous packet)
+  if((irq & RADIOLIB_LR11X0_IRQ_CRC_ERR) || ((irq & RADIOLIB_LR11X0_IRQ_HEADER_ERR) && !(irq & RADIOLIB_LR11X0_IRQ_SYNC_WORD_HEADER_VALID))) {
     crcState = RADIOLIB_ERR_CRC_MISMATCH;
   }
 
@@ -541,10 +587,21 @@ int16_t LR11x0::readData(uint8_t* data, size_t len) {
 }
 
 int16_t LR11x0::startChannelScan() {
-  return(this->startChannelScan(RADIOLIB_LR11X0_CAD_PARAM_DEFAULT, RADIOLIB_LR11X0_CAD_PARAM_DEFAULT, RADIOLIB_LR11X0_CAD_PARAM_DEFAULT));
+  ChannelScanConfig_t cfg = {
+    .cad = {
+      .symNum = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .detPeak = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .detMin = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .exitMode = RADIOLIB_LR11X0_CAD_PARAM_DEFAULT,
+      .timeout = 0,
+      .irqFlags = RADIOLIB_IRQ_CAD_DEFAULT_FLAGS,
+      .irqMask = RADIOLIB_IRQ_CAD_DEFAULT_MASK,
+    },
+  };
+  return(this->startChannelScan(cfg));
 }
 
-int16_t LR11x0::startChannelScan(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin) {
+int16_t LR11x0::startChannelScan(const ChannelScanConfig_t &config) {
   // check active modem
   int16_t state = RADIOLIB_ERR_NONE;
   uint8_t modem = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
@@ -562,7 +619,8 @@ int16_t LR11x0::startChannelScan(uint8_t symbolNum, uint8_t detPeak, uint8_t det
   this->mod->setRfSwitchState(Module::MODE_RX);
 
   // set DIO pin mapping
-  state = setDioIrqParams(RADIOLIB_LR11X0_IRQ_CAD_DETECTED | RADIOLIB_LR11X0_IRQ_CAD_DONE, RADIOLIB_LR11X0_IRQ_NONE);
+  uint16_t irqFlags = (config.cad.irqFlags == RADIOLIB_IRQ_NOT_SUPPORTED) ? RADIOLIB_LR11X0_IRQ_CAD_DETECTED | RADIOLIB_LR11X0_IRQ_CAD_DONE : config.cad.irqFlags;
+  state = setDioIrqParams(getIrqMapped(irqFlags), getIrqMapped(irqFlags));
   RADIOLIB_ASSERT(state);
 
   // clear interrupt flags
@@ -570,7 +628,7 @@ int16_t LR11x0::startChannelScan(uint8_t symbolNum, uint8_t detPeak, uint8_t det
   RADIOLIB_ASSERT(state);
 
   // set mode to CAD
-  return(startCad(symbolNum, detPeak, detMin));
+  return(startCad(config.cad.symNum, config.cad.detPeak, config.cad.detMin, config.cad.exitMode, config.cad.timeout));
 }
 
 int16_t LR11x0::getChannelScanResult() {
@@ -596,7 +654,7 @@ int16_t LR11x0::getChannelScanResult() {
   return(RADIOLIB_ERR_UNKNOWN);
 }
 
-int16_t LR11x0::setBandwidth(float bw) {
+int16_t LR11x0::setBandwidth(float bw, bool high) {
   // check active modem
   uint8_t type = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
   int16_t state = getPacketType(&type);
@@ -606,25 +664,39 @@ int16_t LR11x0::setBandwidth(float bw) {
   }
 
   // ensure byte conversion doesn't overflow
-  RADIOLIB_CHECK_RANGE(bw, 0.0, 510.0, RADIOLIB_ERR_INVALID_BANDWIDTH);
+  if (high) {
+    RADIOLIB_CHECK_RANGE(bw, 203.125, 815.0, RADIOLIB_ERR_INVALID_BANDWIDTH);
 
-  // check allowed bandwidth values
-  uint8_t bw_div2 = bw / 2 + 0.01;
-  switch (bw_div2)  {
-    case 31: // 62.5:
-      this->bandwidth = RADIOLIB_LR11X0_LORA_BW_62_5;
-      break;
-    case 62: // 125.0:
-      this->bandwidth = RADIOLIB_LR11X0_LORA_BW_125_0;
-      break;
-    case 125: // 250.0
-      this->bandwidth = RADIOLIB_LR11X0_LORA_BW_250_0;
-      break;
-    case 250: // 500.0
-      this->bandwidth = RADIOLIB_LR11X0_LORA_BW_500_0;
-      break;
-    default:
+    if(fabsf(bw - 203.125) <= 0.001) {
+      this->bandwidth = RADIOLIB_LR11X0_LORA_BW_203_125;
+    } else if(fabsf(bw - 406.25) <= 0.001) {
+      this->bandwidth = RADIOLIB_LR11X0_LORA_BW_406_25;
+    } else if(fabsf(bw - 812.5) <= 0.001) {
+      this->bandwidth = RADIOLIB_LR11X0_LORA_BW_812_50;
+    } else {
       return(RADIOLIB_ERR_INVALID_BANDWIDTH);
+    }
+  } else {
+    RADIOLIB_CHECK_RANGE(bw, 0.0, 510.0, RADIOLIB_ERR_INVALID_BANDWIDTH);
+    
+    // check allowed bandwidth values
+    uint8_t bw_div2 = bw / 2 + 0.01;
+    switch (bw_div2)  {
+      case 31: // 62.5:
+        this->bandwidth = RADIOLIB_LR11X0_LORA_BW_62_5;
+        break;
+      case 62: // 125.0:
+        this->bandwidth = RADIOLIB_LR11X0_LORA_BW_125_0;
+        break;
+      case 125: // 250.0
+        this->bandwidth = RADIOLIB_LR11X0_LORA_BW_250_0;
+        break;
+      case 250: // 500.0
+        this->bandwidth = RADIOLIB_LR11X0_LORA_BW_500_0;
+        break;
+      default:
+        return(RADIOLIB_ERR_INVALID_BANDWIDTH);
+    }
   }
 
   // update modulation parameters
@@ -754,47 +826,47 @@ int16_t LR11x0::setRxBandwidth(float rxBw) {
   }*/
 
   // check allowed receiver bandwidth values
-  if(fabs(rxBw - 4.8) <= 0.001) {
+  if(fabsf(rxBw - 4.8) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_4_8;
-  } else if(fabs(rxBw - 5.8) <= 0.001) {
+  } else if(fabsf(rxBw - 5.8) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_5_8;
-  } else if(fabs(rxBw - 7.3) <= 0.001) {
+  } else if(fabsf(rxBw - 7.3) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_7_3;
-  } else if(fabs(rxBw - 9.7) <= 0.001) {
+  } else if(fabsf(rxBw - 9.7) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_9_7;
-  } else if(fabs(rxBw - 11.7) <= 0.001) {
+  } else if(fabsf(rxBw - 11.7) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_11_7;
-  } else if(fabs(rxBw - 14.6) <= 0.001) {
+  } else if(fabsf(rxBw - 14.6) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_14_6;
-  } else if(fabs(rxBw - 19.5) <= 0.001) {
+  } else if(fabsf(rxBw - 19.5) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_19_5;
-  } else if(fabs(rxBw - 23.4) <= 0.001) {
+  } else if(fabsf(rxBw - 23.4) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_23_4;
-  } else if(fabs(rxBw - 29.3) <= 0.001) {
+  } else if(fabsf(rxBw - 29.3) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_29_3;
-  } else if(fabs(rxBw - 39.0) <= 0.001) {
+  } else if(fabsf(rxBw - 39.0) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_39_0;
-  } else if(fabs(rxBw - 46.9) <= 0.001) {
+  } else if(fabsf(rxBw - 46.9) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_46_9;
-  } else if(fabs(rxBw - 58.6) <= 0.001) {
+  } else if(fabsf(rxBw - 58.6) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_58_6;
-  } else if(fabs(rxBw - 78.2) <= 0.001) {
+  } else if(fabsf(rxBw - 78.2) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_78_2;
-  } else if(fabs(rxBw - 93.8) <= 0.001) {
+  } else if(fabsf(rxBw - 93.8) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_93_8;
-  } else if(fabs(rxBw - 117.3) <= 0.001) {
+  } else if(fabsf(rxBw - 117.3) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_117_3;
-  } else if(fabs(rxBw - 156.2) <= 0.001) {
+  } else if(fabsf(rxBw - 156.2) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_156_2;
-  } else if(fabs(rxBw - 187.2) <= 0.001) {
+  } else if(fabsf(rxBw - 187.2) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_187_2;
-  } else if(fabs(rxBw - 234.3) <= 0.001) {
+  } else if(fabsf(rxBw - 234.3) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_234_3;
-  } else if(fabs(rxBw - 312.0) <= 0.001) {
+  } else if(fabsf(rxBw - 312.0) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_312_0;
-  } else if(fabs(rxBw - 373.6) <= 0.001) {
+  } else if(fabsf(rxBw - 373.6) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_373_6;
-  } else if(fabs(rxBw - 467.0) <= 0.001) {
+  } else if(fabsf(rxBw - 467.0) <= 0.001) {
     this->rxBandwidth = RADIOLIB_LR11X0_GFSK_RX_BW_467_0;
   } else {
     return(RADIOLIB_ERR_INVALID_RX_BANDWIDTH);
@@ -1006,7 +1078,12 @@ int16_t LR11x0::setDataRate(DataRate_t dr) {
     state = this->setCodingRate(dr.lora.codingRate);
   
   } else if(type == RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS) {
+    // set the basic config
+    state = this->setLrFhssConfig(dr.lrFhss.bw, dr.lrFhss.cr);
+    RADIOLIB_ASSERT(state);
 
+    // set hopping grid
+    this->lrFhssGrid = dr.lrFhss.narrowGrid ? RADIOLIB_LR11X0_LR_FHSS_GRID_STEP_NON_FCC : RADIOLIB_LR11X0_LR_FHSS_GRID_STEP_FCC;
   
   }
 
@@ -1045,7 +1122,11 @@ int16_t LR11x0::setPreambleLength(size_t preambleLength) {
     return(setPacketParamsLoRa(this->preambleLengthLoRa, this->headerType,  this->implicitLen, this->crcTypeLoRa, (uint8_t)this->invertIQEnabled));
   } else if(type == RADIOLIB_LR11X0_PACKET_TYPE_GFSK) {
     this->preambleLengthGFSK = preambleLength;
-    this->preambleDetLength = RADIOLIB_LR11X0_GFSK_PREAMBLE_DETECT_16_BITS;
+    this->preambleDetLength = preambleLength >= 32 ? RADIOLIB_LR11X0_GFSK_PREAMBLE_DETECT_32_BITS :
+                              preambleLength >= 24 ? RADIOLIB_LR11X0_GFSK_PREAMBLE_DETECT_24_BITS :
+                              preambleLength >= 16 ? RADIOLIB_LR11X0_GFSK_PREAMBLE_DETECT_16_BITS :
+                              preambleLength >   0 ? RADIOLIB_LR11X0_GFSK_PREAMBLE_DETECT_8_BITS :
+                              RADIOLIB_LR11X0_GFSK_PREAMBLE_DETECT_DISABLED;
     return(setPacketParamsGFSK(this->preambleLengthGFSK, this->preambleDetLength, this->syncWordLength, this->addrComp, this->packetType, RADIOLIB_LR11X0_MAX_PACKET_LENGTH, this->crcTypeGFSK, this->whitening));
   }
 
@@ -1070,28 +1151,28 @@ int16_t LR11x0::setTCXO(float voltage, uint32_t delay) {
   }
 
   // check 0 V disable
-  if(fabs(voltage - 0.0) <= 0.001) {
+  if(fabsf(voltage - 0.0) <= 0.001) {
     setTcxoMode(0, 0);
     return(reset());
   }
 
   // check allowed voltage values
   uint8_t tune = 0;
-  if(fabs(voltage - 1.6) <= 0.001) {
+  if(fabsf(voltage - 1.6) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_1_6;
-  } else if(fabs(voltage - 1.7) <= 0.001) {
+  } else if(fabsf(voltage - 1.7) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_1_7;
-  } else if(fabs(voltage - 1.8) <= 0.001) {
+  } else if(fabsf(voltage - 1.8) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_1_8;
-  } else if(fabs(voltage - 2.2) <= 0.001) {
+  } else if(fabsf(voltage - 2.2) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_2_2;
-  } else if(fabs(voltage - 2.4) <= 0.001) {
+  } else if(fabsf(voltage - 2.4) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_2_4;
-  } else if(fabs(voltage - 2.7) <= 0.001) {
+  } else if(fabsf(voltage - 2.7) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_2_7;
-  } else if(fabs(voltage - 3.0) <= 0.001) {
+  } else if(fabsf(voltage - 3.0) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_3_0;
-  } else if(fabs(voltage - 3.3) <= 0.001) {
+  } else if(fabsf(voltage - 3.3) <= 0.001) {
     tune = RADIOLIB_LR11X0_TCXO_VOLTAGE_3_3;
   } else {
     return(RADIOLIB_ERR_INVALID_TCXO_VOLTAGE);
@@ -1265,7 +1346,7 @@ RadioLibTime_t LR11x0::getTimeOnAir(size_t len) {
       uint32_t N_symbolPreamble = (this->preambleLengthLoRa & 0x0F) * (uint32_t(1) << ((this->preambleLengthLoRa & 0xF0) >> 4));
 
       // calculate the number of symbols
-      N_symbol = (float)N_symbolPreamble + coeff1 + 8.0 + ceil(RADIOLIB_MAX((int16_t)(8 * len + N_bitCRC - coeff2 + N_symbolHeader), (int16_t)0) / (float)coeff3) * (float)(this->codingRate + 4);
+      N_symbol = (float)N_symbolPreamble + coeff1 + 8.0 + ceilf((float)RADIOLIB_MAX((int16_t)(8 * len + N_bitCRC - coeff2 + N_symbolHeader), (int16_t)0) / (float)coeff3) * (float)(this->codingRate + 4);
 
     } else {
       // long interleaving - abandon hope all ye who enter here
@@ -1322,18 +1403,18 @@ RadioLibTime_t LR11x0::calculateRxTimeout(RadioLibTime_t timeoutUs) {
   return(timeout);
 }
 
-int16_t LR11x0::irqRxDoneRxTimeout(uint32_t &irqFlags, uint32_t &irqMask) {
-  irqFlags = RADIOLIB_LR11X0_IRQ_RX_DONE | RADIOLIB_LR11X0_IRQ_TIMEOUT;  // flags that can appear in the IRQ register
-  irqMask  = irqFlags; // on LR11x0, these are the same
-  return(RADIOLIB_ERR_NONE);
+uint32_t LR11x0::getIrqFlags() {
+  return((uint32_t)this->getIrqStatus());
 }
 
-bool LR11x0::isRxTimeout() {
-  uint32_t irq = getIrqStatus();
-  bool rxTimedOut = irq & RADIOLIB_LR11X0_IRQ_TIMEOUT;
-  return(rxTimedOut);
+int16_t LR11x0::setIrqFlags(uint32_t irq) {
+  return(this->setDioIrqParams(irq, irq));
 }
-  
+
+int16_t LR11x0::clearIrqFlags(uint32_t irq) {
+  return(this->clearIrq(irq));
+}
+
 uint8_t LR11x0::randomByte() {
   uint32_t num = 0;
   (void)getRandomNumber(&num);
@@ -1369,22 +1450,68 @@ void LR11x0::setRfSwitchTable(const uint32_t (&pins)[Module::RFSWITCH_MAX_PINS],
   // find which pins are used
   uint8_t enable = 0;
   for(size_t i = 0; i < Module::RFSWITCH_MAX_PINS; i++) {
-    if((pins[i] == RADIOLIB_NC) || (pins[i] > RADIOLIB_LR11X0_DIO10)) {
+    // check if this pin is unused
+    if(pins[i] == RADIOLIB_NC) {
       continue;
     }
-    enable |= 1UL << pins[i];
+
+    // only keep DIO pins, there may be some GPIOs in the switch tabke
+    if(pins[i] & RFSWITCH_PIN_FLAG) {
+      enable |= 1UL << RADIOLIB_LR11X0_DIOx_VAL(pins[i]);
+    }
+    
   }
 
   // now get the configuration
   uint8_t modes[7] = { 0 };
   for(size_t i = 0; i < 7; i++) {
+    // check end of table
+    if(table[i].mode == LR11x0::MODE_END_OF_TABLE) {
+      break;
+    }
+
+    // get the mode ID in case the modes are out-of-order
+    uint8_t index = table[i].mode - LR11x0::MODE_STBY;
+
+    // iterate over the pins
     for(size_t j = 0; j < Module::RFSWITCH_MAX_PINS; j++) {
-      modes[i] |= (table[i].values[j] > 0) ? (1UL << j) : 0;
+      // only process modes for the DIOx pins, skip GPIO pins
+      if(!(pins[j] & RFSWITCH_PIN_FLAG)) {
+        continue;
+      }
+      modes[index] |= (table[i].values[j] == this->mod->hal->GpioLevelHigh) ? (1UL << j) : 0;
     }
   }
 
   // set it
   this->setDioAsRfSwitch(enable, modes[0], modes[1], modes[2], modes[3], modes[4], modes[5], modes[6]);
+}
+
+int16_t LR11x0::forceLDRO(bool enable) {
+  // check packet type
+  uint8_t type = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
+  int16_t state = getPacketType(&type);
+  RADIOLIB_ASSERT(state);
+  if(type != RADIOLIB_LR11X0_PACKET_TYPE_LORA) {
+    return(RADIOLIB_ERR_WRONG_MODEM);
+  }
+
+  // update modulation parameters
+  this->ldroAuto = false;
+  this->ldrOptimize = (uint8_t)enable;
+  return(setModulationParamsLoRa(this->spreadingFactor, this->bandwidth, this->codingRate, this->ldrOptimize));
+}
+
+int16_t LR11x0::autoLDRO() {
+  uint8_t type = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
+  int16_t state = getPacketType(&type);
+  RADIOLIB_ASSERT(state);
+  if(type != RADIOLIB_LR11X0_PACKET_TYPE_LORA) {
+    return(RADIOLIB_ERR_WRONG_MODEM);
+  }
+
+  this->ldroAuto = true;
+  return(RADIOLIB_ERR_NONE);
 }
 
 int16_t LR11x0::setLrFhssConfig(uint8_t bw, uint8_t cr, uint8_t hdrCount, uint16_t hopSeed) {
@@ -1409,6 +1536,11 @@ int16_t LR11x0::setLrFhssConfig(uint8_t bw, uint8_t cr, uint8_t hdrCount, uint16
 }
 
 int16_t LR11x0::startWifiScan(char wifiType, uint8_t mode, uint16_t chanMask, uint8_t numScans, uint16_t timeout) {
+  // LR1121 cannot do WiFi scanning
+  if(this->chipType == RADIOLIB_LR11X0_DEVICE_LR1121) {
+    return(RADIOLIB_ERR_UNSUPPORTED);
+  }
+
   uint8_t type;
   switch(wifiType) {
     case('b'):
@@ -1436,7 +1568,7 @@ int16_t LR11x0::startWifiScan(char wifiType, uint8_t mode, uint16_t chanMask, ui
   RADIOLIB_ASSERT(state);
 
   // set DIO mapping
-  state = setDioIrqParams(RADIOLIB_LR11X0_IRQ_WIFI_DONE, 0);
+  state = setDioIrqParams(RADIOLIB_LR11X0_IRQ_WIFI_DONE);
   RADIOLIB_ASSERT(state);
 
   // start scan with the maximum number of results and abort on timeout
@@ -1468,9 +1600,7 @@ int16_t LR11x0::getWifiScanResultsCount(uint8_t* count) {
 }
 
 int16_t LR11x0::getWifiScanResult(LR11x0WifiResult_t* result, uint8_t index, bool brief) {
-  if(!result) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(result);
 
   // read a single result
   uint8_t format = brief ? RADIOLIB_LR11X0_WIFI_RESULT_TYPE_BASIC : RADIOLIB_LR11X0_WIFI_RESULT_TYPE_COMPLETE;
@@ -1544,9 +1674,7 @@ int16_t LR11x0::getWifiScanResult(LR11x0WifiResult_t* result, uint8_t index, boo
 }
 
 int16_t LR11x0::wifiScan(uint8_t wifiType, uint8_t* count, uint8_t mode, uint16_t chanMask, uint8_t numScans, uint16_t timeout) {
-  if(!count) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(count);
 
   // start scan
   RADIOLIB_DEBUG_BASIC_PRINTLN("WiFi scan start");
@@ -1571,9 +1699,7 @@ int16_t LR11x0::wifiScan(uint8_t wifiType, uint8_t* count, uint8_t mode, uint16_
 }
 
 int16_t LR11x0::getVersionInfo(LR11x0VersionInfo_t* info) {
-  if(!info) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(info);
 
   int16_t state = this->getVersion(&info->hardware, &info->device, &info->fwMajor, &info->fwMinor);
   RADIOLIB_ASSERT(state);
@@ -1593,9 +1719,7 @@ int16_t LR11x0::getVersionInfo(LR11x0VersionInfo_t* info) {
 }
 
 int16_t LR11x0::updateFirmware(const uint32_t* image, size_t size, bool nonvolatile) {
-  if(!image) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(image);
 
   // put the device to bootloader mode
   int16_t state = this->reboot(true);
@@ -1660,102 +1784,265 @@ int16_t LR11x0::isGnssScanCapable() {
 
   // check the device firmware version is sufficient
   uint16_t versionFull = ((uint16_t)version.fwMajor << 8) | (uint16_t)version.fwMinor;
+  state = RADIOLIB_ERR_UNSUPPORTED;
   if((version.device == RADIOLIB_LR11X0_DEVICE_LR1110) && (versionFull >= 0x0401)) {
-    return(RADIOLIB_ERR_NONE);
+    state = RADIOLIB_ERR_NONE;
   } else if((version.device == RADIOLIB_LR11X0_DEVICE_LR1120) && (versionFull >= 0x0201)) {
-    return(RADIOLIB_ERR_NONE);
+    state = RADIOLIB_ERR_NONE;
+  }
+  RADIOLIB_ASSERT(state);
+
+  // in debug mode, dump the almanac
+  #if RADIOLIB_DEBUG_PROTOCOL
+  uint32_t addr = 0;
+  uint16_t sz = 0;
+  state = this->gnssAlmanacReadAddrSize(&addr, &sz);
+  RADIOLIB_ASSERT(state);
+  RADIOLIB_DEBUG_BASIC_PRINTLN("Almanac@%08x, %d bytes", addr, sz);
+  uint32_t buff[32] = { 0 };
+  while(sz > 0) {
+    size_t len = sz > 32 ? 32 : sz/sizeof(uint32_t);
+    state = this->readRegMem32(addr, buff, len);
+    RADIOLIB_ASSERT(state);
+    RADIOLIB_DEBUG_HEXDUMP(NULL, (uint8_t*)buff, len*sizeof(uint32_t), addr);
+    addr += len*sizeof(uint32_t);
+    sz -= len*sizeof(uint32_t);
   }
 
-  return(RADIOLIB_ERR_UNSUPPORTED);
+  uint8_t almanac[22] = { 0 };
+  for(uint8_t i = 0; i < 128; i++) {
+    RADIOLIB_DEBUG_BASIC_PRINTLN("Almanac[%d]:", i);
+    state = this->gnssAlmanacReadSV(i, almanac);
+    RADIOLIB_ASSERT(state);
+    RADIOLIB_DEBUG_HEXDUMP(NULL, almanac, 22);
+  }
+
+  #endif
+
+  return(state);
 }
 
-int16_t LR11x0::gnssScan(uint16_t* resSize) {
+int16_t LR11x0::gnssScan(LR11x0GnssResult_t* res) {
+  RADIOLIB_ASSERT_PTR(res);
+
   // go to standby
   int16_t state = standby();
   RADIOLIB_ASSERT(state);
 
   // set DIO mapping
-  state = setDioIrqParams(RADIOLIB_LR11X0_IRQ_GNSS_DONE, 0);
+  state = setDioIrqParams(RADIOLIB_LR11X0_IRQ_GNSS_DONE | RADIOLIB_LR11X0_IRQ_GNSS_ABORT);
   RADIOLIB_ASSERT(state);
 
-  state = this->gnssSetConstellationToUse(0x03);
-  RADIOLIB_ASSERT(state);
-
-  // set scan mode
+  // set scan mode (single vs multiple)
   state = this->gnssSetMode(0x03);
   RADIOLIB_ASSERT(state);
+  
+  // set RF switch
+  this->mod->setRfSwitchState(LR11x0::MODE_GNSS);
 
   // start scan with high effort
   RADIOLIB_DEBUG_BASIC_PRINTLN("GNSS scan start");
-  state = this->gnssPerformScan(0x01, 0x3C, 8);
+  state = this->gnssPerformScan(RADIOLIB_LR11X0_GNSS_EFFORT_MID, 0x3C, 16);
   RADIOLIB_ASSERT(state);
 
   // wait for scan finished or timeout
+  // this can take very long if both GPS and BeiDou are enabled
   RadioLibTime_t softTimeout = 300UL * 1000UL;
   RadioLibTime_t start = this->mod->hal->millis();
   while(!this->mod->hal->digitalRead(this->mod->getIrq())) {
     this->mod->hal->yield();
     if(this->mod->hal->millis() - start > softTimeout) {
+      this->gnssAbort();
       RADIOLIB_DEBUG_BASIC_PRINTLN("Timeout waiting for IRQ");
-      this->standby();
-      return(RADIOLIB_ERR_RX_TIMEOUT);
     }
   }
 
+  // restore the switch
+  this->mod->setRfSwitchState(Module::MODE_IDLE);
   RADIOLIB_DEBUG_BASIC_PRINTLN("GNSS scan done in %lu ms", (long unsigned int)(this->mod->hal->millis() - start));
-  
-  state = this->clearIrq(RADIOLIB_LR11X0_IRQ_ALL);
-  RADIOLIB_ASSERT(state);
 
-  int8_t status = 0;
+  // distinguish between GNSS-done and GNSS-abort outcomes and clear the flags
+  uint32_t irq = this->getIrqStatus();
+  this->clearIrq(RADIOLIB_LR11X0_IRQ_ALL);
+  if(irq & RADIOLIB_LR11X0_IRQ_GNSS_ABORT) {
+    return(RADIOLIB_ERR_RX_TIMEOUT);
+  }
+
+  // retrieve the demodulator status
   uint8_t info = 0;
-  state = this->gnssReadDemodStatus(&status, &info);
+  state = this->gnssReadDemodStatus(&res->demodStat, &info);
   RADIOLIB_ASSERT(state);
-  RADIOLIB_DEBUG_BASIC_PRINTLN("Demod status %d, info %02x", (int)status, (unsigned int)info);
+  RADIOLIB_DEBUG_BASIC_PRINTLN("Demod status %d, info %02x", (int)res->demodStat, (unsigned int)info);
 
-  uint8_t fwVersion = 0;
-  uint32_t almanacCrc = 0;
-  uint8_t errCode = 0;
-  uint8_t almUpdMask = 0;
-  uint8_t freqSpace = 0;
-  state = this->gnssGetContextStatus(&fwVersion, &almanacCrc, &errCode, &almUpdMask, &freqSpace);
-  RADIOLIB_DEBUG_BASIC_PRINTLN("Context status fwVersion %d, almanacCrc %lx, errCode %d, almUpdMask %d, freqSpace %d", 
-    (int)fwVersion, (unsigned long)almanacCrc, (int)errCode, (int)almUpdMask, (int)freqSpace);
+  // retrieve the number of detected satellites
+  state = this->gnssGetNbSvDetected(&res->numSatsDet);
   RADIOLIB_ASSERT(state);
 
-  uint8_t stat[53] = { 0 };
-  state = this->gnssReadAlmanacStatus(stat);
+  // retrieve the result size
+  state = this->gnssGetResultSize(&res->resSize);
   RADIOLIB_ASSERT(state);
-  //Module::hexdump(NULL, stat, 53);
 
-  return(this->gnssGetResultSize(resSize));
+  // check and return demodulator status
+  if(res->demodStat < RADIOLIB_LR11X0_GNSS_DEMOD_STATUS_TOW_FOUND) {
+    return(RADIOLIB_ERR_GNSS_DEMOD(res->demodStat));
+  }
+  
+  return(state);
 }
 
-int16_t LR11x0::getGnssScanResult(uint16_t size) {
-  // read the result
-  uint8_t res[256] = { 0 };
-  int16_t state = this->gnssReadResults(res, size);
+int16_t LR11x0::getGnssAlmanacStatus(LR11x0GnssAlmanacStatus_t *stat) {
+  RADIOLIB_ASSERT_PTR(stat);
+
+  // save the time the time until subframe is relative to
+  stat->start = this->mod->hal->millis();
+
+  // get the raw data
+  uint8_t raw[53] = { 0 };
+  int16_t state = this->gnssReadAlmanacStatus(raw);
   RADIOLIB_ASSERT(state);
-  RADIOLIB_DEBUG_BASIC_PRINTLN("Result type: %02x", (int)res[0]);
-  //Module::hexdump(NULL, res, size);
+
+  // parse the reply
+  stat->gps.status = (int8_t)raw[0];
+  stat->gps.timeUntilSubframe = ((uint32_t)(raw[1]) << 24) | ((uint32_t)(raw[2]) << 16) | ((uint32_t)(raw[3]) << 8) | (uint32_t)raw[4];
+  stat->gps.numSubframes = raw[5];
+  stat->gps.nextSubframe4SvId = raw[6];
+  stat->gps.nextSubframe5SvId = raw[7];
+  stat->gps.nextSubframeStart = raw[8];
+  stat->gps.numUpdateNeeded = raw[9];
+  stat->gps.flagsUpdateNeeded[0] = ((uint32_t)(raw[10]) << 24) | ((uint32_t)(raw[11]) << 16) | ((uint32_t)(raw[12]) << 8) | (uint32_t)raw[13];
+  stat->gps.flagsActive[0] = ((uint32_t)(raw[14]) << 24) | ((uint32_t)(raw[15]) << 16) | ((uint32_t)(raw[16]) << 8) | (uint32_t)raw[17];
+  stat->beidou.status = (int8_t)raw[18];
+  stat->beidou.timeUntilSubframe = ((uint32_t)(raw[19]) << 24) | ((uint32_t)(raw[20]) << 16) | ((uint32_t)(raw[21]) << 8) | (uint32_t)raw[22];
+  stat->beidou.numSubframes = raw[23];
+  stat->beidou.nextSubframe4SvId = raw[24];
+  stat->beidou.nextSubframe5SvId = raw[25];
+  stat->beidou.nextSubframeStart = raw[26];
+  stat->beidou.numUpdateNeeded = raw[27];
+  stat->beidou.flagsUpdateNeeded[0] = ((uint32_t)(raw[28]) << 24) | ((uint32_t)(raw[29]) << 16) | ((uint32_t)(raw[30]) << 8) | (uint32_t)raw[31];
+  stat->beidou.flagsUpdateNeeded[1] = ((uint32_t)(raw[32]) << 24) | ((uint32_t)(raw[33]) << 16) | ((uint32_t)(raw[34]) << 8) | (uint32_t)raw[35];
+  stat->beidou.flagsActive[0] = ((uint32_t)(raw[36]) << 24) | ((uint32_t)(raw[37]) << 16) | ((uint32_t)(raw[38]) << 8) | (uint32_t)raw[39];
+  stat->beidou.flagsActive[1] = ((uint32_t)(raw[40]) << 24) | ((uint32_t)(raw[41]) << 16) | ((uint32_t)(raw[42]) << 8) | (uint32_t)raw[43];
+  stat->beidouSvNoAlmanacFlags[0] = ((uint32_t)(raw[44]) << 24) | ((uint32_t)(raw[45]) << 16) | ((uint32_t)(raw[46]) << 8) | (uint32_t)raw[47];
+  stat->beidouSvNoAlmanacFlags[1] = ((uint32_t)(raw[18]) << 24) | ((uint32_t)(raw[49]) << 16) | ((uint32_t)(raw[50]) << 8) | (uint32_t)raw[51];
+  stat->nextAlmanacId = raw[52];
 
   return(state);
 }
 
-int16_t LR11x0::getGnssPosition(float* lat, float* lon, bool filtered) {
+int16_t LR11x0::gnssDelayUntilSubframe(LR11x0GnssAlmanacStatus_t *stat, uint8_t constellation) {
+  RADIOLIB_ASSERT_PTR(stat);
+
+  // almanac update has to be called at least 1.3 seconds before the subframe
+  // we use 2.3 seconds to be on the safe side
+
+  // calculate absolute times
+  RadioLibTime_t window = stat->start + stat->gps.timeUntilSubframe - 2300;
+  if(constellation == RADIOLIB_LR11X0_GNSS_CONSTELLATION_BEIDOU) {
+    window = stat->start + stat->beidou.timeUntilSubframe - 2300;
+  }
+  RadioLibTime_t now = this->mod->hal->millis();
+  if(now > window) {
+    // we missed the window
+    return(RADIOLIB_ERR_GNSS_SUBFRAME_NOT_AVAILABLE);
+  }
+
+  RadioLibTime_t delay = window - now;
+  RADIOLIB_DEBUG_BASIC_PRINTLN("Time until subframe %lu ms", delay);
+  this->mod->hal->delay(delay); 
+  return(RADIOLIB_ERR_NONE);
+}
+
+// TODO fix last satellite always out of date
+int16_t LR11x0::updateGnssAlmanac(uint8_t constellation) {
+  int16_t state = this->setDioIrqParams(RADIOLIB_LR11X0_IRQ_GNSS_DONE | RADIOLIB_LR11X0_IRQ_GNSS_ABORT);
+  RADIOLIB_ASSERT(state);
+
+  state = this->gnssAlmanacUpdateFromSat(RADIOLIB_LR11X0_GNSS_EFFORT_MID, constellation);
+  RADIOLIB_ASSERT(state);
+
+  // wait for scan finished or timeout, assumes 2 subframes and up to 2.3s pre-roll
+  uint32_t softTimeout = 16UL * 1000UL;
+  uint32_t start = this->mod->hal->millis();
+  while (!this->mod->hal->digitalRead(this->mod->getIrq())) {
+    this->mod->hal->yield();
+    if(this->mod->hal->millis() - start > softTimeout) {
+      this->gnssAbort();
+      RADIOLIB_DEBUG_BASIC_PRINTLN("Timeout waiting for almanac update");
+    }
+  }
+
+  RADIOLIB_DEBUG_BASIC_PRINTLN("GPS almanac update done in %lu ms", (long unsigned int)(this->mod->hal->millis() - start));
+
+  // distinguish between GNSS-done and GNSS-abort outcomes and clear the flags
+  uint32_t irq = this->getIrqStatus();
+  this->clearIrq(RADIOLIB_LR11X0_IRQ_ALL);
+  if(irq & RADIOLIB_LR11X0_IRQ_GNSS_ABORT) {
+    state = RADIOLIB_ERR_RX_TIMEOUT;
+  }
+  
+  return(state);
+}
+
+int16_t LR11x0::getGnssPosition(LR11x0GnssPosition_t* pos, bool filtered) {
+  RADIOLIB_ASSERT_PTR(pos);
+
   uint8_t error = 0;
-  uint8_t nbSvUsed = 0;
-  uint16_t accuracy = 0;
   int16_t state;
   if(filtered) {
-    state = this->gnssReadDopplerSolverRes(&error, &nbSvUsed, NULL, NULL, NULL, NULL, lat, lon, &accuracy, NULL);
+    state = this->gnssReadDopplerSolverRes(&error, &pos->numSatsUsed, NULL, NULL, NULL, NULL, &pos->latitude, &pos->longitude, &pos->accuracy, NULL);
   } else {
-    state = this->gnssReadDopplerSolverRes(&error, &nbSvUsed, lat, lon, &accuracy, NULL, NULL, NULL, NULL, NULL);
+    state = this->gnssReadDopplerSolverRes(&error, &pos->numSatsUsed, &pos->latitude, &pos->longitude, &pos->accuracy, NULL, NULL, NULL, NULL, NULL);
   }
   RADIOLIB_ASSERT(state);
-  RADIOLIB_DEBUG_BASIC_PRINTLN("Solver error %d, nbSvUsed %d, accuracy = %u", (int)error, (int)nbSvUsed, (unsigned int)accuracy);
+
+  // check the solver error
+  if(error != 0) {
+    return(RADIOLIB_ERR_GNSS_SOLVER(error));
+  }
 
   return(state);
+}
+
+int16_t LR11x0::getGnssSatellites(LR11x0GnssSatellite_t* sats, uint8_t numSats) {
+  RADIOLIB_ASSERT_PTR(sats);
+  if(numSats >= 32) {
+    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
+  }
+
+  uint8_t svId[32] = { 0 };
+  uint8_t snr[32] = { 0 };
+  int16_t doppler[32] = { 0 };
+  int16_t state = this->gnssGetSvDetected(svId, snr, doppler, numSats);
+  RADIOLIB_ASSERT(state);
+  for(size_t i = 0; i < numSats; i++) {
+    sats[i].svId = svId[i];
+    sats[i].c_n0 = snr[i] + 31;
+    sats[i].doppler = doppler[i];
+  }
+
+  return(state);
+}
+
+int16_t LR11x0::getModem(ModemType_t* modem) {
+  RADIOLIB_ASSERT_PTR(modem);
+
+  uint8_t packetType = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
+  int16_t state = getPacketType(&packetType);
+  RADIOLIB_ASSERT(state);
+
+  switch(packetType) {
+    case(RADIOLIB_LR11X0_PACKET_TYPE_LORA):
+      *modem = ModemType_t::LoRa;
+      return(RADIOLIB_ERR_NONE);
+    case(RADIOLIB_LR11X0_PACKET_TYPE_GFSK):
+      *modem = ModemType_t::FSK;
+      return(RADIOLIB_ERR_NONE);
+    case(RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS):
+      *modem = ModemType_t::LRFHSS;
+      return(RADIOLIB_ERR_NONE);
+  }
+  
+  return(RADIOLIB_ERR_WRONG_MODEM);
 }
 
 int16_t LR11x0::modSetup(float tcxoVoltage, uint8_t modem) {
@@ -1851,7 +2138,9 @@ bool LR11x0::findChip(uint8_t ver) {
     // read the version
     LR11x0VersionInfo_t info;
     int16_t state = getVersionInfo(&info);
-    if((state == RADIOLIB_ERR_NONE) && (info.device == ver)) {
+    RADIOLIB_ASSERT(state);
+
+    if(info.device == ver) {
       RADIOLIB_DEBUG_BASIC_PRINTLN("Found LR11x0: RADIOLIB_LR11X0_CMD_GET_VERSION = 0x%02x", info.device);
       RADIOLIB_DEBUG_BASIC_PRINTLN("Base FW version: %d.%d", (int)info.fwMajor, (int)info.fwMinor);
       if(this->chipType != RADIOLIB_LR11X0_DEVICE_LR1121) {
@@ -1879,7 +2168,7 @@ int16_t LR11x0::config(uint8_t modem) {
 
   // clear IRQ
   state = this->clearIrq(RADIOLIB_LR11X0_IRQ_ALL);
-  state |= this->setDioIrqParams(RADIOLIB_LR11X0_IRQ_NONE, RADIOLIB_LR11X0_IRQ_NONE);
+  state |= this->setDioIrqParams(RADIOLIB_LR11X0_IRQ_NONE);
   RADIOLIB_ASSERT(state);
 
   // calibrate all blocks
@@ -1925,7 +2214,7 @@ int16_t LR11x0::setPacketMode(uint8_t mode, uint8_t len) {
   return(state);
 }
 
-int16_t LR11x0::startCad(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin) {
+int16_t LR11x0::startCad(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin, uint8_t exitMode, RadioLibTime_t timeout) {
   // check active modem
   uint8_t type = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
   int16_t state = getPacketType(&type);
@@ -1952,9 +2241,16 @@ int16_t LR11x0::startCad(uint8_t symbolNum, uint8_t detPeak, uint8_t detMin) {
     min = 10;
   }
 
+  uint8_t mode = exitMode; 
+  if(mode == RADIOLIB_LR11X0_CAD_PARAM_DEFAULT) {
+    mode = RADIOLIB_LR11X0_CAD_EXIT_MODE_STBY_RC;
+  }
+
+  uint32_t timeout_raw = (float)timeout / 30.52f;
+
   // set CAD parameters
   // TODO add configurable exit mode and timeout
-  state = setCadParams(num, peak, min, RADIOLIB_LR11X0_CAD_EXIT_MODE_STBY_RC, 0);
+  state = setCadParams(num, peak, min, mode, timeout_raw);
   RADIOLIB_ASSERT(state);
 
   // start CAD
@@ -2128,10 +2424,10 @@ int16_t LR11x0::setRegMode(uint8_t mode) {
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_SET_REG_MODE, true, &mode, 1));
 }
 
-int16_t LR11x0::calibImage(float freq1, float freq2) {
+int16_t LR11x0::calibrateImageRejection(float freqMin, float freqMax) {
   uint8_t buff[2] = {
-    (uint8_t)floor((freq1 - 1.0f) / 4.0f),
-    (uint8_t)ceil((freq2 + 1.0f) / 4.0f)
+    (uint8_t)floor((freqMin - 1.0f) / 4.0f),
+    (uint8_t)ceil((freqMax + 1.0f) / 4.0f)
   };
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_CALIB_IMAGE, true, buff, sizeof(buff)));
 }
@@ -2149,6 +2445,10 @@ int16_t LR11x0::setDioIrqParams(uint32_t irq1, uint32_t irq2) {
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_SET_DIO_IRQ_PARAMS, true, buff, sizeof(buff)));
 }
 
+int16_t LR11x0::setDioIrqParams(uint32_t irq) {
+  return(setDioIrqParams(irq, 0));
+}
+
 int16_t LR11x0::clearIrq(uint32_t irq) {
   uint8_t buff[4] = {
     (uint8_t)((irq >> 24) & 0xFF), (uint8_t)((irq >> 16) & 0xFF), (uint8_t)((irq >> 8) & 0xFF), (uint8_t)(irq & 0xFF),
@@ -2157,7 +2457,7 @@ int16_t LR11x0::clearIrq(uint32_t irq) {
 }
 
 int16_t LR11x0::configLfClock(uint8_t setup) {
-  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_SET_REG_MODE, true, &setup, 1));
+  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_CONFIG_LF_LOCK, true, &setup, 1));
 }
 
 int16_t LR11x0::setTcxoMode(uint8_t tune, uint32_t delay) {
@@ -2189,7 +2489,8 @@ int16_t LR11x0::getTemp(float* temp) {
   // pass the replies
   if(temp) {
     uint16_t raw = ((uint16_t)(buff[0]) << 8) | (uint16_t)buff[1];
-    *temp = 25.0f - (1000.0f/1.7f)*(((float)raw/2047.0f)*1350.0f - 0.7295f);
+    raw = raw & 0x07FF; //According LR1121 datasheet we need [0..10] bits
+    *temp = 25.0f - (1000.0f/1.7f)*(((float)raw/2047.0f)*1.35f - 0.7295f); //According LR1121 datasheet 1.35
   }
 
   return(state);
@@ -2288,23 +2589,17 @@ int16_t LR11x0::readInfoPage(uint16_t addr, uint32_t* data, size_t len) {
 }
 
 int16_t LR11x0::getChipEui(uint8_t* eui) {
-  if(!eui) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(eui);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GET_CHIP_EUI, false, eui, RADIOLIB_LR11X0_EUI_LEN));
 }
 
 int16_t LR11x0::getSemtechJoinEui(uint8_t* eui) {
-  if(!eui) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(eui);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GET_SEMTECH_JOIN_EUI, false, eui, RADIOLIB_LR11X0_EUI_LEN));
 }
 
 int16_t LR11x0::deriveRootKeysAndGetPin(uint8_t* pin) {
-  if(!pin) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(pin);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_DERIVE_ROOT_KEYS_AND_GET_PIN, false, pin, RADIOLIB_LR11X0_PIN_LEN));
 }
 
@@ -2370,7 +2665,7 @@ int16_t LR11x0::getPacketStatusLoRa(float* rssiPkt, float* snrPkt, float* signal
 
   // pass the replies
   if(rssiPkt) { *rssiPkt = (float)buff[0] / -2.0f; }
-  if(snrPkt) { *snrPkt = (float)buff[1] / 4.0f; }
+  if(snrPkt) { *snrPkt = (float)((int8_t)buff[1]) / 4.0f; }
   if(signalRssiPkt) { *signalRssiPkt = buff[2]; }
 
   return(state);
@@ -2400,9 +2695,7 @@ int16_t LR11x0::getRssiInst(float* rssi) {
 }
 
 int16_t LR11x0::setGfskSyncWord(uint8_t* sync) {
-  if(!sync) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(sync);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_SET_GFSK_SYNC_WORD, true, sync, RADIOLIB_LR11X0_GFSK_SYNC_WORD_LEN));
 }
 
@@ -2455,7 +2748,19 @@ int16_t LR11x0::setPacketType(uint8_t type) {
 }
 
 int16_t LR11x0::setModulationParamsLoRa(uint8_t sf, uint8_t bw, uint8_t cr, uint8_t ldro) {
-  uint8_t buff[4] = { sf, bw, cr, ldro };
+  // calculate symbol length and enable low data rate optimization, if auto-configuration is enabled
+  if(this->ldroAuto) {
+    float symbolLength = (float)(uint32_t(1) << this->spreadingFactor) / (float)this->bandwidthKhz;
+    if(symbolLength >= 16.0) {
+      this->ldrOptimize = RADIOLIB_LR11X0_LORA_LDRO_ENABLED;
+    } else {
+      this->ldrOptimize = RADIOLIB_LR11X0_LORA_LDRO_DISABLED;
+    }
+  } else {
+    this->ldrOptimize = ldro;
+  }
+
+  uint8_t buff[4] = { sf, bw, cr, this->ldrOptimize };
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_SET_MODULATION_PARAMS, true, buff, sizeof(buff)));
 }
 
@@ -2832,6 +3137,15 @@ int16_t LR11x0::wifiReadVersion(uint8_t* major, uint8_t* minor) {
   return(state);
 }
 
+int16_t LR11x0::gnssReadRssi(int8_t* rssi) {
+  uint8_t reqBuff[1] = { 0x09 };  // some undocumented magic byte, from the official driver
+  uint8_t rplBuff[2] = { 0 };
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_RSSI, false, rplBuff, sizeof(rplBuff), reqBuff, sizeof(reqBuff));
+  RADIOLIB_ASSERT(state);
+  if(rssi) { *rssi = rplBuff[1]; }
+  return(state);
+}
+
 int16_t LR11x0::gnssSetConstellationToUse(uint8_t mask) {
   uint8_t buff[1] = { mask };
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_SET_CONSTELLATION_TO_USE, true, buff, sizeof(buff)));
@@ -2859,6 +3173,18 @@ int16_t LR11x0::gnssReadAlmanacUpdate(uint8_t* mask) {
   // pass the replies
   if(mask) { *mask = buff[0]; }
 
+  return(state);
+}
+
+int16_t LR11x0::gnssSetFreqSearchSpace(uint8_t freq) {
+  uint8_t buff[1] = { freq };
+  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_SET_FREQ_SEARCH_SPACE, true, buff, sizeof(buff)));
+}
+
+int16_t LR11x0::gnssReadFreqSearchSpace(uint8_t* freq) {
+  uint8_t buff[1] = { 0 };
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_FREQ_SEARCH_SPACE, false, buff, sizeof(buff));
+  if(freq) { *freq = buff[0]; }
   return(state);
 }
 
@@ -2967,7 +3293,7 @@ int16_t LR11x0::gnssGetNbSvDetected(uint8_t* nbSv) {
   return(state);
 }
 
-int16_t LR11x0::gnssGetSvDetected(uint8_t* svId, uint8_t* snr, uint16_t* doppler, size_t nbSv) {
+int16_t LR11x0::gnssGetSvDetected(uint8_t* svId, uint8_t* snr, int16_t* doppler, size_t nbSv) {
   // TODO this is arbitrary - is there an actual maximum?
   if(nbSv > RADIOLIB_LR11X0_SPI_MAX_READ_WRITE_LEN/sizeof(uint32_t)) {
     return(RADIOLIB_ERR_SPI_CMD_INVALID);
@@ -3018,9 +3344,7 @@ int16_t LR11x0::gnssGetResultSize(uint16_t* size) {
 }
 
 int16_t LR11x0::gnssReadResults(uint8_t* result, uint16_t size) {
-  if(!result) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(result);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_RESULTS, false, result, size));
 }
 
@@ -3040,7 +3364,24 @@ int16_t LR11x0::gnssAlmanacFullUpdateSV(uint8_t svn, uint8_t* svnAlmanac) {
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_FULL_UPDATE, true, buff, sizeof(buff)));
 }
 
-int16_t LR11x0::gnssGetSvVisible(uint32_t time, float lat, float lon, uint8_t constellation, uint8_t* nbSv) {
+int16_t LR11x0::gnssAlmanacReadAddrSize(uint32_t* addr, uint16_t* size) {
+  uint8_t buff[6] = { 0 };
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_READ_ADDR_SIZE, false, buff, sizeof(buff));
+
+  if(addr) { *addr = ((uint32_t)(buff[0]) << 24) | ((uint32_t)(buff[1]) << 16) | ((uint32_t)(buff[2]) << 8) | (uint32_t)buff[3]; }
+  if(size) { *size = ((uint16_t)(buff[4]) << 8) | (uint16_t)buff[5]; }
+  
+  return(state);
+}
+
+int16_t LR11x0::gnssAlmanacReadSV(uint8_t svId, uint8_t* almanac) {
+  uint8_t reqBuff[2] = { svId, 0x01 }; // in theory multiple SV entries can be read at the same time, but we don't need that
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_ALMANAC_PER_SATELLITE, false, almanac, 22, reqBuff, sizeof(reqBuff));
+  RADIOLIB_ASSERT(state);
+  return(state);
+}
+
+int16_t LR11x0::gnssGetNbSvVisible(uint32_t time, float lat, float lon, uint8_t constellation, uint8_t* nbSv) {
   uint16_t latRaw = (lat*2048.0f)/90.0f + 0.5f;
   uint16_t lonRaw = (lon*2048.0f)/180.0f + 0.5f;
   uint8_t reqBuff[9] = { 
@@ -3051,6 +3392,23 @@ int16_t LR11x0::gnssGetSvVisible(uint32_t time, float lat, float lon, uint8_t co
     constellation,
   };
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_GET_SV_VISIBLE, false, nbSv, 1, reqBuff, sizeof(reqBuff)));
+}
+
+int16_t LR11x0::gnssGetSvVisible(uint8_t nbSv, uint8_t** svId, int16_t** doppler, int16_t** dopplerErr) {
+  // enforce a maximum of 12 SVs
+  if(nbSv > 12) {
+    return(RADIOLIB_ERR_SPI_CMD_INVALID);
+  }
+
+  uint8_t buff[60] = { 0 };
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_GET_SV_VISIBLE_DOPPLER, false, buff, sizeof(buff));
+  for(uint8_t i = 0; i < nbSv; i++) {
+    if(svId && svId[i]) { *svId[i] = buff[i*12]; }
+    if(doppler && doppler[i]) { *doppler[i] = ((uint16_t)(buff[i*12 + 1]) << 8) | (uint16_t)buff[i*12 + 2]; }
+    if(dopplerErr && dopplerErr[i]) { *dopplerErr[i] = ((uint16_t)(buff[i*12 + 3]) << 8) | (uint16_t)buff[i*12 + 4]; }
+  }
+  
+  return(state);
 }
 
 int16_t LR11x0::gnssPerformScan(uint8_t effort, uint8_t resMask, uint8_t nbSvMax) {
@@ -3071,7 +3429,8 @@ int16_t LR11x0::gnssReadLastScanModeLaunched(uint8_t* lastScanMode) {
 
 int16_t LR11x0::gnssFetchTime(uint8_t effort, uint8_t opt) {
   uint8_t buff[2] = { effort, opt };
-  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_FETCH_TIME, true, buff, sizeof(buff)));
+  // call the SPI write stream directly to skip waiting for BUSY - it will be set to high once the scan starts
+  return(this->mod->SPIwriteStream(RADIOLIB_LR11X0_CMD_GNSS_FETCH_TIME, buff, sizeof(buff), false, false));
 }
 
 int16_t LR11x0::gnssReadTime(uint8_t* err, uint32_t* time, uint32_t* nbUs, uint32_t* timeAccuracy) {
@@ -3080,9 +3439,22 @@ int16_t LR11x0::gnssReadTime(uint8_t* err, uint32_t* time, uint32_t* nbUs, uint3
 
   // pass the replies
   if(err) { *err = buff[0]; }
-  if(time) { *time = ((uint32_t)(buff[1]) << 24) | ((uint32_t)(buff[2]) << 16) | ((uint32_t)(buff[3]) << 8) | (uint32_t)buff[4]; }
-  if(nbUs) { *nbUs = ((uint32_t)(buff[5]) << 16) | ((uint32_t)(buff[6]) << 8) | (uint32_t)buff[7]; }
-  if(timeAccuracy) { *timeAccuracy = ((uint32_t)(buff[8]) << 24) | ((uint32_t)(buff[9]) << 16) | ((uint32_t)(buff[10]) << 8) | (uint32_t)buff[11]; }
+  
+  if(time) {
+    *time = ((uint32_t)(buff[1]) << 24) | ((uint32_t)(buff[2]) << 16) | ((uint32_t)(buff[3]) << 8) | (uint32_t)buff[4];
+    *time += 2UL*1024UL*7UL*24UL*3600UL; // assume WN rollover is at 2, this will fail sometime in 2038
+    *time += 315964800UL; // convert to UTC
+  }
+
+  if(nbUs) {
+    *nbUs = ((uint32_t)(buff[5]) << 16) | ((uint32_t)(buff[6]) << 8) | (uint32_t)buff[7];
+    *nbUs /= 16;
+  }
+
+  if(timeAccuracy) {
+    *timeAccuracy = ((uint32_t)(buff[8]) << 24) | ((uint32_t)(buff[9]) << 16) | ((uint32_t)(buff[10]) << 8) | (uint32_t)buff[11];
+    *timeAccuracy /= 16;
+  }
   
   return(state);
 }
@@ -3093,6 +3465,14 @@ int16_t LR11x0::gnssResetTime(void) {
 
 int16_t LR11x0::gnssResetPosition(void) {
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_RESET_POSITION, true, NULL, 0));
+}
+
+int16_t LR11x0::gnssReadWeekNumberRollover(uint8_t* status, uint8_t* rollover) {
+  uint8_t buff[2] = { 0 };
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_WEEK_NUMBER_ROLLOWER, false, buff, sizeof(buff));
+  if(status) { *status = buff[0]; }
+  if(rollover) { *rollover = buff[1]; }
+  return(state);
 }
 
 int16_t LR11x0::gnssReadDemodStatus(int8_t* status, uint8_t* info) {
@@ -3108,7 +3488,7 @@ int16_t LR11x0::gnssReadDemodStatus(int8_t* status, uint8_t* info) {
 
 int16_t LR11x0::gnssReadCumulTiming(uint32_t* timing, uint8_t* constDemod) {
   uint8_t rplBuff[125] = { 0 };
-  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_READ_REG_MEM, false, rplBuff, 125);
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_CUMUL_TIMING, false, rplBuff, 125);
   RADIOLIB_ASSERT(state);
 
   // convert endians
@@ -3174,11 +3554,21 @@ int16_t LR11x0::gnssReadDelayResetAP(uint32_t* delay) {
 
 int16_t LR11x0::gnssAlmanacUpdateFromSat(uint8_t effort, uint8_t bitMask) {
   uint8_t buff[2] = { effort, bitMask };
-  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_UPDATE_FROM_SAT, true, buff, sizeof(buff)));
+  // call the SPI write stream directly to skip waiting for BUSY - it will be set to high once the scan starts
+  return(this->mod->SPIwriteStream(RADIOLIB_LR11X0_CMD_GNSS_ALMANAC_UPDATE_FROM_SAT, buff, sizeof(buff), false, false));
+}
+
+int16_t LR11x0::gnssReadKeepSyncStatus(uint8_t mask, uint8_t* nbSvVisible, uint32_t* elapsed) {
+  uint8_t reqBuff[1] = { mask };
+  uint8_t rplBuff[5] = { 0 };
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_KEEP_SYNC_STATUS, false, rplBuff, sizeof(rplBuff), reqBuff, sizeof(reqBuff));
+  RADIOLIB_ASSERT(state);
+  if(nbSvVisible) { *nbSvVisible = rplBuff[0]; }
+  if(elapsed) { *elapsed = ((uint32_t)(rplBuff[1]) << 24) | ((uint32_t)(rplBuff[2]) << 16) | ((uint32_t)(rplBuff[3]) << 8) | (uint32_t)rplBuff[4]; }
+  return(state);
 }
 
 int16_t LR11x0::gnssReadAlmanacStatus(uint8_t* status) {
-  // TODO parse the reply into some structure
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_ALMANAC_STATUS, false, status, 53));
 }
 
@@ -3208,14 +3598,9 @@ int16_t LR11x0::gnssGetSvWarmStart(uint8_t bitMask, uint8_t* sv, uint8_t nbVisSa
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_GET_SV_WARM_START, false, sv, nbVisSat, reqBuff, sizeof(reqBuff)));
 }
 
-int16_t LR11x0::gnssReadWNRollover(uint8_t* status, uint8_t* rollover) {
-  uint8_t buff[2] = { 0 };
-  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_WN_ROLLOVER, false, buff, sizeof(buff));
-
-  if(status) { *status = buff[0]; }
-  if(rollover) { *rollover = buff[1]; }
-  
-  return(state);
+int16_t LR11x0::gnssGetSvSync(uint8_t mask, uint8_t nbSv, uint8_t* syncList) {
+  uint8_t reqBuff[2] = { mask, nbSv };
+  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_GET_SV_SYNC, false, syncList, nbSv, reqBuff, sizeof(reqBuff)));
 }
 
 int16_t LR11x0::gnssReadWarmStartStatus(uint8_t bitMask, uint8_t* nbVisSat, uint32_t* timeElapsed) {
@@ -3234,7 +3619,7 @@ int16_t LR11x0::gnssWriteBitMaskSatActivated(uint8_t bitMask, uint32_t* bitMaskA
   uint8_t reqBuff[1] = { bitMask };
   uint8_t rplBuff[8] = { 0 };
   size_t rplLen = (bitMask & 0x01) ? 8 : 4; // GPS only has the first bit mask
-  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_READ_WARM_START_STATUS, false, rplBuff, rplLen, reqBuff, sizeof(reqBuff));
+  int16_t state = this->SPIcommand(RADIOLIB_LR11X0_CMD_GNSS_WRITE_BIT_MASK_SAT_ACTIVATED, false, rplBuff, rplLen, reqBuff, sizeof(reqBuff));
   RADIOLIB_ASSERT(state);
 
   if(bitMaskActivated0) { *bitMaskActivated0 = ((uint32_t)(rplBuff[0]) << 24) | ((uint32_t)(rplBuff[1]) << 16) | ((uint32_t)(rplBuff[2]) << 8) | (uint32_t)rplBuff[3]; }
@@ -3243,10 +3628,20 @@ int16_t LR11x0::gnssWriteBitMaskSatActivated(uint8_t bitMask, uint32_t* bitMaskA
   return(state);
 }
 
+void LR11x0::gnssAbort() {
+  // send the abort signal (single NOP)
+  this->mod->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_CMD] = Module::BITS_8;
+  // we need to call the most basic overload of the SPI write method otherwise the call will be ambiguous
+  uint8_t cmd[2] = { 0, 0 };
+  this->mod->SPIwriteStream(cmd, 2, NULL, 0, false, false);
+  this->mod->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_CMD] = Module::BITS_16;
+
+  // wait for at least 2.9 seconds as specified by the user manual
+  this->mod->hal->delay(3000);
+}
+
 int16_t LR11x0::cryptoSetKey(uint8_t keyId, uint8_t* key) {
-  if(!key) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(key);
   uint8_t buff[1 + RADIOLIB_AES128_KEY_SIZE] = { 0 };
   buff[0] = keyId;
   memcpy(&buff[1], key, RADIOLIB_AES128_KEY_SIZE);
@@ -3254,9 +3649,7 @@ int16_t LR11x0::cryptoSetKey(uint8_t keyId, uint8_t* key) {
 }
 
 int16_t LR11x0::cryptoDeriveKey(uint8_t srcKeyId, uint8_t dstKeyId, uint8_t* key) {
-  if(!key) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(key);
   uint8_t buff[2 + RADIOLIB_AES128_KEY_SIZE] = { 0 };
   buff[0] = srcKeyId;
   buff[1] = dstKeyId;
@@ -3303,11 +3696,17 @@ int16_t LR11x0::cryptoProcessJoinAccept(uint8_t decKeyId, uint8_t verKeyId, uint
   // check the crypto engine state
   if(rplBuff[0] != RADIOLIB_LR11X0_CRYPTO_STATUS_SUCCESS) {
     RADIOLIB_DEBUG_BASIC_PRINTLN("Crypto Engine error: %02x", rplBuff[0]);
+    #if !RADIOLIB_STATIC_ONLY
+      delete[] rplBuff;
+    #endif
     return(RADIOLIB_ERR_SPI_CMD_FAILED);
   }
 
   // pass the data
   memcpy(dataOut, &rplBuff[1], len);
+  #if !RADIOLIB_STATIC_ONLY
+    delete[] rplBuff;
+  #endif
   return(state);
 }
 
@@ -3448,23 +3847,17 @@ int16_t LR11x0::bootReboot(bool stay) {
 }
 
 int16_t LR11x0::bootGetPin(uint8_t* pin) {
-  if(!pin) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(pin);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_BOOT_GET_PIN, false, pin, RADIOLIB_LR11X0_PIN_LEN));
 }
 
 int16_t LR11x0::bootGetChipEui(uint8_t* eui) {
-  if(!eui) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(eui);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_BOOT_GET_CHIP_EUI, false, eui, RADIOLIB_LR11X0_EUI_LEN));
 }
 
 int16_t LR11x0::bootGetJoinEui(uint8_t* eui) {
-  if(!eui) {
-    return(RADIOLIB_ERR_MEMORY_ALLOCATION_FAILED);
-  }
+  RADIOLIB_ASSERT_PTR(eui);
   return(this->SPIcommand(RADIOLIB_LR11X0_CMD_BOOT_GET_JOIN_EUI, false, eui, RADIOLIB_LR11X0_EUI_LEN));
 }
 
@@ -3538,6 +3931,9 @@ int16_t LR11x0::cryptoCommon(uint16_t cmd, uint8_t keyId, uint8_t* dataIn, size_
 
   // pass the data
   memcpy(dataOut, &rplBuff[1], len);
+  #if !RADIOLIB_STATIC_ONLY
+    delete[] rplBuff;
+  #endif
   return(state);
 }
 

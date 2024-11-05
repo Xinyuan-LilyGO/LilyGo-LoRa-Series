@@ -39,6 +39,14 @@
 // BUSY pin:  9
 LR1110 radio = new Module(10, 2, 3, 9);
 
+// or detect the pinout automatically using RadioBoards
+// https://github.com/radiolib-org/RadioBoards
+/*
+#define RADIO_BOARD_AUTO
+#include <RadioBoards.h>
+Radio radio = new RadioModule();
+*/
+
 // set RF switch configuration for Wio WM1110
 // Wio WM1110 uses DIO5 and DIO6 for RF switching
 // NOTE: other boards may be different!
@@ -62,10 +70,6 @@ static const Module::RfSwitchMode_t rfswitch_table[] = {
 void setup() {
   Serial.begin(9600);
 
-  // set RF switch control configuration
-  // this has to be done prior to calling begin()
-  radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
-
   // initialize LR1110 with default settings
   Serial.print(F("[LR1110] Initializing ... "));
   int state = radio.begin();
@@ -74,8 +78,11 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
+
+  // set RF switch control configuration
+  radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
 }
 
 void loop() {

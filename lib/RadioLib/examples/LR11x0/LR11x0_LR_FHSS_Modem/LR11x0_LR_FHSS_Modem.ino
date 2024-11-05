@@ -2,6 +2,7 @@
   RadioLib LR11x0 LR-FHSS Modem Example
 
   This example shows how to use LR-FHSS modem in LR11x0 chips.
+  This modem can only transmit data, and is not able to receive.
 
   NOTE: The sketch below is just a guide on how to use
         LR-FHSS modem, so this code should not be run directly!
@@ -26,9 +27,13 @@
 // BUSY pin:  9
 LR1110 radio = new Module(10, 2, 3, 9);
 
-// or using RadioShield
-// https://github.com/jgromes/RadioShield
-//LR1110 radio = RadioShield.ModuleA;
+// or detect the pinout automatically using RadioBoards
+// https://github.com/radiolib-org/RadioBoards
+/*
+#define RADIO_BOARD_AUTO
+#include <RadioBoards.h>
+Radio radio = new RadioModule();
+*/
 
 void setup() {
   Serial.begin(9600);
@@ -41,7 +46,7 @@ void setup() {
   } else {
     Serial.print(F("failed, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   // if needed, you can switch between any of the modems
@@ -61,16 +66,14 @@ void setup() {
   if (state != RADIOLIB_ERR_NONE) {
     Serial.print(F("Unable to set configuration, code "));
     Serial.println(state);
-    while (true);
+    while (true) { delay(10); }
   }
 
   #warning "This sketch is just an API guide! Read the note at line 6."
 }
 
 void loop() {
-  // LR-FHSS modem can use the same transmit/receive methods
-  // as the LoRa modem, even their interrupt-driven versions
-
+  // LR-FHSS modem can only transmit!
   // transmit LR-FHSS packet
   int state = radio.transmit("Hello World!");
   /*
@@ -86,24 +89,6 @@ void loop() {
     Serial.println(F("[LR1110] Timed out while transmitting!"));
   } else {
     Serial.println(F("[LR1110] Failed to transmit packet, code "));
-    Serial.println(state);
-  }
-
-  // receive LR-FHSS packet
-  String str;
-  state = radio.receive(str);
-  /*
-    byte byteArr[8];
-    int state = radio.receive(byteArr, 8);
-  */
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("[LR1110] Received packet!"));
-    Serial.print(F("[LR1110] Data:\t"));
-    Serial.println(str);
-  } else if (state == RADIOLIB_ERR_RX_TIMEOUT) {
-    Serial.println(F("[LR1110] Timed out while waiting for packet!"));
-  } else {
-    Serial.print(F("[LR1110] Failed to receive packet, code "));
     Serial.println(state);
   }
 

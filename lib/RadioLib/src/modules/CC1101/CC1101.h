@@ -575,7 +575,7 @@ class CC1101: public PhysicalLayer {
       \param addr Address to send the data to. Will only be added if address filtering was enabled.
       \returns \ref status_codes
     */
-    int16_t transmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t transmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Blocking binary receive method.
@@ -687,7 +687,7 @@ class CC1101: public PhysicalLayer {
       \param addr Address to send the data to. Will only be added if address filtering was enabled.
       \returns \ref status_codes
     */
-    int16_t startTransmit(uint8_t* data, size_t len, uint8_t addr = 0) override;
+    int16_t startTransmit(const uint8_t* data, size_t len, uint8_t addr = 0) override;
 
     /*!
       \brief Clean up after transmission is done.
@@ -737,6 +737,13 @@ class CC1101: public PhysicalLayer {
       \returns \ref status_codes
     */
     int16_t setBitRate(float br) override;
+
+    /*!
+      \brief Sets bit rate tolerance in BSCFG register. Allowed values are 0:(0%), 1(3,125%), 2:(6,25%) and 3:(12,5%).
+      \param brt Bit rate tolerance to be set.
+      \returns \ref status_codes
+    */
+    int16_t setBitRateTolerance(uint8_t brt);
 
     /*!
       \brief Sets receiver bandwidth. Allowed values are 58, 68, 81, 102, 116, 135, 162,
