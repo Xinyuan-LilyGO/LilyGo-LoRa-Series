@@ -381,10 +381,10 @@ void loopPMU()
     if (PMU->isPekeyLongPressIrq()) {
         Serial.println("isPekeyLongPress");
     }
-    if (PMU->isBatChagerDoneIrq()) {
-        Serial.println("isBatChagerDone");
+    if (PMU->isBatChargeDoneIrq()) {
+        Serial.println("isBatChargeDone");
     }
-    if (PMU->isBatChagerStartIrq()) {
+    if (PMU->isBatChargeStartIrq()) {
         Serial.println("isBatChagerStart");
     }
     // Clear PMU Interrupt Status Register
@@ -648,7 +648,7 @@ void setupBoards(bool disable_u8g2 )
         beginDisplay();
     }
 
-    beginWiFi();
+    // beginWiFi();
 
 #ifdef HAS_GPS
 #ifdef T_BEAM_S3_BPF

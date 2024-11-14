@@ -75,11 +75,11 @@ void loop()
         if (PMU->isPekeyLongPressIrq()) {
             Serial.println("isPekeyLongPress");
         }
-        if (PMU->isBatChagerDoneIrq()) {
-            Serial.println("isBatChagerDone");
+        if (PMU->isBatChargeDoneIrq()) {
+            Serial.println("isBatChargeDone");
         }
-        if (PMU->isBatChagerStartIrq()) {
-            Serial.println("isBatChagerStart");
+        if (PMU->isBatChargeStartIrq()) {
+            Serial.println("isBatChargeStart");
         }
         // Clear PMU Interrupt Status Register
         PMU->clearIrqStatus();

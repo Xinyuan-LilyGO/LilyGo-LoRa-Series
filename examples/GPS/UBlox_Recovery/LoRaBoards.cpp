@@ -381,10 +381,10 @@ void loopPMU()
     if (PMU->isPekeyLongPressIrq()) {
         Serial.println("isPekeyLongPress");
     }
-    if (PMU->isBatChagerDoneIrq()) {
-        Serial.println("isBatChagerDone");
+    if (PMU->isBatChargeDoneIrq()) {
+        Serial.println("isBatChargeDone");
     }
-    if (PMU->isBatChagerStartIrq()) {
+    if (PMU->isBatChargeStartIrq()) {
         Serial.println("isBatChagerStart");
     }
     // Clear PMU Interrupt Status Register
@@ -642,11 +642,11 @@ void setupBoards(bool disable_u8g2 )
 
     beginPower();
 
-    // beginSDCard();
+    beginSDCard();
 
-    // if (!disable_u8g2) {
-    //     beginDisplay();
-    // }
+    if (!disable_u8g2) {
+        beginDisplay();
+    }
 
     // beginWiFi();
 
