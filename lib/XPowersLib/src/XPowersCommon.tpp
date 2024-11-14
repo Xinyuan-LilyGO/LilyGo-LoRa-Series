@@ -52,7 +52,7 @@
 
 #endif //ESP_PLATFORM
 
-#define XPOWERSLIB_I2C_MASTER_SEEED            400000
+#define XPOWERSLIB_I2C_MASTER_SPEED            400000
 
 
 #ifdef _BV
@@ -100,16 +100,32 @@
 #endif
 
 #ifndef ESP32
+#ifdef LOG_FILE_LINE_INFO
+#undef LOG_FILE_LINE_INFO
+#endif
+#define LOG_FILE_LINE_INFO __FILE__, __LINE__
 #ifndef log_e
-#define log_e(...)          Serial.printf(__VA_ARGS__)
+#define log_e(fmt, ...)     Serial.printf("[E][%s:%d] " fmt "\n", LOG_FILE_LINE_INFO, ##__VA_ARGS__)
 #endif
 #ifndef log_i
-#define log_i(...)          Serial.printf(__VA_ARGS__)
+#define log_i(fmt, ...)     Serial.printf("[I][%s:%d] " fmt "\n", LOG_FILE_LINE_INFO, ##__VA_ARGS__)
 #endif
 #ifndef log_d
-#define log_d(...)          Serial.printf(__VA_ARGS__)
+#define log_d(fmt, ...)     Serial.printf("[D][%s:%d] " fmt "\n", LOG_FILE_LINE_INFO, ##__VA_ARGS__)
 #endif
 #endif
+
+
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+#ifndef SDA
+#define SDA     (0xFF)
+#endif
+
+#ifndef SCL
+#define SCL     (0xFF)
+#endif
+#endif
+
 
 typedef int (*iic_fptr_t)(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len);
 
@@ -127,13 +143,23 @@ public:
         __sda = sda;
         __scl = scl;
         __wire = &w;
-#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
-        __wire->end();
-        __wire->setSDA(__sda);
-        __wire->setSCL(__scl);
+
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+        if (__sda != 0xFF && __scl != 0xFF) {
+            __wire->setPins(__sda, __scl);
+        }
         __wire->begin();
+#elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
+        if (__sda != 0xFF && __scl != 0xFF) {
+            __wire->end();
+            __wire->setSDA(__sda);
+            __wire->setSCL(__scl);
+        }
+        __wire->begin();
+#elif defined(ARDUINO_ARCH_ESP32)
+        __wire->begin(__sda, __scl);
 #else
-        __wire->begin(sda, scl);
+        __wire->begin();
 #endif
         __addr = addr;
         return thisChip().initImpl();
@@ -147,7 +173,7 @@ public:
     // * which is useful when the bus shares multiple devices.
     bool begin(i2c_master_bus_handle_t i2c_dev_bus_handle, uint8_t addr)
     {
-        log_i("Using ESP-IDF Driver interface.\n");
+        log_i("Using ESP-IDF Driver interface.");
         if (i2c_dev_bus_handle == NULL) return false;
         if (__has_init)return thisChip().initImpl();
 
@@ -171,7 +197,14 @@ public:
         i2c_device_config_t i2c_dev_conf = {
             .dev_addr_length = I2C_ADDR_BIT_LEN_7,
             .device_address = addr,
-            .scl_speed_hz = XPOWERSLIB_I2C_MASTER_SEEED,
+            .scl_speed_hz = XPOWERSLIB_I2C_MASTER_SPEED,
+#if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,3,0))
+            // New fields since esp-idf-v5.3-beta1
+            .scl_wait_us = 0,
+            .flags = {
+                . disable_ack_check = 0
+            }
+#endif
         };
 
         if (ESP_OK != i2c_master_bus_add_device(bus_handle,
@@ -196,7 +229,7 @@ public:
     bool begin(i2c_port_t port_num, uint8_t addr, int sda, int scl)
     {
         __i2c_num = port_num;
-        log_i("Using ESP-IDF Driver interface.\n");
+        log_i("Using ESP-IDF Driver interface.");
         if (__has_init)return thisChip().initImpl();
         __sda = sda;
         __scl = scl;
@@ -211,7 +244,7 @@ public:
         i2c_conf.scl_io_num = scl;
         i2c_conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
         i2c_conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-        i2c_conf.master.clk_speed = XPOWERSLIB_I2C_MASTER_SEEED;
+        i2c_conf.master.clk_speed = XPOWERSLIB_I2C_MASTER_SPEED;
 
         /**
          * @brief Without checking whether the initialization is successful,
@@ -410,13 +443,22 @@ protected:
         __has_init = true;
         if (__wire) {
             log_i("SDA:%d SCL:%d", __sda, __scl);
-#if defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
-            __wire->end();
-            __wire->setSDA(__sda);
-            __wire->setSCL(__scl);
+#if defined(NRF52840_XXAA) || defined(NRF52832_XXAA)
+            if (__sda != 0xFF && __scl != 0xFF) {
+                __wire->setPins(__sda, __scl);
+            }
             __wire->begin();
-#else
+#elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_STM32)
+            if (__sda != 0xFF && __scl != 0xFF) {
+                __wire->end();
+                __wire->setSDA(__sda);
+                __wire->setSCL(__scl);
+            }
+            __wire->begin();
+#elif defined(ARDUINO_ARCH_ESP32)
             __wire->begin(__sda, __scl);
+#else
+            __wire->begin();
 #endif
         }
 #endif  /*ARDUINO*/

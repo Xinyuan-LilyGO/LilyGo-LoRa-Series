@@ -75,17 +75,6 @@ typedef enum {
 } xpowers_axp192_pekey_long_press_t;
 
 typedef enum {
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V,
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V1,
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V2,
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V3,
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V4,
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V5,
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V6,
-    XPOWERS_AXP192_VBUS_VOL_LIM_4V7,
-} xpowers_axp192_vbus_vol_limit_t;
-
-typedef enum {
     XPOWERS_AXP192_CHG_CONS_TIMEOUT_7H,
     XPOWERS_AXP192_CHG_CONS_TIMEOUT_8H,
     XPOWERS_AXP192_CHG_CONS_TIMEOUT_9H,
@@ -271,12 +260,27 @@ public:
         clrRegisterBit(XPOWERS_AXP192_IPS_SET, 6);
     }
 
-    void setVbusVoltageLimit(xpowers_axp192_vbus_vol_limit_t opt)
+    /**
+     * @brief  Set VBUS Voltage Input Limit.
+     * @param  opt: View the related chip type xpowers_axp192_vbus_vol_limit_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     */
+    void setVbusVoltageLimit(uint8_t opt)
     {
         int val = readRegister(XPOWERS_AXP192_IPS_SET);
         if (val == -1)return;
         val &= 0xC7;
         writeRegister(XPOWERS_AXP192_IPS_SET, val | (opt << 3));
+    }
+
+    /**
+    * @brief  Get VBUS Voltage Input Limit.
+    * @retval View the related chip type xpowers_axp192_vbus_vol_limit_t enumeration
+    *              parameters in "XPowersParams.hpp"
+    */
+    uint8_t getVbusVoltageLimit(void)
+    {
+        return (readRegister(XPOWERS_AXP192_IPS_SET) >> 3 ) & 0x7;
     }
 
     /**
@@ -1009,12 +1013,12 @@ public:
         return (bool)(statusRegister[1] & _BV(4));
     }
 
-    bool isBatChagerStartIrq(void)
+    bool isBatChargeStartIrq(void)
     {
         return (bool)(statusRegister[1] & _BV(3));
     }
 
-    bool isBatChagerDoneIrq(void)
+    bool isBatChargeDoneIrq(void)
     {
         return (bool)(statusRegister[1] & _BV(2));
     }

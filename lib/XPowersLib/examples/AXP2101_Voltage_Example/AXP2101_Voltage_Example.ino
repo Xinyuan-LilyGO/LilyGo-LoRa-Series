@@ -39,7 +39,7 @@ if there is any loss, please bear it by yourself
 #include <Arduino.h>
 #include "XPowersLib.h"
 
-XPowersPMU PMU;
+XPowersPMU power;
 
 #ifndef CONFIG_PMU_SDA
 #define CONFIG_PMU_SDA 21
@@ -65,38 +65,38 @@ void setup()
 {
     Serial.begin(115200);
 
-    bool result = PMU.begin(Wire, AXP2101_SLAVE_ADDRESS, i2c_sda, i2c_scl);
+    bool result = power.begin(Wire, AXP2101_SLAVE_ADDRESS, i2c_sda, i2c_scl);
 
     if (result == false) {
-        Serial.println("PMU is not online..."); while (1)delay(50);
+        Serial.println("power is not online..."); while (1)delay(50);
     }
 
     Serial.println("AXP2101 Power Output Test.");
 
 
 
-    PMU.disableDC2();
-    PMU.disableDC3();
-    PMU.disableDC4();
-    PMU.disableDC5();
-    PMU.disableALDO1();
-    PMU.disableALDO2();
-    PMU.disableALDO3();
-    PMU.disableALDO4();
-    PMU.disableBLDO1();
-    PMU.disableBLDO2();
-    PMU.disableCPUSLDO();
-    PMU.disableDLDO1();
-    PMU.disableDLDO2();
+    power.disableDC2();
+    power.disableDC3();
+    power.disableDC4();
+    power.disableDC5();
+    power.disableALDO1();
+    power.disableALDO2();
+    power.disableALDO3();
+    power.disableALDO4();
+    power.disableBLDO1();
+    power.disableBLDO2();
+    power.disableCPUSLDO();
+    power.disableDLDO1();
+    power.disableDLDO2();
 
 
     // DC1 IMAX=2A
     // 1500~3400mV,100mV/step,20steps
     vol = 1500;
     for (int i = 0; i < 20; ++i) {
-        PMU.setDC1Voltage(vol);
+        power.setDC1Voltage(vol);
         vol += 100;
-        Serial.printf("DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
+        Serial.printf("DC1  :%s   Voltage:%u mV \n",  power.isEnableDC1()  ? "ENABLE" : "DISABLE", power.getDC1Voltage());
     }
 
 
@@ -104,10 +104,10 @@ void setup()
     // 500~1200mV  10mV/step,71steps
     vol = 500;
     for (int i = 0; i < 71; ++i) {
-        PMU.setDC2Voltage(vol);
+        power.setDC2Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC2Voltage();
-        Serial.printf("[%d]DC2  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC2Voltage();
+        Serial.printf("[%d]DC2  :%s   Voltage:%u mV \n", i,  power.isEnableDC2()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 10;
     }
@@ -116,10 +116,10 @@ void setup()
     // 1220~1540mV 20mV/step,17steps
     vol = 1220;
     for (int i = 0; i < 17; ++i) {
-        PMU.setDC2Voltage(vol);
+        power.setDC2Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC2Voltage();
-        Serial.printf("[%u]DC2  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC2Voltage();
+        Serial.printf("[%u]DC2  :%s   Voltage:%u mV \n", i,  power.isEnableDC2()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 20;
     }
@@ -128,10 +128,10 @@ void setup()
     // 500~1200mV,10mV/step,71steps
     vol = 500;
     for (int i = 0; i < 71; ++i) {
-        PMU.setDC3Voltage(vol);
+        power.setDC3Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC3Voltage();
-        Serial.printf("[%u]DC3  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC3Voltage();
+        Serial.printf("[%u]DC3  :%s   Voltage:%u mV \n", i,  power.isEnableDC3()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 10;
     }
@@ -140,10 +140,10 @@ void setup()
     // 1220~1540mV,20mV/step,17steps
     vol = 1220;
     for (int i = 0; i < 17; ++i) {
-        PMU.setDC3Voltage(vol);
+        power.setDC3Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC3Voltage();
-        Serial.printf("[%u]DC3  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC3Voltage();
+        Serial.printf("[%u]DC3  :%s   Voltage:%u mV \n", i,  power.isEnableDC3()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 20;
     }
@@ -153,10 +153,10 @@ void setup()
     // 1600~3400mV,100mV/step,19steps
     vol = 1600;
     for (int i = 0; i < 19; ++i) {
-        PMU.setDC3Voltage(vol);
+        power.setDC3Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC3Voltage();
-        Serial.printf("[%u]DC3  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC3Voltage();
+        Serial.printf("[%u]DC3  :%s   Voltage:%u mV \n", i,  power.isEnableDC3()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -166,10 +166,10 @@ void setup()
     // 500~1200mV,10mV/step,71steps
     vol = 500;
     for (int i = 0; i < 71; ++i) {
-        PMU.setDC4Voltage(vol);
+        power.setDC4Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC4Voltage();
-        Serial.printf("[%u]DC4  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC4()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC4Voltage();
+        Serial.printf("[%u]DC4  :%s   Voltage:%u mV \n", i,  power.isEnableDC4()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 10;
     }
@@ -178,29 +178,29 @@ void setup()
     // 1220~1840mV,20mV/step,32steps
     vol = 1220;
     for (int i = 0; i < 32; ++i) {
-        PMU.setDC4Voltage(vol);
+        power.setDC4Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC4Voltage();
-        Serial.printf("[%u]DC4  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC4()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC4Voltage();
+        Serial.printf("[%u]DC4  :%s   Voltage:%u mV \n", i,  power.isEnableDC4()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 20;
     }
 
     // DC5 IMAX=2A
     // 1200mV
-    PMU.setDC5Voltage(1200);
-    targetVol = PMU.getDC5Voltage();
-    Serial.printf("[0]DC5  :%s   Voltage:%u mV \n",   PMU.isEnableDC5()  ? "ENABLE" : "DISABLE", targetVol );
+    power.setDC5Voltage(1200);
+    targetVol = power.getDC5Voltage();
+    Serial.printf("[0]DC5  :%s   Voltage:%u mV \n",   power.isEnableDC5()  ? "ENABLE" : "DISABLE", targetVol );
 
 
     // DC5 IMAX=2A
     // 1400~3700mV,100mV/step,24steps
     vol = 1400;
     for (int i = 0; i < 24; ++i) {
-        PMU.setDC5Voltage(vol);
+        power.setDC5Voltage(vol);
         delay(1);
-        targetVol = PMU.getDC5Voltage();
-        Serial.printf("[%u]DC5  :%s   Voltage:%u mV \n", i,  PMU.isEnableDC5()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDC5Voltage();
+        Serial.printf("[%u]DC5  :%s   Voltage:%u mV \n", i,  power.isEnableDC5()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -211,10 +211,10 @@ void setup()
     //500~3500mV, 100mV/step,31steps
     vol = 500;
     for (int i = 0; i < 31; ++i) {
-        PMU.setALDO1Voltage(vol);
+        power.setALDO1Voltage(vol);
         delay(1);
-        targetVol = PMU.getALDO1Voltage();
-        Serial.printf("[%u]ALDO1  :%s   Voltage:%u mV \n", i,  PMU.isEnableALDO1()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getALDO1Voltage();
+        Serial.printf("[%u]ALDO1  :%s   Voltage:%u mV \n", i,  power.isEnableALDO1()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -223,10 +223,10 @@ void setup()
     //500~3500mV, 100mV/step,31steps
     vol = 500;
     for (int i = 0; i < 31; ++i) {
-        PMU.setALDO2Voltage(vol);
+        power.setALDO2Voltage(vol);
         delay(1);
-        targetVol = PMU.getALDO2Voltage();
-        Serial.printf("[%u]ALDO2  :%s   Voltage:%u mV \n", i,  PMU.isEnableALDO2()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getALDO2Voltage();
+        Serial.printf("[%u]ALDO2  :%s   Voltage:%u mV \n", i,  power.isEnableALDO2()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -235,10 +235,10 @@ void setup()
     //500~3500mV, 100mV/step,31steps
     vol = 500;
     for (int i = 0; i < 31; ++i) {
-        PMU.setALDO3Voltage(vol);
+        power.setALDO3Voltage(vol);
         delay(1);
-        targetVol = PMU.getALDO3Voltage();
-        Serial.printf("[%u]ALDO3  :%s   Voltage:%u mV \n", i,  PMU.isEnableALDO3()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getALDO3Voltage();
+        Serial.printf("[%u]ALDO3  :%s   Voltage:%u mV \n", i,  power.isEnableALDO3()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -247,10 +247,10 @@ void setup()
     //500~3500mV, 100mV/step,31steps
     vol = 500;
     for (int i = 0; i < 31; ++i) {
-        PMU.setALDO4Voltage(vol);
+        power.setALDO4Voltage(vol);
         delay(1);
-        targetVol = PMU.getALDO4Voltage();
-        Serial.printf("[%u]ALDO4  :%s   Voltage:%u mV \n", i,  PMU.isEnableALDO4()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getALDO4Voltage();
+        Serial.printf("[%u]ALDO4  :%s   Voltage:%u mV \n", i,  power.isEnableALDO4()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -259,10 +259,10 @@ void setup()
     //500~3500mV, 100mV/step,31steps
     vol = 500;
     for (int i = 0; i < 31; ++i) {
-        PMU.setBLDO1Voltage(vol);
+        power.setBLDO1Voltage(vol);
         delay(1);
-        targetVol = PMU.getBLDO1Voltage();
-        Serial.printf("[%u]BLDO1  :%s   Voltage:%u mV \n", i,  PMU.isEnableBLDO1()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getBLDO1Voltage();
+        Serial.printf("[%u]BLDO1  :%s   Voltage:%u mV \n", i,  power.isEnableBLDO1()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -271,10 +271,10 @@ void setup()
     //500~3500mV, 100mV/step,31steps
     vol = 500;
     for (int i = 0; i < 31; ++i) {
-        PMU.setBLDO2Voltage(vol);
+        power.setBLDO2Voltage(vol);
         delay(1);
-        targetVol = PMU.getBLDO2Voltage();
-        Serial.printf("[%u]BLDO2  :%s   Voltage:%u mV \n", i,  PMU.isEnableBLDO2()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getBLDO2Voltage();
+        Serial.printf("[%u]BLDO2  :%s   Voltage:%u mV \n", i,  power.isEnableBLDO2()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -284,10 +284,10 @@ void setup()
     //500~1400mV,50mV/step,19steps
     vol = 500;
     for (int i = 0; i < 19; ++i) {
-        PMU.setCPUSLDOVoltage(vol);
+        power.setCPUSLDOVoltage(vol);
         delay(1);
-        targetVol = PMU.getCPUSLDOVoltage();
-        Serial.printf("[%u]CPUSLDO  :%s   Voltage:%u mV \n", i,  PMU.isEnableCPUSLDO()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getCPUSLDOVoltage();
+        Serial.printf("[%u]CPUSLDO  :%s   Voltage:%u mV \n", i,  power.isEnableCPUSLDO()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 50;
     }
@@ -296,10 +296,10 @@ void setup()
     //500~3400mV, 100mV/step,29steps
     vol = 500;
     for (int i = 0; i < 29; ++i) {
-        PMU.setDLDO1Voltage(vol);
+        power.setDLDO1Voltage(vol);
         delay(1);
-        targetVol = PMU.getDLDO1Voltage();
-        Serial.printf("[%u]DLDO1  :%s   Voltage:%u mV \n", i,  PMU.isEnableDLDO1()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDLDO1Voltage();
+        Serial.printf("[%u]DLDO1  :%s   Voltage:%u mV \n", i,  power.isEnableDLDO1()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -308,10 +308,10 @@ void setup()
     //500~1400mV, 50mV/step,2steps
     vol = 500;
     for (int i = 0; i < 29; ++i) {
-        PMU.setDLDO2Voltage(vol);
+        power.setDLDO2Voltage(vol);
         delay(1);
-        targetVol = PMU.getDLDO2Voltage();
-        Serial.printf("[%u]DLDO2  :%s   Voltage:%u mV \n", i,  PMU.isEnableDLDO2()  ? "ENABLE" : "DISABLE", targetVol );
+        targetVol = power.getDLDO2Voltage();
+        Serial.printf("[%u]DLDO2  :%s   Voltage:%u mV \n", i,  power.isEnableDLDO2()  ? "ENABLE" : "DISABLE", targetVol );
         if (targetVol != vol)Serial.println(">>> FAILED!");
         vol += 100;
     }
@@ -324,25 +324,25 @@ void setup()
     if there is any loss, please bear it by yourself
     */
 
-    // PMU.enableDC1();
-    // PMU.enableDC2();
-    // PMU.enableDC3();
-    // PMU.enableDC4();
-    // PMU.enableDC5();
+    // power.enableDC1();
+    // power.enableDC2();
+    // power.enableDC3();
+    // power.enableDC4();
+    // power.enableDC5();
 
-    // PMU.enableALDO1();
-    // PMU.enableALDO2();
-    // PMU.enableALDO3();
-    // PMU.enableALDO4();
+    // power.enableALDO1();
+    // power.enableALDO2();
+    // power.enableALDO3();
+    // power.enableALDO4();
 
 
-    // PMU.enableBLDO1();
-    // PMU.enableBLDO2();
+    // power.enableBLDO1();
+    // power.enableBLDO2();
 
-    // PMU.enableCPUSLDO();
+    // power.enableCPUSLDO();
 
-    // PMU.enableDLDO1();
-    // PMU.enableDLDO2();
+    // power.enableDLDO1();
+    // power.enableDLDO2();
 
 
 }

@@ -1,8 +1,8 @@
 {
   "name": "XPowersLib",
-  "version": "0.2.3",
-  "description": "Arduino,CircuitPython,Micropython library for x-powers power management series",
-  "keywords": "AXP192 AXP202 AXP2101 x-powers",
+  "version": "0.2.6",
+  "description": "Arduino, CircuitPython, Micropython, esp-idf and other frameworks power management series library",
+  "keywords": "AXP192,AXP202,AXP2101,SY6970,BQ25896,HUSB238",
   "authors": [
     {
       "name": "LewisHe",
@@ -68,6 +68,16 @@
       "files": ["AXP2101_Sleep_Example.ino"]
     },
     {
+      "name": "AXP2101_Charge_Current_Setting",
+      "base": "examples/AXP2101_Charge_Current_Setting",
+      "files": ["AXP2101_Charge_Current_Setting.ino"]
+    },
+    {
+      "name": "AXP2101_LowBatteryWarningExample",
+      "base": "examples/AXP2101_LowBatteryWarningExample",
+      "files": ["AXP2101_LowBatteryWarningExample.ino"]
+    },
+    {
       "name": "ESP_IDF_Example",
       "base": "examples/ESP_IDF_Example/main",
       "files": [
@@ -91,10 +101,45 @@
       "name": "SY6970_Watchdog_Example",
       "base": "examples/SY6970_Watchdog_Example",
       "files": ["SY6970_Watchdog_Example.ino"]
+    },
+    {
+      "name": "SY6970_Shutdown_Example",
+      "base": "examples/SY6970_Shutdown_Example",
+      "files": ["SY6970_Shutdown_Example.ino"]
+    },
+    {
+      "name": "BQ25896_Example",
+      "base": "examples/BQ25896_Example",
+      "files": ["BQ25896_Example.ino"]
+    },
+    {
+      "name": "BQ25896_Shutdown_Example",
+      "base": "examples/BQ25896_Shutdown_Example",
+      "files": ["BQ25896_Shutdown_Example.ino"]
+    },
+    {
+      "name": "FastCharging_BleUartDebug",
+      "base": "examples/FastCharging_BleUartDebug",
+      "files": ["FastCharging_BleUartDebug.ino"]
+    },
+    {
+      "name": "PowerDeliveryHUSB238_BleUart",
+      "base": "examples/PowerDeliveryHUSB238_BleUart",
+      "files": ["PowerDeliveryHUSB238_BleUart.ino"]
+    },
+    {
+      "name": "PowerDeliveryHUSB238_Example",
+      "base": "examples/PowerDeliveryHUSB238_Example",
+      "files": ["PowerDeliveryHUSB238_Example.ino"]
+    },
+    {
+      "name": "XPowersLibInterface_Linux",
+      "base": "examples/XPowersLibInterface_Linux",
+      "files": ["main.cpp"]
     }
   ],
   "frameworks": ["arduino", "espidf"],
-  "platforms": "esp32,ststm32,espressif32",
+  "platforms": "ststm32,espressif32,nordicnrf52",
   "headers": "XPowersLib.h",
   "license": "MIT"
-}
+} 

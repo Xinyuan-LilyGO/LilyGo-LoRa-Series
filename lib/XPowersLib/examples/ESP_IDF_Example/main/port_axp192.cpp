@@ -10,7 +10,7 @@
 #include "XPowersLib.h"
 static const char *TAG = "AXP192";
 
-XPowersPMU PMU;
+XPowersPMU power;
 
 extern int pmu_register_read(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len);
 extern int pmu_register_write_byte(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len);
@@ -21,7 +21,7 @@ esp_err_t pmu_init()
     //* Implemented using read and write callback methods, applicable to other platforms
 #if CONFIG_I2C_COMMUNICATION_METHOD_CALLBACK_RW
     ESP_LOGI(TAG, "Implemented using read and write callback methods");
-    if (PMU.begin(AXP192_SLAVE_ADDRESS, pmu_register_read, pmu_register_write_byte)) {
+    if (power.begin(AXP192_SLAVE_ADDRESS, pmu_register_read, pmu_register_write_byte)) {
         ESP_LOGI(TAG, "Init PMU SUCCESS!");
     } else {
         ESP_LOGE(TAG, "Init PMU FAILED!");
@@ -38,7 +38,7 @@ esp_err_t pmu_init()
     // * which is useful when the bus shares multiple devices.
     extern i2c_master_bus_handle_t bus_handle;
 
-    if (PMU.begin(bus_handle, AXP192_SLAVE_ADDRESS)) {
+    if (power.begin(bus_handle, AXP192_SLAVE_ADDRESS)) {
         ESP_LOGI(TAG, "Init PMU SUCCESS!");
     } else {
         ESP_LOGE(TAG, "Init PMU FAILED!");
@@ -48,7 +48,7 @@ esp_err_t pmu_init()
 
     ESP_LOGI(TAG, "Implemented using built-in read and write methods (Use lower version < 5.0 API)");
 
-    if (PMU.begin((i2c_port_t)CONFIG_I2C_MASTER_PORT_NUM, AXP192_SLAVE_ADDRESS, CONFIG_PMU_I2C_SDA, CONFIG_PMU_I2C_SCL)) {
+    if (power.begin((i2c_port_t)CONFIG_I2C_MASTER_PORT_NUM, AXP192_SLAVE_ADDRESS, CONFIG_PMU_I2C_SDA, CONFIG_PMU_I2C_SCL)) {
         ESP_LOGI(TAG, "Init PMU SUCCESS!");
     } else {
         ESP_LOGE(TAG, "Init PMU FAILED!");
@@ -57,64 +57,64 @@ esp_err_t pmu_init()
 #endif //ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5,0,0)
 #endif //CONFIG_I2C_COMMUNICATION_METHOD_BUILTIN_RW
 
-    ESP_LOGI(TAG, "getID:0x%x", PMU.getChipID());
+    ESP_LOGI(TAG, "getID:0x%x", power.getChipID());
 
     // Set the minimum system operating voltage inside the PMU,
     // below this value will shut down the PMU
     // Range: 2600~3300mV
-    PMU.setSysPowerDownVoltage(2700);
+    power.setSysPowerDownVoltage(2700);
 
     // Set the minimum common working voltage of the PMU VBUS input,
     // below this value will turn off the PMU
-    PMU.setVbusVoltageLimit(XPOWERS_AXP192_VBUS_VOL_LIM_4V5);
+    power.setVbusVoltageLimit(XPOWERS_AXP192_VBUS_VOL_LIM_4V5);
 
     // Turn off USB input current limit
-    PMU.setVbusCurrentLimit(XPOWERS_AXP192_VBUS_CUR_LIM_OFF);
+    power.setVbusCurrentLimit(XPOWERS_AXP192_VBUS_CUR_LIM_OFF);
 
     // DC1 700~3500mV, IMAX=1.2A
-    PMU.setDC1Voltage(3300);
-    ESP_LOGI(TAG, "DC1  :%s   Voltage:%u mV ",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
+    power.setDC1Voltage(3300);
+    ESP_LOGI(TAG, "DC1  :%s   Voltage:%u mV ",  power.isEnableDC1()  ? "ENABLE" : "DISABLE", power.getDC1Voltage());
 
     // DC2 700~2750mV, IMAX=1.6A;
-    PMU.setDC2Voltage(700);
-    ESP_LOGI(TAG, "DC2  :%s   Voltage:%u mV ",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
+    power.setDC2Voltage(700);
+    ESP_LOGI(TAG, "DC2  :%s   Voltage:%u mV ",  power.isEnableDC2()  ? "ENABLE" : "DISABLE", power.getDC2Voltage());
 
     // DC3 700~3500mV,IMAX=0.7A;
-    PMU.setDC3Voltage(3300);
-    ESP_LOGI(TAG, "DC3  :%s   Voltage:%u mV ",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
+    power.setDC3Voltage(3300);
+    ESP_LOGI(TAG, "DC3  :%s   Voltage:%u mV ",  power.isEnableDC3()  ? "ENABLE" : "DISABLE", power.getDC3Voltage());
 
 
     //LDO2 1800~3300V, 100mV/step, IMAX=200mA
-    PMU.setLDO2Voltage(1800);
+    power.setLDO2Voltage(1800);
 
     //LDO3 1800~3300V, 100mV/step, IMAX=200mA
-    PMU.setLDO3Voltage(1800);
+    power.setLDO3Voltage(1800);
 
     //LDOio 1800~3300V, 100mV/step, IMAX=50mA
-    PMU.setLDOioVoltage(3300);
+    power.setLDOioVoltage(3300);
 
 
     // Enable power output channel
-    // PMU.enableDC1();
-    PMU.enableDC2();
-    PMU.enableDC3();
-    PMU.enableLDO2();
-    PMU.enableLDO3();
-    PMU.enableLDOio();
+    // power.enableDC1();
+    power.enableDC2();
+    power.enableDC3();
+    power.enableLDO2();
+    power.enableLDO3();
+    power.enableLDOio();
 
     ESP_LOGI(TAG, "DCDC=======================================================================\n");
-    ESP_LOGI(TAG, "DC1  :%s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "ENABLE" : "DISABLE", PMU.getDC1Voltage());
-    ESP_LOGI(TAG, "DC2  :%s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "ENABLE" : "DISABLE", PMU.getDC2Voltage());
-    ESP_LOGI(TAG, "DC3  :%s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "ENABLE" : "DISABLE", PMU.getDC3Voltage());
+    ESP_LOGI(TAG, "DC1  :%s   Voltage:%u mV \n",  power.isEnableDC1()  ? "ENABLE" : "DISABLE", power.getDC1Voltage());
+    ESP_LOGI(TAG, "DC2  :%s   Voltage:%u mV \n",  power.isEnableDC2()  ? "ENABLE" : "DISABLE", power.getDC2Voltage());
+    ESP_LOGI(TAG, "DC3  :%s   Voltage:%u mV \n",  power.isEnableDC3()  ? "ENABLE" : "DISABLE", power.getDC3Voltage());
     ESP_LOGI(TAG, "LDO=======================================================================\n");
-    ESP_LOGI(TAG, "LDO2: %s   Voltage:%u mV\n",  PMU.isEnableLDO2()  ? "ENABLE" : "DISABLE", PMU.getLDO2Voltage());
-    ESP_LOGI(TAG, "LDO3: %s   Voltage:%u mV\n",  PMU.isEnableLDO3()  ? "ENABLE" : "DISABLE", PMU.getLDO3Voltage());
-    ESP_LOGI(TAG, "LDOio: %s   Voltage:%u mV\n",  PMU.isEnableLDOio()  ? "ENABLE" : "DISABLE", PMU.getLDOioVoltage());
+    ESP_LOGI(TAG, "LDO2: %s   Voltage:%u mV\n",  power.isEnableLDO2()  ? "ENABLE" : "DISABLE", power.getLDO2Voltage());
+    ESP_LOGI(TAG, "LDO3: %s   Voltage:%u mV\n",  power.isEnableLDO3()  ? "ENABLE" : "DISABLE", power.getLDO3Voltage());
+    ESP_LOGI(TAG, "LDOio: %s   Voltage:%u mV\n",  power.isEnableLDOio()  ? "ENABLE" : "DISABLE", power.getLDOioVoltage());
     ESP_LOGI(TAG, "==========================================================================\n");
 
     // Set the time of pressing the button to turn off
-    PMU.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
-    uint8_t opt = PMU.getPowerKeyPressOffTime();
+    power.setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
+    uint8_t opt = power.getPowerKeyPressOffTime();
     ESP_LOGI(TAG, "PowerKeyPressOffTime:");
     switch (opt) {
     case XPOWERS_POWEROFF_4S: ESP_LOGI(TAG, "4 Second");
@@ -129,8 +129,8 @@ esp_err_t pmu_init()
         break;
     }
     // Set the button power-on press time
-    PMU.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
-    opt = PMU.getPowerKeyPressOnTime();
+    power.setPowerKeyPressOnTime(XPOWERS_POWERON_128MS);
+    opt = power.getPowerKeyPressOnTime();
     ESP_LOGI(TAG, "PowerKeyPressOnTime:");
     switch (opt) {
     case XPOWERS_POWERON_128MS: ESP_LOGI(TAG, "128 Ms");
@@ -149,16 +149,16 @@ esp_err_t pmu_init()
 
     // It is necessary to disable the detection function of the TS pin on the board
     // without the battery temperature detection function, otherwise it will cause abnormal charging
-    PMU.disableTSPinMeasure();
+    power.disableTSPinMeasure();
 
-    // PMU.enableTemperatureMeasure();
-    // PMU.disableTemperatureMeasure();
+    // power.enableTemperatureMeasure();
+    // power.disableTemperatureMeasure();
 
     // Enable internal ADC detection
-    PMU.enableBattDetection();
-    PMU.enableVbusVoltageMeasure();
-    PMU.enableBattVoltageMeasure();
-    PMU.enableSystemVoltageMeasure();
+    power.enableBattDetection();
+    power.enableVbusVoltageMeasure();
+    power.enableBattVoltageMeasure();
+    power.enableSystemVoltageMeasure();
 
     /*
       The default setting is CHGLED is automatically controlled by the PMU.
@@ -168,14 +168,14 @@ esp_err_t pmu_init()
     - XPOWERS_CHG_LED_ON,
     - XPOWERS_CHG_LED_CTRL_CHG,
     * */
-    PMU.setChargingLedMode(XPOWERS_CHG_LED_OFF);
+    power.setChargingLedMode(XPOWERS_CHG_LED_OFF);
 
     // Disable all interrupts
-    PMU.disableIRQ(XPOWERS_AXP192_ALL_IRQ);
+    power.disableIRQ(XPOWERS_AXP192_ALL_IRQ);
     // Clear all interrupt flags
-    PMU.clearIrqStatus();
+    power.clearIrqStatus();
     // Enable the required interrupt function
-    PMU.enableIRQ(
+    power.enableIRQ(
         XPOWERS_AXP192_BAT_INSERT_IRQ    | XPOWERS_AXP192_BAT_REMOVE_IRQ      |   //BATTERY
         XPOWERS_AXP192_VBUS_INSERT_IRQ   | XPOWERS_AXP192_VBUS_REMOVE_IRQ     |   //VBUS
         XPOWERS_AXP192_PKEY_SHORT_IRQ    | XPOWERS_AXP192_PKEY_LONG_IRQ       |   //POWER KEY
@@ -185,25 +185,25 @@ esp_err_t pmu_init()
     );
 
     // Set constant current charge current limit
-    PMU.setChargerConstantCurr(XPOWERS_AXP192_CHG_CUR_280MA);
+    power.setChargerConstantCurr(XPOWERS_AXP192_CHG_CUR_280MA);
     // Set stop charging termination current
-    PMU.setChargerTerminationCurr(XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT);
+    power.setChargerTerminationCurr(XPOWERS_AXP192_CHG_ITERM_LESS_10_PERCENT);
 
     // Set charge cut-off voltage
-    PMU.setChargeTargetVoltage(XPOWERS_AXP192_CHG_VOL_4V2);
+    power.setChargeTargetVoltage(XPOWERS_AXP192_CHG_VOL_4V2);
 
     // Cache writes and reads, as long as the PMU remains powered, the data will always be stored inside the PMU
     ESP_LOGI(TAG, "Write pmu data buffer .");
     uint8_t data[XPOWERS_AXP192_DATA_BUFFER_SIZE] = {1, 2, 3, 4, 5, 6};
-    PMU.writeDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
+    power.writeDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
     memset(data, 0, XPOWERS_AXP192_DATA_BUFFER_SIZE);
 
     ESP_LOGI(TAG, "Read pmu data buffer :");
-    PMU.readDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
+    power.readDataBuffer(data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
     ESP_LOG_BUFFER_HEX(TAG, data, XPOWERS_AXP192_DATA_BUFFER_SIZE);
 
     // Set the timing after one minute, the isWdtExpireIrq will be triggered in the loop interrupt function
-    PMU.setTimerout(1);
+    power.setTimerout(1);
 
     return ESP_OK;
 }
@@ -212,113 +212,113 @@ esp_err_t pmu_init()
 void pmu_isr_handler()
 {
     // Get PMU Interrupt Status Register
-    PMU.getIrqStatus();
+    power.getIrqStatus();
 
-    if (PMU.isAcinOverVoltageIrq()) {
+    if (power.isAcinOverVoltageIrq()) {
         ESP_LOGI(TAG, "isAcinOverVoltageIrq");
     }
-    if (PMU.isAcinInserIrq()) {
+    if (power.isAcinInserIrq()) {
         ESP_LOGI(TAG, "isAcinInserIrq");
     }
-    if (PMU.isAcinRemoveIrq()) {
+    if (power.isAcinRemoveIrq()) {
         ESP_LOGI(TAG, "isAcinRemoveIrq");
     }
-    if (PMU.isVbusOverVoltageIrq()) {
+    if (power.isVbusOverVoltageIrq()) {
         ESP_LOGI(TAG, "isVbusOverVoltageIrq");
     }
-    if (PMU.isVbusInsertIrq()) {
+    if (power.isVbusInsertIrq()) {
         ESP_LOGI(TAG, "isVbusInsertIrq");
     }
-    if (PMU.isVbusRemoveIrq()) {
+    if (power.isVbusRemoveIrq()) {
         ESP_LOGI(TAG, "isVbusRemoveIrq");
     }
-    if (PMU.isVbusLowVholdIrq()) {
+    if (power.isVbusLowVholdIrq()) {
         ESP_LOGI(TAG, "isVbusLowVholdIrq");
     }
-    if (PMU.isBatInsertIrq()) {
+    if (power.isBatInsertIrq()) {
         ESP_LOGI(TAG, "isBatInsertIrq");
     }
-    if (PMU.isBatRemoveIrq()) {
+    if (power.isBatRemoveIrq()) {
         ESP_LOGI(TAG, "isBatRemoveIrq");
     }
-    if (PMU.isBattEnterActivateIrq()) {
+    if (power.isBattEnterActivateIrq()) {
         ESP_LOGI(TAG, "isBattEnterActivateIrq");
     }
-    if (PMU.isBattExitActivateIrq()) {
+    if (power.isBattExitActivateIrq()) {
         ESP_LOGI(TAG, "isBattExitActivateIrq");
     }
-    if (PMU.isBatChagerStartIrq()) {
-        ESP_LOGI(TAG, "isBatChagerStartIrq");
+    if (power.isBatChargeStartIrq()) {
+        ESP_LOGI(TAG, "isBatChargeStartIrq");
     }
-    if (PMU.isBatChagerDoneIrq()) {
-        ESP_LOGI(TAG, "isBatChagerDoneIrq");
+    if (power.isBatChargeDoneIrq()) {
+        ESP_LOGI(TAG, "isBatChargeDoneIrq");
     }
-    if (PMU.isBattTempHighIrq()) {
+    if (power.isBattTempHighIrq()) {
         ESP_LOGI(TAG, "isBattTempHighIrq");
     }
-    if (PMU.isBattTempLowIrq()) {
+    if (power.isBattTempLowIrq()) {
         ESP_LOGI(TAG, "isBattTempLowIrq");
     }
-    if (PMU.isChipOverTemperatureIrq()) {
+    if (power.isChipOverTemperatureIrq()) {
         ESP_LOGI(TAG, "isChipOverTemperatureIrq");
     }
-    if (PMU.isChargingCurrentLessIrq()) {
+    if (power.isChargingCurrentLessIrq()) {
         ESP_LOGI(TAG, "isChargingCurrentLessIrq");
     }
-    if (PMU.isDC1VoltageLessIrq()) {
+    if (power.isDC1VoltageLessIrq()) {
         ESP_LOGI(TAG, "isDC1VoltageLessIrq");
     }
-    if (PMU.isDC2VoltageLessIrq()) {
+    if (power.isDC2VoltageLessIrq()) {
         ESP_LOGI(TAG, "isDC2VoltageLessIrq");
     }
-    if (PMU.isDC3VoltageLessIrq()) {
+    if (power.isDC3VoltageLessIrq()) {
         ESP_LOGI(TAG, "isDC3VoltageLessIrq");
     }
-    if (PMU.isPekeyShortPressIrq()) {
+    if (power.isPekeyShortPressIrq()) {
         ESP_LOGI(TAG, "isPekeyShortPress");
         // enterPmuSleep();
     }
-    if (PMU.isPekeyLongPressIrq()) {
+    if (power.isPekeyLongPressIrq()) {
         ESP_LOGI(TAG, "isPekeyLongPress");
 
     }
-    if (PMU.isNOEPowerOnIrq()) {
+    if (power.isNOEPowerOnIrq()) {
         ESP_LOGI(TAG, "isNOEPowerOnIrq");
     }
-    if (PMU.isNOEPowerDownIrq()) {
+    if (power.isNOEPowerDownIrq()) {
         ESP_LOGI(TAG, "isNOEPowerDownIrq");
     }
-    if (PMU.isVbusEffectiveIrq()) {
+    if (power.isVbusEffectiveIrq()) {
         ESP_LOGI(TAG, "isVbusEffectiveIrq");
     }
-    if (PMU.isVbusInvalidIrq()) {
+    if (power.isVbusInvalidIrq()) {
         ESP_LOGI(TAG, "isVbusInvalidIrq");
     }
-    if (PMU.isVbusSessionIrq()) {
+    if (power.isVbusSessionIrq()) {
         ESP_LOGI(TAG, "isVbusSessionIrq");
     }
-    if (PMU.isVbusSessionEndIrq()) {
+    if (power.isVbusSessionEndIrq()) {
         ESP_LOGI(TAG, "isVbusSessionEndIrq");
     }
-    if (PMU.isLowVoltageLevel2Irq()) {
+    if (power.isLowVoltageLevel2Irq()) {
         ESP_LOGI(TAG, "isLowVoltageLevel2Irq");
     }
-    if (PMU.isWdtExpireIrq()) {
+    if (power.isWdtExpireIrq()) {
         ESP_LOGI(TAG, "isWdtExpire");
         // Clear the timer state and continue to the next timer
-        PMU.clearTimerFlag();
+        power.clearTimerFlag();
     }
-    if (PMU.isGpio2EdgeTriggerIrq()) {
+    if (power.isGpio2EdgeTriggerIrq()) {
         ESP_LOGI(TAG, "isGpio2EdgeTriggerIrq");
     }
-    if (PMU.isGpio1EdgeTriggerIrq()) {
+    if (power.isGpio1EdgeTriggerIrq()) {
         ESP_LOGI(TAG, "isGpio1EdgeTriggerIrq");
     }
-    if (PMU.isGpio0EdgeTriggerIrq()) {
+    if (power.isGpio0EdgeTriggerIrq()) {
         ESP_LOGI(TAG, "isGpio0EdgeTriggerIrq");
     }
     // Clear PMU Interrupt Status Register
-    PMU.clearIrqStatus();
+    power.clearIrqStatus();
 }
 #endif /*CONFIG_XPOWERS_AXP192_CHIP_AXP192*/
 

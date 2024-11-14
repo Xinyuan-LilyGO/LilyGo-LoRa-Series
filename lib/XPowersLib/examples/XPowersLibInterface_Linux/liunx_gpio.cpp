@@ -1,5 +1,5 @@
 /**
- * @file      liunx_gpio.cpp
+ * @file      linux_gpio.cpp
  * @author    Lewis He (lewishe@outlook.com)
  * @license   MIT
  * @copyright Copyright (c) 2023  Shenzhen Xinyuan Electronic Technology Co., Ltd
@@ -14,14 +14,14 @@
 #include <fcntl.h>
 #include <poll.h>
 
-int liunx_gpio_export(int pin);
-int liunx_gpio_unexport(int pin);
-int liunx_gpio_direction(int pin, int dir);
-int liunx_gpio_write(int pin, int value);
-int liunx_gpio_read(int pin);
-int liunx_gpio_edge(int pin, int edge);
+int linux_gpio_export(int pin);
+int linux_gpio_unexport(int pin);
+int linux_gpio_direction(int pin, int dir);
+int linux_gpio_write(int pin, int value);
+int linux_gpio_read(int pin);
+int linux_gpio_edge(int pin, int edge);
 
-int liunx_gpio_export(int pin)
+int linux_gpio_export(int pin)
 {
     char buffer[64];
     int len;
@@ -41,7 +41,7 @@ int liunx_gpio_export(int pin)
     return 0;
 }
 
-int liunx_gpio_unexport(int pin)
+int linux_gpio_unexport(int pin)
 {
     char buffer[64];
     int len;
@@ -61,7 +61,7 @@ int liunx_gpio_unexport(int pin)
 }
 
 // dir: 0-->IN, 1-->OUT
-int liunx_gpio_direction(int pin, int dir)
+int linux_gpio_direction(int pin, int dir)
 {
     const char dir_str[] = "in\0out";
     char path[64];
@@ -81,7 +81,7 @@ int liunx_gpio_direction(int pin, int dir)
 }
 
 // value: 0-->LOW, 1-->HIGH
-int liunx_gpio_write(int pin, int value)
+int linux_gpio_write(int pin, int value)
 {
     const char values_str[] = "01";
     char path[64];
@@ -100,7 +100,7 @@ int liunx_gpio_write(int pin, int value)
     return 0;
 }
 
-int liunx_gpio_read(int pin)
+int linux_gpio_read(int pin)
 {
     char path[64];
     char value_str[3];
@@ -120,7 +120,7 @@ int liunx_gpio_read(int pin)
 }
 
 // 0-->none, 1-->rising, 2-->falling, 3-->both
-int liunx_gpio_edge(int pin, int edge)
+int linux_gpio_edge(int pin, int edge)
 {
     const char dir_str[] = "none\0rising\0falling\0both";
     unsigned char ptr = 0;

@@ -50,7 +50,7 @@ if there is any loss, please bear it by yourself
 #define CONFIG_PMU_IRQ 6
 #endif
 
-XPowersPMU PMU;
+XPowersPMU power;
 
 const uint8_t i2c_sda = CONFIG_PMU_SDA;
 const uint8_t i2c_scl = CONFIG_PMU_SCL;
@@ -66,29 +66,29 @@ void setFlag(void)
 
 void adcOn()
 {
-    PMU.enableTemperatureMeasure();
+    power.enableTemperatureMeasure();
     // Enable internal ADC detection
-    PMU.enableBattDetection();
-    PMU.enableVbusVoltageMeasure();
-    PMU.enableBattVoltageMeasure();
-    PMU.enableSystemVoltageMeasure();
+    power.enableBattDetection();
+    power.enableVbusVoltageMeasure();
+    power.enableBattVoltageMeasure();
+    power.enableSystemVoltageMeasure();
 }
 
 void adcOff()
 {
-    PMU.disableTemperatureMeasure();
+    power.disableTemperatureMeasure();
     // Enable internal ADC detection
-    PMU.disableBattDetection();
-    PMU.disableVbusVoltageMeasure();
-    PMU.disableBattVoltageMeasure();
-    PMU.disableSystemVoltageMeasure();
+    power.disableBattDetection();
+    power.disableVbusVoltageMeasure();
+    power.disableBattVoltageMeasure();
+    power.disableSystemVoltageMeasure();
 }
 
 void setup()
 {
     Serial.begin(115200);
 
-    bool result = PMU.begin(Wire, AXP2101_SLAVE_ADDRESS, i2c_sda, i2c_scl);
+    bool result = power.begin(Wire, AXP2101_SLAVE_ADDRESS, i2c_sda, i2c_scl);
 
     if (result == false) {
         Serial.println("PMU is not online..."); while (1)delay(50);
@@ -98,11 +98,11 @@ void setup()
     pinMode(pmu_irq_pin, INPUT_PULLUP);
     attachInterrupt(pmu_irq_pin, setFlag, FALLING);
 
-    PMU.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+    power.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
     // Clear all interrupt flags
-    PMU.clearIrqStatus();
+    power.clearIrqStatus();
     // Enable the required interrupt function
-    PMU.enableIRQ(
+    power.enableIRQ(
         XPOWERS_AXP2101_PKEY_SHORT_IRQ    //POWER KEY
     );
 
@@ -114,7 +114,7 @@ void setup()
     - XPOWERS_CHG_LED_ON,
     - XPOWERS_CHG_LED_CTRL_CHG,
     * */
-    PMU.setChargingLedMode(XPOWERS_CHG_LED_ON);
+    power.setChargingLedMode(XPOWERS_CHG_LED_ON);
 
     //Default turn on adc
     adcOn();
@@ -130,8 +130,8 @@ void loop()
     if (pmu_flag) {
         pmu_flag = false;
         // Get PMU Interrupt Status Register
-        uint32_t status = PMU.getIrqStatus();
-        if (PMU.isPekeyShortPressIrq()) {
+        uint32_t status = power.getIrqStatus();
+        if (power.isPekeyShortPressIrq()) {
             if (adc_switch) {
                 adcOn(); Serial.println("Enable ADC\n\n\n");
             } else {
@@ -139,18 +139,18 @@ void loop()
             }
             adc_switch = !adc_switch;
         }
-        // Clear PMU Interrupt Status Register
-        PMU.clearIrqStatus();
+        // Clear power Interrupt Status Register
+        power.clearIrqStatus();
     }
 
-    Serial.print("PMU Temperature:"); Serial.print(PMU.getTemperature()); Serial.println("*C");
-    Serial.print("isCharging:"); Serial.println(PMU.isCharging() ? "YES" : "NO");
-    Serial.print("isDischarge:"); Serial.println(PMU.isDischarge() ? "YES" : "NO");
-    Serial.print("isStandby:"); Serial.println(PMU.isStandby() ? "YES" : "NO");
-    Serial.print("isVbusIn:"); Serial.println(PMU.isVbusIn() ? "YES" : "NO");
-    Serial.print("isVbusGood:"); Serial.println(PMU.isVbusGood() ? "YES" : "NO");
+    Serial.print("power Temperature:"); Serial.print(power.getTemperature()); Serial.println("*C");
+    Serial.print("isCharging:"); Serial.println(power.isCharging() ? "YES" : "NO");
+    Serial.print("isDischarge:"); Serial.println(power.isDischarge() ? "YES" : "NO");
+    Serial.print("isStandby:"); Serial.println(power.isStandby() ? "YES" : "NO");
+    Serial.print("isVbusIn:"); Serial.println(power.isVbusIn() ? "YES" : "NO");
+    Serial.print("isVbusGood:"); Serial.println(power.isVbusGood() ? "YES" : "NO");
     Serial.print("getChargerStatus:");
-    uint8_t charge_status = PMU.getChargerStatus();
+    uint8_t charge_status = power.getChargerStatus();
     if (charge_status == XPOWERS_AXP2101_CHG_TRI_STATE) {
         Serial.println("tri_charge");
     } else if (charge_status == XPOWERS_AXP2101_CHG_PRE_STATE) {
@@ -162,19 +162,19 @@ void loop()
     } else if (charge_status == XPOWERS_AXP2101_CHG_DONE_STATE) {
         Serial.println("charge done");
     } else if (charge_status == XPOWERS_AXP2101_CHG_STOP_STATE) {
-        Serial.println("not chargin");
+        Serial.println("not charge");
     }
 
     // After the ADC detection is turned off, the register will return to the last reading. The PMU will not refresh the data register
-    Serial.print("getBattVoltage:"); Serial.print(PMU.getBattVoltage()); Serial.println("mV");
-    Serial.print("getVbusVoltage:"); Serial.print(PMU.getVbusVoltage()); Serial.println("mV");
-    Serial.print("getSystemVoltage:"); Serial.print(PMU.getSystemVoltage()); Serial.println("mV");
+    Serial.print("getBattVoltage:"); Serial.print(power.getBattVoltage()); Serial.println("mV");
+    Serial.print("getVbusVoltage:"); Serial.print(power.getVbusVoltage()); Serial.println("mV");
+    Serial.print("getSystemVoltage:"); Serial.print(power.getSystemVoltage()); Serial.println("mV");
 
     // The battery percentage may be inaccurate at first use, the PMU will automatically
     // learn the battery curve and will automatically calibrate the battery percentage
     // after a charge and discharge cycle
-    if (PMU.isBatteryConnect()) {
-        Serial.print("getBatteryPercent:"); Serial.print(PMU.getBatteryPercent()); Serial.println("%");
+    if (power.isBatteryConnect()) {
+        Serial.print("getBatteryPercent:"); Serial.print(power.getBatteryPercent()); Serial.println("%");
     }
 
     // Serial.println();

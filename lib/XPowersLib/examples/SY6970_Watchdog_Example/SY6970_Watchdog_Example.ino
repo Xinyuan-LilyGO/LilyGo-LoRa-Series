@@ -8,7 +8,7 @@
  */
 #include <XPowersLib.h>
 
-PowersSY6970 PMU;
+XPowersPPM PPM;
 
 
 #ifndef CONFIG_PMU_SDA
@@ -34,29 +34,29 @@ void setup()
     while (!Serial);
 
 
-    // Begin SY6970 PMU , Default disable watchdog timer
-    bool result =  PMU.init(Wire, i2c_sda, i2c_scl, SY6970_SLAVE_ADDRESS);
+    // Begin SY6970 PPM , Default disable watchdog timer
+    bool result =  PPM.init(Wire, i2c_sda, i2c_scl, SY6970_SLAVE_ADDRESS);
 
     if (result == false) {
         while (1) {
-            Serial.println("PMU is not online...");
+            Serial.println("PPM is not online...");
             delay(50);
         }
     }
 
     // Disable battery charge function
-    PMU.disableCharge();
+    PPM.disableCharge();
 
     /*
     * Example:
-    *   PMU.enableWatchdog( SY6970_WDT_TIMEROUT_40SEC );
+    *   PPM.enableWatchdog( SY6970_WDT_TIMEROUT_40SEC );
     * Optional parameters:
     *   SY6970_WDT_TIMEROUT_40SEC,      //40 Second
     *   SY6970_WDT_TIMEROUT_80SEC,      //80 Second
     *   SY6970_WDT_TIMEROUT_160SEC,     //160 Second
     * * */
-    // Enabale SY6970 PMU watchdog function ,default timer out 40 second
-    PMU.enableWatchdog();
+    // Enable SY6970 PPM watchdog function ,default timer out 40 second
+    PPM.enableWatchdog();
 
 }
 
@@ -64,9 +64,9 @@ void setup()
 
 void loop()
 {
-    // Feed watchdog , If the dog is not fed, the PMU will restart after a timeout, and all PMU settings will be restored to their default values
+    // Feed watchdog , If the dog is not fed, the PPM will restart after a timeout, and all PPM settings will be restored to their default values
     Serial.print(millis() / 1000); Serial.println(" Second");
-    PMU.feedWatchdog();
+    PPM.feedWatchdog();
     delay(1000);
 }
 

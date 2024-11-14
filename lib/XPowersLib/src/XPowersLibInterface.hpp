@@ -197,7 +197,7 @@ public:
 
 
     /**
-     * @brief Get PMU satatus register
+     * @brief Get PMU status register
      * @note
      * @retval register value
      */
@@ -338,6 +338,22 @@ public:
     virtual uint8_t getVbusCurrentLimit(void) = 0;
 
 
+    /**
+     * @brief  Set VBUS Voltage Input Limit.
+     * @param  opt: View the related chip type xpowers_axpxxx_vbus_vol_limit_t enumeration
+     *              parameters in "XPowersParams.hpp"
+     * 
+     */
+    virtual void setVbusVoltageLimit(uint8_t opt) = 0;
+
+    /**
+    * @brief  Get VBUS Voltage Input Limit.
+    * @retval View the related chip type xpowers_axpxxx_vbus_vol_limit_t enumeration
+    *              parameters in "XPowersParams.hpp"
+    */
+    virtual uint8_t getVbusVoltageLimit(void) = 0;
+
+
     // SYS
     /**
     * @brief  Get PMU SYS main Voltage
@@ -404,8 +420,8 @@ public:
      *      if (PMU->isPekeyShortPressIrq()) {
      *          Serial.println("isPekeyShortPressIrq");
      *      }
-     *      if (PMU->isBatChagerStartIrq()) {
-     *          Serial.println("isBatChagerStart");
+     *      if (PMU->isBatChargeStartIrq()) {
+     *          Serial.println("isBatChargeStart");
      *      }
      *      ......
      *
@@ -428,7 +444,7 @@ public:
     virtual void clearIrqStatus() = 0;
 
     /**
-     * @brief  Eanble PMU interrupt control mask .
+     * @brief  Enable PMU interrupt control mask .
      * @param  opt: View the related chip type xpowers_axpxxx_irq_t enumeration
      *              parameters in "XPowersParams.hpp"
      * @retval true valid false invalid
@@ -507,13 +523,13 @@ public:
      * @brief  Interrupt response when PMU charging is complete
      * @retval true valid false invalid
      */
-    virtual bool isBatChagerDoneIrq() = 0;
+    virtual bool isBatChargeDoneIrq() = 0;
 
     /**
      * @brief  Interrupt response when PMU charging starts
      * @retval true valid false invalid
      */
-    virtual bool isBatChagerStartIrq() = 0;
+    virtual bool isBatChargeStartIrq() = 0;
 
 
     //Data collection function

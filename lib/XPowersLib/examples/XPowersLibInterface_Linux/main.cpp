@@ -47,10 +47,10 @@ if there is any loss, please bear it by yourself
 #define CONFIG_PMU_IRQ 55
 #endif
 
-extern int liunx_gpio_edge(int pin, int edge);
-extern int liunx_gpio_direction(int pin, int dir);
-extern int liunx_gpio_export(int pin);
-extern int liunx_gpio_unexport(int pin);
+extern int linux_gpio_edge(int pin, int edge);
+extern int linux_gpio_direction(int pin, int dir);
+extern int linux_gpio_export(int pin);
+extern int linux_gpio_unexport(int pin);
 
 const uint8_t pmu_irq_pin = CONFIG_PMU_IRQ;
 
@@ -59,7 +59,7 @@ const char *i2c_device = "/dev/i2c-3";
 int     hardware_i2c_fd = -1;
 
 
-int liunx_i2c_read_callback(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len)
+int linux_i2c_read_callback(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len)
 {
     uint8_t tmp[1] = {regAddr};
     // Write reg address
@@ -68,7 +68,7 @@ int liunx_i2c_read_callback(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uin
     return read(hardware_i2c_fd, data, len);
 }
 
-int liunx_i2c_write_callback(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len)
+int linux_i2c_write_callback(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t len)
 {
     uint8_t tmp[1] = {regAddr};
     // Write reg address
@@ -116,7 +116,7 @@ int main()
             printf("Failed to access bus.\n");
             exit(1);
         }
-        PMU = new XPowersAXP2101(AXP2101_SLAVE_ADDRESS, liunx_i2c_read_callback, liunx_i2c_write_callback);
+        PMU = new XPowersAXP2101(AXP2101_SLAVE_ADDRESS, linux_i2c_read_callback, linux_i2c_write_callback);
         if (!PMU->init()) {
             printf("Warning: Failed to find AXP2101 power management\n");
             delete PMU;
@@ -132,7 +132,7 @@ int main()
             printf("Failed to access bus.\n");
             exit(1);
         }
-        PMU = new XPowersAXP192(AXP192_SLAVE_ADDRESS, liunx_i2c_read_callback, liunx_i2c_write_callback);
+        PMU = new XPowersAXP192(AXP192_SLAVE_ADDRESS, linux_i2c_read_callback, linux_i2c_write_callback);
         if (!PMU->init()) {
             printf("Warning: Failed to find AXP192 power management\n");
             delete PMU;
@@ -147,7 +147,7 @@ int main()
             printf("Failed to access bus.\n");
             exit(1);
         }
-        PMU = new XPowersAXP202(AXP202_SLAVE_ADDRESS, liunx_i2c_read_callback, liunx_i2c_write_callback);
+        PMU = new XPowersAXP202(AXP202_SLAVE_ADDRESS, linux_i2c_read_callback, linux_i2c_write_callback);
         printf("Warning: Failed to find AXP202 power management\n");
         delete PMU;
         PMU = NULL;
@@ -461,10 +461,10 @@ int main()
                          XPOWERS_CHARGE_DONE_INT);
 
     // Attach PMU irq to gpio interrupt
-    liunx_gpio_unexport(pmu_irq_pin);
-    liunx_gpio_export(pmu_irq_pin);
-    liunx_gpio_direction(pmu_irq_pin, INPUT);
-    liunx_gpio_edge(pmu_irq_pin, FALLING);
+    linux_gpio_unexport(pmu_irq_pin);
+    linux_gpio_export(pmu_irq_pin);
+    linux_gpio_direction(pmu_irq_pin, INPUT);
+    linux_gpio_edge(pmu_irq_pin, FALLING);
 
     struct pollfd fdset[1];
     char buf[64];
@@ -518,11 +518,11 @@ int main()
             if (PMU->isPekeyLongPressIrq()) {
                 printf("isPekeyLongPress\n");
             }
-            if (PMU->isBatChagerDoneIrq()) {
-                printf("isBatChagerDone\n");
+            if (PMU->isBatChargeDoneIrq()) {
+                printf("isBatChargeDone\n");
             }
-            if (PMU->isBatChagerStartIrq()) {
-                printf("isBatChagerStart\n");
+            if (PMU->isBatChargeStartIrq()) {
+                printf("isBatChargeStart\n");
             }
             // Clear PMU Interrupt Status Register
             PMU->clearIrqStatus();

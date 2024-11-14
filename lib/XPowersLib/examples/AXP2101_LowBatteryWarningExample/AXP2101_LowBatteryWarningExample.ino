@@ -51,7 +51,7 @@ if there is any loss, please bear it by yourself
 #endif
 
 bool  pmu_flag = 0;
-XPowersPMU PMU;
+XPowersPMU power;
 
 const uint8_t i2c_sda = CONFIG_PMU_SDA;
 const uint8_t i2c_scl = CONFIG_PMU_SCL;
@@ -68,63 +68,63 @@ void setup()
 {
     Serial.begin(115200);
 
-    bool result = PMU.begin(Wire, AXP2101_SLAVE_ADDRESS, i2c_sda, i2c_scl);
+    bool result = power.begin(Wire, AXP2101_SLAVE_ADDRESS, i2c_sda, i2c_scl);
 
     if (result == false) {
-        Serial.println("PMU is not online..."); while (1)delay(50);
+        Serial.println("power is not online..."); while (1)delay(50);
     }
 
-    Serial.printf("getID:0x%x\n", PMU.getChipID());
+    Serial.printf("getID:0x%x\n", power.getChipID());
 
     // Set the minimum common working voltage of the PMU VBUS input,
     // below this value will turn off the PMU
-    PMU.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
+    power.setVbusVoltageLimit(XPOWERS_AXP2101_VBUS_VOL_LIM_4V36);
 
     // Set the maximum current of the PMU VBUS input,
     // higher than this value will turn off the PMU
-    PMU.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA);
+    power.setVbusCurrentLimit(XPOWERS_AXP2101_VBUS_CUR_LIM_1500MA);
 
 
     // Get the VSYS shutdown voltage
-    uint16_t vol = PMU.getSysPowerDownVoltage();
+    uint16_t vol = power.getSysPowerDownVoltage();
     Serial.printf("->  getSysPowerDownVoltage:%u\n", vol);
 
-    // Set VSY off voltage as 2600mV , Adjustment range 2600mV ~ 3300mV
-    PMU.setSysPowerDownVoltage(2600);
+    // Set VSYS off voltage as 2600mV , Adjustment range 2600mV ~ 3300mV
+    power.setSysPowerDownVoltage(2600);
 
-    vol = PMU.getSysPowerDownVoltage();
+    vol = power.getSysPowerDownVoltage();
     Serial.printf("->  getSysPowerDownVoltage:%u\n", vol);
 
 
     Serial.println("DCDC=======================================================================");
-    Serial.printf("DC1  : %s   Voltage:%u mV \n",  PMU.isEnableDC1()  ? "+" : "-", PMU.getDC1Voltage());
-    Serial.printf("DC2  : %s   Voltage:%u mV \n",  PMU.isEnableDC2()  ? "+" : "-", PMU.getDC2Voltage());
-    Serial.printf("DC3  : %s   Voltage:%u mV \n",  PMU.isEnableDC3()  ? "+" : "-", PMU.getDC3Voltage());
-    Serial.printf("DC4  : %s   Voltage:%u mV \n",  PMU.isEnableDC4()  ? "+" : "-", PMU.getDC4Voltage());
-    Serial.printf("DC5  : %s   Voltage:%u mV \n",  PMU.isEnableDC5()  ? "+" : "-", PMU.getDC5Voltage());
+    Serial.printf("DC1  : %s   Voltage:%u mV \n",  power.isEnableDC1()  ? "+" : "-", power.getDC1Voltage());
+    Serial.printf("DC2  : %s   Voltage:%u mV \n",  power.isEnableDC2()  ? "+" : "-", power.getDC2Voltage());
+    Serial.printf("DC3  : %s   Voltage:%u mV \n",  power.isEnableDC3()  ? "+" : "-", power.getDC3Voltage());
+    Serial.printf("DC4  : %s   Voltage:%u mV \n",  power.isEnableDC4()  ? "+" : "-", power.getDC4Voltage());
+    Serial.printf("DC5  : %s   Voltage:%u mV \n",  power.isEnableDC5()  ? "+" : "-", power.getDC5Voltage());
     Serial.println("ALDO=======================================================================");
-    Serial.printf("ALDO1: %s   Voltage:%u mV\n",  PMU.isEnableALDO1()  ? "+" : "-", PMU.getALDO1Voltage());
-    Serial.printf("ALDO2: %s   Voltage:%u mV\n",  PMU.isEnableALDO2()  ? "+" : "-", PMU.getALDO2Voltage());
-    Serial.printf("ALDO3: %s   Voltage:%u mV\n",  PMU.isEnableALDO3()  ? "+" : "-", PMU.getALDO3Voltage());
-    Serial.printf("ALDO4: %s   Voltage:%u mV\n",  PMU.isEnableALDO4()  ? "+" : "-", PMU.getALDO4Voltage());
+    Serial.printf("ALDO1: %s   Voltage:%u mV\n",  power.isEnableALDO1()  ? "+" : "-", power.getALDO1Voltage());
+    Serial.printf("ALDO2: %s   Voltage:%u mV\n",  power.isEnableALDO2()  ? "+" : "-", power.getALDO2Voltage());
+    Serial.printf("ALDO3: %s   Voltage:%u mV\n",  power.isEnableALDO3()  ? "+" : "-", power.getALDO3Voltage());
+    Serial.printf("ALDO4: %s   Voltage:%u mV\n",  power.isEnableALDO4()  ? "+" : "-", power.getALDO4Voltage());
     Serial.println("BLDO=======================================================================");
-    Serial.printf("BLDO1: %s   Voltage:%u mV\n",  PMU.isEnableBLDO1()  ? "+" : "-", PMU.getBLDO1Voltage());
-    Serial.printf("BLDO2: %s   Voltage:%u mV\n",  PMU.isEnableBLDO2()  ? "+" : "-", PMU.getBLDO2Voltage());
+    Serial.printf("BLDO1: %s   Voltage:%u mV\n",  power.isEnableBLDO1()  ? "+" : "-", power.getBLDO1Voltage());
+    Serial.printf("BLDO2: %s   Voltage:%u mV\n",  power.isEnableBLDO2()  ? "+" : "-", power.getBLDO2Voltage());
     Serial.println("CPUSLDO====================================================================");
-    Serial.printf("CPUSLDO: %s Voltage:%u mV\n",  PMU.isEnableCPUSLDO() ? "+" : "-", PMU.getCPUSLDOVoltage());
+    Serial.printf("CPUSLDO: %s Voltage:%u mV\n",  power.isEnableCPUSLDO() ? "+" : "-", power.getCPUSLDOVoltage());
     Serial.println("DLDO=======================================================================");
-    Serial.printf("DLDO1: %s   Voltage:%u mV\n",  PMU.isEnableDLDO1()  ? "+" : "-", PMU.getDLDO1Voltage());
-    Serial.printf("DLDO2: %s   Voltage:%u mV\n",  PMU.isEnableDLDO2()  ? "+" : "-", PMU.getDLDO2Voltage());
+    Serial.printf("DLDO1: %s   Voltage:%u mV\n",  power.isEnableDLDO1()  ? "+" : "-", power.getDLDO1Voltage());
+    Serial.printf("DLDO2: %s   Voltage:%u mV\n",  power.isEnableDLDO2()  ? "+" : "-", power.getDLDO2Voltage());
     Serial.println("===========================================================================");
 
 
 
     // Enable internal ADC detection
-    PMU.enableBattDetection();
-    PMU.enableVbusVoltageMeasure();
-    PMU.enableBattVoltageMeasure();
-    PMU.enableSystemVoltageMeasure();
-    PMU.enableTemperatureMeasure();
+    power.enableBattDetection();
+    power.enableVbusVoltageMeasure();
+    power.enableBattVoltageMeasure();
+    power.enableSystemVoltageMeasure();
+    power.enableTemperatureMeasure();
 
 
     /*
@@ -135,7 +135,7 @@ void setup()
     - XPOWERS_CHG_LED_ON,
     - XPOWERS_CHG_LED_CTRL_CHG,
     * */
-    PMU.setChargingLedMode(XPOWERS_CHG_LED_CTRL_CHG);
+    power.setChargingLedMode(XPOWERS_CHG_LED_CTRL_CHG);
 
 
     // Force add pull-up
@@ -144,11 +144,11 @@ void setup()
 
 
     // Disable all interrupts
-    PMU.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+    power.disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
     // Clear all interrupt flags
-    PMU.clearIrqStatus();
+    power.clearIrqStatus();
     // Enable the required interrupt function
-    PMU.enableIRQ(
+    power.enableIRQ(
         XPOWERS_AXP2101_BAT_INSERT_IRQ    | XPOWERS_AXP2101_BAT_REMOVE_IRQ      |   //BATTERY
         XPOWERS_AXP2101_VBUS_INSERT_IRQ   | XPOWERS_AXP2101_VBUS_REMOVE_IRQ     |   //VBUS
         XPOWERS_AXP2101_PKEY_SHORT_IRQ    | XPOWERS_AXP2101_PKEY_LONG_IRQ       |   //POWER KEY
@@ -158,7 +158,7 @@ void setup()
 
 
     // Get the default low pressure warning percentage setting
-    uint8_t low_warn_per = PMU.getLowBatWarnThreshold();
+    uint8_t low_warn_per = power.getLowBatWarnThreshold();
     Serial.printf("Default low battery warning threshold is %d percentage\n", low_warn_per);
 
     //
@@ -169,14 +169,14 @@ void setup()
     // 10% ~= 3.55V
     // 5%  ~= 3.5V
     // 1%  ~= 3.4V
-    PMU.setLowBatWarnThreshold(5); // Set to trigger interrupt when reaching 5%
+    power.setLowBatWarnThreshold(5); // Set to trigger interrupt when reaching 5%
 
     // Get the low voltage warning percentage setting
-    low_warn_per = PMU.getLowBatWarnThreshold();
+    low_warn_per = power.getLowBatWarnThreshold();
     Serial.printf("Set low battery warning threshold is %d percentage\n", low_warn_per);
 
     // Get the default low voltage shutdown percentage setting
-    uint8_t low_shutdown_per = PMU.getLowBatShutdownThreshold();
+    uint8_t low_shutdown_per = power.getLowBatShutdownThreshold();
     Serial.printf("Default low battery shutdown threshold is %d percentage\n", low_shutdown_per);
 
     // setLowBatShutdownThreshold Range:  0% ~ 15%
@@ -185,10 +185,10 @@ void setup()
     // 10% ~= 3.55V
     // 5%  ~= 3.5V
     // 1%  ~= 3.4V
-    PMU.setLowBatShutdownThreshold(1);  // Set to trigger interrupt when reaching 1%
+    power.setLowBatShutdownThreshold(1);  // Set to trigger interrupt when reaching 1%
 
     // Get the low voltage shutdown percentage setting
-    low_shutdown_per = PMU.getLowBatShutdownThreshold();
+    low_shutdown_per = power.getLowBatShutdownThreshold();
     Serial.printf("Set low battery shutdown threshold is %d percentage\n", low_shutdown_per);
 
 
@@ -215,15 +215,15 @@ void loop()
 
         interval = millis() + 3000;
 
-        Serial.print("getBattVoltage:"); Serial.print(PMU.getBattVoltage()); Serial.println("mV");
-        Serial.print("getVbusVoltage:"); Serial.print(PMU.getVbusVoltage()); Serial.println("mV");
-        Serial.print("getSystemVoltage:"); Serial.print(PMU.getSystemVoltage()); Serial.println("mV");
+        Serial.print("getBattVoltage:"); Serial.print(power.getBattVoltage()); Serial.println("mV");
+        Serial.print("getVbusVoltage:"); Serial.print(power.getVbusVoltage()); Serial.println("mV");
+        Serial.print("getSystemVoltage:"); Serial.print(power.getSystemVoltage()); Serial.println("mV");
 
         // The battery percentage may be inaccurate at first use, the PMU will automatically
         // learn the battery curve and will automatically calibrate the battery percentage
         // after a charge and discharge cycle
-        if (PMU.isBatteryConnect()) {
-            Serial.print("getBatteryPercent:"); Serial.print(PMU.getBatteryPercent()); Serial.println("%");
+        if (power.isBatteryConnect()) {
+            Serial.print("getBatteryPercent:"); Serial.print(power.getBatteryPercent()); Serial.println("%");
         }
         Serial.println();
     }
@@ -233,7 +233,7 @@ void loop()
         pmu_flag = false;
 
         // Get PMU Interrupt Status Register
-        uint32_t status = PMU.getIrqStatus();
+        uint32_t status = power.getIrqStatus();
         Serial.print("STATUS => HEX:");
         Serial.print(status, HEX);
         Serial.print(" BIN:");
@@ -241,41 +241,41 @@ void loop()
 
         // When the set low-voltage battery percentage warning threshold is reached,
         // set the threshold through getLowBatWarnThreshold( 5% ~ 20% )
-        if (PMU.isDropWarningLevel2Irq()) {
+        if (power.isDropWarningLevel2Irq()) {
             Serial.println("The voltage percentage has reached the low voltage warning threshold!!!");
         }
 
         // When the set low-voltage battery percentage shutdown threshold is reached
         // set the threshold through setLowBatShutdownThreshold()
-        if (PMU.isDropWarningLevel1Irq()) {
+        if (power.isDropWarningLevel1Irq()) {
             int i = 4;
             while (i--) {
                 Serial.printf("The voltage percentage has reached the low voltage shutdown threshold and will shut down in %d seconds.\n", i);
             }
             // Turn off all power supplies, leaving only the RTC power supply. The RTC power supply cannot be turned off.
-            PMU.shutdown();
+            power.shutdown();
         }
-        if (PMU.isVbusInsertIrq()) {
+        if (power.isVbusInsertIrq()) {
             Serial.println("isVbusInsert");
         }
-        if (PMU.isVbusRemoveIrq()) {
+        if (power.isVbusRemoveIrq()) {
             Serial.println("isVbusRemove");
         }
-        if (PMU.isBatInsertIrq()) {
+        if (power.isBatInsertIrq()) {
             Serial.println("isBatInsert");
         }
-        if (PMU.isBatRemoveIrq()) {
+        if (power.isBatRemoveIrq()) {
             Serial.println("isBatRemove");
         }
-        if (PMU.isPekeyShortPressIrq()) {
+        if (power.isPekeyShortPressIrq()) {
             Serial.println("isPekeyShortPress");
         }
 
-        if (PMU.isPekeyLongPressIrq()) {
+        if (power.isPekeyLongPressIrq()) {
             Serial.println("isPekeyLongPress");
         }
         // Clear PMU Interrupt Status Register
-        PMU.clearIrqStatus();
+        power.clearIrqStatus();
 
     }
     delay(10);

@@ -1,11 +1,9 @@
 /**
- * @file      SY6970_Example.ino
+ * @file      BQ25896_Example.ino
  * @author    Lewis He (lewishe@outlook.com)
  * @license   MIT
- * @copyright Copyright (c) 2023  Shenzhen Xin Yuan Electronic Technology Co., Ltd
- * @date      2023-08-05
- * @note      SY6970 If the power supply is a separate USB power supply, VSYS can only provide a maximum load current of 500mA.
- *            If it is connected to a battery, the discharge current depends on the maximum discharge current of the battery.
+ * @copyright Copyright (c) 2024  Shenzhen Xin Yuan Electronic Technology Co., Ltd
+ * @date      2024-06-04
  *
  */
 #include <XPowersLib.h>
@@ -37,7 +35,7 @@ void setup()
     while (!Serial);
 
 
-    bool result =  PPM.init(Wire, i2c_sda, i2c_scl, SY6970_SLAVE_ADDRESS);
+    bool result =  PPM.init(Wire, i2c_sda, i2c_scl, BQ25896_SLAVE_ADDRESS);
 
     if (result == false) {
         while (1) {
@@ -105,6 +103,7 @@ void loop()
 {
     if (pmu_irq) {
         pmu_irq = false;
+
         // Get PPM interrupt status
         PPM.getIrqStatus();
 

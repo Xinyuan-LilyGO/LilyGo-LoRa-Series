@@ -25,6 +25,7 @@ typedef XPowersAXP2101 XPowersPMU;
 #include "XPowersAXP202.tpp"
 #include "XPowersAXP2101.tpp"
 #include "PowersSY6970.tpp"
+#include "PowerDeliveryHUSB238.hpp"
 #endif
 
 
