@@ -25,6 +25,9 @@
 #include <RadioLib.h>
 #include "LoRaBoards.h"
 
+#include <Preferences.h>
+Preferences store;
+
 #if  defined(USING_SX1276)
 SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 #elif defined(USING_SX1262)
@@ -73,6 +76,9 @@ uint8_t nwkKey[] = { RADIOLIB_LORAWAN_NWK_KEY };
 
 // create the LoRaWAN node
 LoRaWANNode node(&radio, &Region, subBand);
+
+RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
+
 
 
 // result code to text - these are error codes that can be raised when using LoRaWAN
@@ -255,9 +261,76 @@ void setup()
     // Setup the OTAA session information
     node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
 
-    Serial.println(F("Join ('login') the LoRaWAN Network"));
-    state = node.activateOTAA(joinDR);
-    debug(state != RADIOLIB_LORAWAN_NEW_SESSION, F("Join failed"), state, true);
+    // ##### setup the flash storage
+    store.begin("radiolib");
+    // ##### if we have previously saved nonces, restore them and try to restore session as well
+    if (store.isKey("nonces")) {
+        uint8_t buffer[RADIOLIB_LORAWAN_NONCES_BUF_SIZE];                                       // create somewhere to store nonces
+        store.getBytes("nonces", buffer, RADIOLIB_LORAWAN_NONCES_BUF_SIZE); // get them from the store
+        state = node.setBufferNonces(buffer);                                                           // send them to LoRaWAN
+        debug(state != RADIOLIB_ERR_NONE, F("Restoring nonces buffer failed"), state, false);
+
+        // recall session from RTC deep-sleep preserved variable
+        state = node.setBufferSession(LWsession); // send them to LoRaWAN stack
+
+        // if we have booted more than once we should have a session to restore, so report any failure
+        // otherwise no point saying there's been a failure when it was bound to fail with an empty LWsession var.
+        debug((state != RADIOLIB_ERR_NONE), F("Restoring session buffer failed"), state, false);
+
+        // if Nonces and Session restored successfully, activation is just a formality
+        // moreover, Nonces didn't change so no need to re-save them
+        if (state == RADIOLIB_ERR_NONE) {
+            Serial.println(F("Successfully restored session - now activating"));
+            state = node.activateOTAA();
+            debug((state != RADIOLIB_LORAWAN_SESSION_RESTORED), F("Failed to activate restored session"), state, true);
+
+            // ##### close the store before returning
+            store.end();
+        }
+    } else {  // store has no key "nonces"
+        Serial.println(F("No Nonces saved - starting fresh."));
+    }
+
+
+    // if we got here, there was no session to restore, so start trying to join
+    uint32_t sleepForSeconds = 60;
+    state = RADIOLIB_ERR_NETWORK_NOT_JOINED;
+
+    while (state != RADIOLIB_LORAWAN_NEW_SESSION) {
+
+        Serial.println(F("Join ('login') to the LoRaWAN Network"));
+
+        state = node.activateOTAA();
+
+        // ##### save the join counters (nonces) to permanent store
+        Serial.println(F("Saving nonces to flash"));
+        uint8_t buffer[RADIOLIB_LORAWAN_NONCES_BUF_SIZE];           // create somewhere to store nonces
+        uint8_t *persist = node.getBufferNonces();                  // get pointer to nonces
+        memcpy(buffer, persist, RADIOLIB_LORAWAN_NONCES_BUF_SIZE);  // copy in to buffer
+        store.putBytes("nonces", buffer, RADIOLIB_LORAWAN_NONCES_BUF_SIZE); // send them to the store
+
+        // we'll save the session after an uplink
+
+        if (state != RADIOLIB_LORAWAN_NEW_SESSION) {
+            Serial.print(F("Join failed: "));
+            Serial.println(state);
+
+            // how long to wait before join attempts. This is an interim solution pending
+            // implementation of TS001 LoRaWAN Specification section #7 - this doc applies to v1.0.4 & v1.1
+            // it sleeps for longer & longer durations to give time for any gateway issues to resolve
+            // or whatever is interfering with the device <-> gateway airwaves.
+            // uint32_t sleepForSeconds = min((bootCountSinceUnsuccessfulJoin++ + 1UL) * 60UL, 3UL * 60UL);
+            Serial.print(F("Boots since unsuccessful join: "));
+            // Serial.println(bootCountSinceUnsuccessfulJoin);
+            Serial.print(F("Retrying join in "));
+            Serial.print(sleepForSeconds);
+            Serial.println(F(" seconds"));
+
+            delay(sleepForSeconds);
+
+            // gotoSleep(sleepForSeconds);
+        }
+    } // if activateOTAA state
 
     // Print the DevAddr
     Serial.print("[LoRaWAN] DevAddr: ");
