@@ -85,6 +85,8 @@
 #define LED_ON                      LOW
 #define LED_OFF                     HIGH
 
+#define BUTTON_PIN                  38
+
 #define GPS_BAUD_RATE               9600
 #define HAS_GPS
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
@@ -272,7 +274,7 @@
 #define BOARD_VARIANT_NAME          "T3 V3.0"
 
 #define BUTTON_PIN                  0
-#define BAT_ADC_PIN                 35
+#define ADC_PIN                     35
 
 
 #elif   defined(T3_S3_V1_2_SX1262)    ||   defined(ARDUINO_LILYGO_T3S3_SX1262)   ||    \
@@ -369,6 +371,8 @@
 
 #endif
 
+#define BUTTON_PIN                  0
+
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
@@ -423,6 +427,7 @@
 
 #define PIN_NONE                    (-1)
 #define RTC_INT                     (14)
+#define BUTTON_PIN                  0
 
 #define GPS_BAUD_RATE               9600
 
