@@ -210,14 +210,14 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
 
         // esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0);
 
-        // TBeam-v1.2 ext1 sleep  ~607uA , 
+        // TBeam-v1.2 ext1 sleep  ~540uA , 
         // See sleep_current.jpg
         esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), ESP_EXT1_WAKEUP_ALL_LOW);
 
 
-        // GPIO WAKE UP + TIMER WAKE UP ~500uA 
-        esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), ESP_EXT1_WAKEUP_ALL_LOW);
-        esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
+        // GPIO WAKE UP + TIMER WAKE UP ~530uA 
+        // esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), ESP_EXT1_WAKEUP_ALL_LOW);
+        // esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
 
         esp_deep_sleep_start();
 

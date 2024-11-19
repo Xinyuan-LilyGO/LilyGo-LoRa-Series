@@ -340,6 +340,10 @@ void disablePeripherals()
     PMU->disablePowerOutput(XPOWERS_DCDC5);
     PMU->disablePowerOutput(XPOWERS_ALDO1);
 #else
+    PMU->disableSystemVoltageMeasure();
+    PMU->disableVbusVoltageMeasure();
+    PMU->disableBattVoltageMeasure();
+
     // LoRa VDD
     PMU->disablePowerOutput(XPOWERS_ALDO2);
     //GNSS VDD
