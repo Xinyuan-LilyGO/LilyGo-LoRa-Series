@@ -293,7 +293,7 @@ void setup()
 
 
     // if we got here, there was no session to restore, so start trying to join
-    uint32_t sleepForSeconds = 60;
+    uint32_t sleepForSeconds = 60*1000;
     state = RADIOLIB_ERR_NETWORK_NOT_JOINED;
 
     while (state != RADIOLIB_LORAWAN_NEW_SESSION) {
