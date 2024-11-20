@@ -23,7 +23,6 @@
 // #define T_BEAM_SX1262
 // #define T_BEAM_SX1276
 // #define T_BEAM_SX1278
-// #define T_BEAM_SX1278
 // #define T_BEAM_LR1121
 
 // #define T_BEAM_S3_SUPREME_SX1262
@@ -88,7 +87,7 @@
 #define RADIO_BUSY_PIN              32
 
 // LR1121 Only
-#define RADIO_DIO9_PIN              26
+#define RADIO_DIO9_PIN              33
 
 
 #define BOARD_LED                   4
