@@ -333,16 +333,22 @@ void disablePeripherals()
 
 #ifdef HAS_PMU
     if (!PMU)return;
+    PMU->disableSystemVoltageMeasure();
+    PMU->disableVbusVoltageMeasure();
+    PMU->disableBattVoltageMeasure();
 #if defined(T_BEAM_S3_BPF)
     PMU->disablePowerOutput(XPOWERS_ALDO4); //gps
     PMU->disablePowerOutput(XPOWERS_ALDO2); //Sdcard
     PMU->disablePowerOutput(XPOWERS_DCDC3); // Extern Power source
     PMU->disablePowerOutput(XPOWERS_DCDC5);
     PMU->disablePowerOutput(XPOWERS_ALDO1);
+#else
+    // LoRa VDD
+    PMU->disablePowerOutput(XPOWERS_ALDO2);
+    //GNSS VDD
+    PMU->disablePowerOutput(XPOWERS_ALDO3);
 #endif
 #endif
-
-
 }
 
 void loopPMU()
@@ -385,7 +391,7 @@ void loopPMU()
         Serial.println("isBatChargeDone");
     }
     if (PMU->isBatChargeStartIrq()) {
-        Serial.println("isBatChagerStart");
+        Serial.println("isBatChargeStart");
     }
     // Clear PMU Interrupt Status Register
     PMU->clearIrqStatus();

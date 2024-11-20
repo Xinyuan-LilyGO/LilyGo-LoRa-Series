@@ -23,8 +23,11 @@
 // #define T_BEAM_SX1262
 // #define T_BEAM_SX1276
 // #define T_BEAM_SX1278
+// #define T_BEAM_SX1278
+// #define T_BEAM_LR1121
 
-// #define T_BEAM_S3_SUPREME
+// #define T_BEAM_S3_SUPREME_SX1262
+// #define T_BEAM_S3_SUPREME_LR1121
 
 // #define T3_S3_V1_2_SX1262
 // #define T3_S3_V1_2_SX1276
@@ -42,7 +45,7 @@
 
 #define UNUSED_PIN                   (0)
 
-#if defined(T_BEAM_SX1262) || defined(T_BEAM_SX1276) || defined(T_BEAM_SX1278)
+#if defined(T_BEAM_SX1262) || defined(T_BEAM_SX1276) || defined(T_BEAM_SX1278) || defined(T_BEAM_LR1121)
 
 
 #if   defined(T_BEAM_SX1262)
@@ -56,6 +59,10 @@
 #elif defined(T_BEAM_SX1278)
 #ifndef USING_SX1278
 #define USING_SX1278
+#endif
+#elif defined(T_BEAM_LR1121)
+#ifndef USING_LR1121
+#define USING_LR1121
 #endif
 #endif // T_BEAM_SX1262
 
@@ -79,6 +86,9 @@
 #define RADIO_DIO2_PIN              32
 // SX1262
 #define RADIO_BUSY_PIN              32
+
+// LR1121 Only
+#define RADIO_DIO9_PIN              26
 
 
 #define BOARD_LED                   4
@@ -379,13 +389,21 @@
 #define BOARD_VARIANT_NAME          "T3 S3 V1.X"
 
 
-#elif defined(T_BEAM_S3_SUPREME)
+#elif defined(T_BEAM_S3_SUPREME_SX1262) || defined(T_BEAM_S3_SUPREME_LR1121)
 
+#ifndef T_BEAM_S3_SUPREME
+#define T_BEAM_S3_SUPREME
+#endif
 
+#if   defined(T_BEAM_S3_SUPREME_SX1262)
 #ifndef USING_SX1262
 #define USING_SX1262
 #endif
-
+#elif defined(T_BEAM_S3_SUPREME_LR1121)
+#ifndef USING_LR1121
+#define USING_LR1121
+#endif
+#endif
 
 #define I2C_SDA                     17
 #define I2C_SCL                     18
@@ -401,7 +419,7 @@
 
 #define BUTTON_PIN                  0
 #define BUTTON_PIN_MASK             GPIO_SEL_0
-#define BUTTON_CONUT                (1)
+#define BUTTON_COUNT                (1)
 #define BUTTON_ARRAY                {BUTTON_PIN}
 
 #define RADIO_SCLK_PIN              (12)
@@ -412,6 +430,9 @@
 #define RADIO_RST_PIN               (5)
 #define RADIO_DIO1_PIN              (1)
 #define RADIO_BUSY_PIN              (4)
+
+
+#define RADIO_DIO9_PIN               (1)
 
 #define SPI_MOSI                    (35)
 #define SPI_SCK                     (36)
@@ -536,7 +557,7 @@
 
 #define BUTTON_PIN                  0
 #define BUTTON_PIN_MASK             GPIO_SEL_0
-#define BUTTON_CONUT                (2)
+#define BUTTON_COUNT                (2)
 #define BUTTON_ARRAY                {BUTTON_PIN,3}
 
 #define RADIO_SCLK_PIN              (41)
