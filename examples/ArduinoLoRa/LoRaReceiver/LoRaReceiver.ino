@@ -14,7 +14,7 @@
 
 
 #if !defined(USING_SX1276) && !defined(USING_SX1278)
-#error "LoRa example is only allowed to run SX1276/78. For other RF models, please run examples/RadioLibExamples
+#error "LoRa example is only allowed to run SX1276/78. For other RF models, please run examples/RadioLibExamples."
 #endif
 
 void setup()
