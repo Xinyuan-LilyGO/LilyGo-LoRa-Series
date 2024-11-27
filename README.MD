@@ -24,6 +24,7 @@
 | [T-Motion][9]                      | STM32L073RZ            | 192 Kbyte      | (20-Kbyte RAM) |
 | [T-Lora C6][10]                    | ESP32-C6-MINI-1U       | 4MB(Quad-SPI)  | ❌              |
 | [T-Beam BPF][12]                   | ESP32-S3-WROOM-1-N16R8 | 16MB(Quad-SPI) | 8MB(OPI)       |
+| [T-3 TCXO][13]                     | ESP32-PICO-D4          | 4MB(Quad-SPI)  | ❌              |
 
 [1]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905052341 "T-Beam S3 Supreme L76K"
 [2]: https://www.lilygo.cc/products/softrf-t-beamsupreme?variant=42880905281717 "T-Beam S3 Supreme Ublox"
@@ -37,6 +38,7 @@
 [10]: https://www.lilygo.cc/products/t-lora-c6 "T-Lora C6"
 [11]: https://www.lilygo.cc/products/lora32-v2-1_1-6 "LoRa32 V2.1_1.6"
 [12]: https://www.lilygo.cc/products "T-Beam BPF"
+[13]: https://lilygo.cc/products/t3-tcxo "T-3 TCXO"
 
 ## 2️⃣Example description
 
@@ -161,7 +163,7 @@
      </details>
 
      <details>
-     <summary>Click to view LoRa32 V1.x Arduino IDE options</summary>
+     <summary>Click to view LoRa32 V1.x or T3 TCXO Arduino IDE options</summary>
 
      | T-Beam-V1.X                          | Value                                                   |
      | ------------------------------------ | ------------------------------------------------------- |
@@ -332,7 +334,9 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 
 [T3-C6 schematic](schematic/T3-C6_V1.0.pdf)
 
+##### T3-TCXO datasheet
 
+[T3-TCXO schematic](schematic/T3_V3.0.pdf)
 
 # 7️⃣ FAQ
 
