@@ -301,6 +301,9 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 - [QMI8658 datasheet](./lib/SensorsLib/datasheet/QMI8658A%20Datasheet%20Rev1.0.pdf)
 - [QMC6310 datasheet](./lib/SensorsLib/datasheet/QMC6310%20Datasheet%20Rev.C.pdf)
 - [BME280 datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/)
+- [Quectel_L76K_GNSS_Protocol_Specification_V1.2](./docs/datasheet/Quectel_L76KL26K_GNSS_协议规范_V1.2.pdf)
+- [CASIC_ProtocolSpecification](./docs/datasheet/CASIC_ProtocolSpecification.pdf)
+
 
 ##### T-Beam ESP32 datasheet
 
