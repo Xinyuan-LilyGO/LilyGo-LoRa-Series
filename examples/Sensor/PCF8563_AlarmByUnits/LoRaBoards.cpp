@@ -333,9 +333,19 @@ void disablePeripherals()
 
 #ifdef HAS_PMU
     if (!PMU)return;
+
+    PMU->setChargingLedMode(XPOWERS_CHG_LED_OFF);
+    // Disable the PMU measurement section
     PMU->disableSystemVoltageMeasure();
     PMU->disableVbusVoltageMeasure();
     PMU->disableBattVoltageMeasure();
+    PMU->disableTemperatureMeasure();
+    PMU->disableBattDetection();
+    // Disable all PMU interrupts
+    PMU->disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+    // Clear the PMU interrupt status before sleeping, otherwise the sleep current will increase
+    PMU->clearIrqStatus();
+
 #if defined(T_BEAM_S3_BPF)
     PMU->disablePowerOutput(XPOWERS_ALDO4); //gps
     PMU->disablePowerOutput(XPOWERS_ALDO2); //Sdcard
