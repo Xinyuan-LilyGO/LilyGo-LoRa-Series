@@ -240,6 +240,7 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         // esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
 
 
+        // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP  NO  OLED  Display + Disable gnss power backup power ~ 415 uA
         // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP  NO  OLED  Display ~ 540 uA
         // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP  +  OLED  Display  ~ 580 uA
         // Serial.println("GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP");
