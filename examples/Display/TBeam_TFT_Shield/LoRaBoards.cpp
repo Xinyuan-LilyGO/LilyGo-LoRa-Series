@@ -129,6 +129,7 @@ bool beginPower()
         PMU->disablePowerOutput(XPOWERS_BLDO2);
         PMU->disablePowerOutput(XPOWERS_DLDO1);
         PMU->disablePowerOutput(XPOWERS_DLDO2);
+        PMU->disablePowerOutput(XPOWERS_CPULDO);
 
         // GNSS RTC PowerVDD 3300mV
         PMU->setPowerChannelVoltage(XPOWERS_VBACKUP, 3300);
@@ -341,10 +342,6 @@ void disablePeripherals()
     PMU->disableBattVoltageMeasure();
     PMU->disableTemperatureMeasure();
     PMU->disableBattDetection();
-    // Disable all PMU interrupts
-    PMU->disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
-    // Clear the PMU interrupt status before sleeping, otherwise the sleep current will increase
-    PMU->clearIrqStatus();
 
 #if defined(T_BEAM_S3_BPF)
     PMU->disablePowerOutput(XPOWERS_ALDO4); //gps
@@ -353,10 +350,33 @@ void disablePeripherals()
     PMU->disablePowerOutput(XPOWERS_DCDC5);
     PMU->disablePowerOutput(XPOWERS_ALDO1);
 #else
-    // LoRa VDD
-    PMU->disablePowerOutput(XPOWERS_ALDO2);
-    //GNSS VDD
-    PMU->disablePowerOutput(XPOWERS_ALDO3);
+
+    if (PMU->getChipModel() == XPOWERS_AXP2101) {
+
+        // Disable all PMU interrupts
+        PMU->disableIRQ(XPOWERS_AXP2101_ALL_IRQ);
+        // Clear the PMU interrupt status before sleeping, otherwise the sleep current will increase
+        PMU->clearIrqStatus();
+        // GNSS RTC Power , Turning off GPS backup voltage and current can further reduce ~ 100 uA
+        PMU->disablePowerOutput(XPOWERS_VBACKUP);
+        // LoRa VDD
+        PMU->disablePowerOutput(XPOWERS_ALDO2);
+        // GNSS VDD
+        PMU->disablePowerOutput(XPOWERS_ALDO3);
+
+    } else if (PMU->getChipModel() == XPOWERS_AXP192) {
+
+        // Disable all PMU interrupts
+        PMU->disableIRQ(XPOWERS_AXP192_ALL_IRQ);
+        // Clear the PMU interrupt status before sleeping, otherwise the sleep current will increase
+        PMU->clearIrqStatus();
+        // LoRa VDD
+        PMU->disablePowerOutput(XPOWERS_LDO2);
+        // GNSS VDD
+        PMU->disablePowerOutput(XPOWERS_LDO3);
+
+
+    }
 #endif
 #endif
 }
