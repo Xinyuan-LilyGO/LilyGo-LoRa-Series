@@ -88,7 +88,6 @@ uint32_t        batteryRunInterval = 0;
 SSD1306Wire     display(0x3c, I2C_SDA, I2C_SCL);
 OLEDDisplayUi   ui( &display );
 FrameCallback   frames[] = { hwInfo,  radioTx, radioRx};
-SPIClass        SDSPI(HSPI);
 AceButton       button;
 
 
@@ -130,25 +129,26 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         ui.nextFrame();
         frameCounter %= 3;
         break;
+
     case AceButton::kEventLongPressed:
+
         Serial.println("Long pressed!");
 
-        display.clear();
+        Serial.println("Enter sleep...");
 
+#ifndef HAS_PMU
         digitalWrite(RADIO_RST_PIN, HIGH);
         gpio_hold_en((gpio_num_t) RADIO_RST_PIN);
         gpio_deep_sleep_hold_en();
-
+#endif
         radio.sleep();
 
+        display.clear();
         display.drawString(60, 28, "Sleep");
         display.display();
         delay(2000);
         display.displayOff();
 
-#ifdef BOARD_LED
-        digitalWrite(BOARD_LED, LOW);
-#endif
 
 #ifdef  RADIO_TCXO_ENABLE
         digitalWrite(RADIO_TCXO_ENABLE, LOW);
@@ -159,19 +159,33 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
             delay(1);
 #endif
 
+        // PMU pre-sleep operation
         disablePeripherals();
+
+        delay(200);
 
         SPI.end();
 
         Wire.end();
 
-        Serial.flush();
 
-        Serial.end();
 
-        pinMode(RADIO_CS_PIN, INPUT);
-        pinMode(RADIO_RST_PIN, INPUT);
+        // GPS pins
+#ifdef HAS_GPS
+        SerialGPS.end();
+        pinMode(GPS_RX_PIN, INPUT);
+        pinMode(GPS_TX_PIN, INPUT);
+#endif
 
+#ifdef OLED_RST
+        pinMode(OLED_RST, INPUT);
+#endif
+        // Wire pins
+        pinMode(I2C_SDA, INPUT);
+        pinMode(I2C_SCL, INPUT);
+
+
+        // Radio pins
 #ifdef RADIO_DIO0_PIN
         pinMode(RADIO_DIO0_PIN, INPUT);
 #endif
@@ -185,16 +199,12 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         pinMode(RADIO_BUSY_PIN, INPUT);
 #endif
         pinMode(RADIO_CS_PIN, INPUT);
-        pinMode(I2C_SDA, INPUT);
-        pinMode(I2C_SCL, INPUT);
-#ifdef OLED_RST
-        pinMode(OLED_RST, INPUT);
-#endif
-
+        pinMode(RADIO_RST_PIN, INPUT);
         pinMode(RADIO_SCLK_PIN, INPUT);
         pinMode(RADIO_MISO_PIN, INPUT);
         pinMode(RADIO_MOSI_PIN, INPUT);
 
+        // SD Card pins
 #ifdef SDCARD_MOSI
         pinMode(SDCARD_MOSI, INPUT);
         pinMode(SDCARD_MISO, INPUT);
@@ -202,29 +212,45 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         pinMode(SDCARD_CS, INPUT);
 #endif
 
+#ifdef HAS_PMU
+        pinMode(PMU_IRQ, INPUT);
+#endif
+
+#ifdef BOARD_LED
         pinMode(BOARD_LED, INPUT);
+#endif
 
 #ifdef ADC_PIN
         pinMode(ADC_PIN, INPUT);
 #endif
 
-        // TBeam-v1.2 ext1 sleep  ~540uA ,
+        pinMode(BUTTON_PIN, INPUT);
+
+        // GPIO WAKE UP EXT 1 NO  OLED  Display ~ 440 uA ,
+        // GPIO WAKE UP EXT 1 +  OLED  Display  ~ 450 uA ,
         // See sleep_current.jpg
         // Serial.println("GPIO WAKE UP EXT 1");
         // esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), ESP_EXT1_WAKEUP_ALL_LOW);
 
 
-        // GPIO WAKE UP EXT 1 + TIMER WAKE UP ~530uA
+        // GPIO WAKE UP EXT 1 + TIMER WAKE UP NO  OLED  Display ~ 440 uA
+        // GPIO WAKE UP EXT 1 + TIMER WAKE UP +  OLED  Display ~  450uA
         // Serial.println("GPIO WAKE UP EXT 1 + TIMER WAKE UP");
         // esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), ESP_EXT1_WAKEUP_ALL_LOW);
         // esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
 
 
-        // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP ~650uA
-        Serial.println("GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP");
+        // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP  NO  OLED  Display ~ 540 uA
+        // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP  +  OLED  Display  ~ 580 uA
+        // Serial.println("GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP");
         esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 0);
         esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), ESP_EXT1_WAKEUP_ALL_LOW);
         esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
+
+
+        Serial.flush();
+
+        Serial.end();
 
         delay(1000);
 
@@ -238,11 +264,13 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
 void setup()
 {
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_ALL) {
+#ifndef HAS_PMU
         gpio_deep_sleep_hold_dis();
         gpio_hold_dis((gpio_num_t) RADIO_RST_PIN);
+#endif
     }
 
-    setupBoards();
+    setupBoards(true);
 
     delay(1000);
 
@@ -445,9 +473,6 @@ void loop()
     delay(2);
 }
 
-
-
-
 void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
     display->setTextAlignment(TEXT_ALIGN_LEFT);
@@ -556,12 +581,20 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 
 void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
-    static char buffer[64];
+    static char buffer[64] = {'0'};
 #ifdef ADC_PIN
     if (millis() - batteryRunInterval > 1000) {
         analogReadResolution(12);
         float voltage = (analogReadMilliVolts(ADC_PIN) * 2) / 1000.0;
         sprintf(buffer, "%.2fV", voltage > 4.2 ? 4.2 : voltage);
+        batteryRunInterval = millis();
+    }
+#endif
+
+#ifdef HAS_PMU
+    if (millis() - batteryRunInterval > 1000) {
+        uint16_t voltage = PMU->getBattVoltage();
+        sprintf(buffer, "%.2fV", voltage / 1000.0 );
         batteryRunInterval = millis();
     }
 #endif
