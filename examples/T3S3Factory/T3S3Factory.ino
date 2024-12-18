@@ -38,7 +38,7 @@ SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO
 SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1262)
-#define CONFIG_RADIO_FREQ           850.0
+#define CONFIG_RADIO_FREQ           868.0
 #define CONFIG_RADIO_OUTPUT_POWER   22
 #define CONFIG_RADIO_BW             125.0
 
@@ -88,7 +88,6 @@ uint32_t        batteryRunInterval = 0;
 SSD1306Wire     display(0x3c, I2C_SDA, I2C_SCL);
 OLEDDisplayUi   ui( &display );
 FrameCallback   frames[] = { hwInfo,  radioTx, radioRx};
-SPIClass        SDSPI(HSPI);
 AceButton       button;
 
 
@@ -218,7 +217,7 @@ void setup()
 
     setupBoards();
 
-
+    setupBLE();
 
     delay(1000);
 
@@ -363,7 +362,7 @@ void setup()
     * SX1280        : Allowed values range from 1 to 65535.
     * LR1121        : Allowed values range from 1 to 65535.
     * * */
-    if (radio.setPreambleLength(15) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH) {
+    if (radio.setPreambleLength(12) == RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH) {
         Serial.println(F("Selected preamble length is invalid for this module!"));
         while (true);
     }
