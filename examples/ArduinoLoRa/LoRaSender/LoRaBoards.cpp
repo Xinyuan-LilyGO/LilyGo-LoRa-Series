@@ -10,6 +10,13 @@
 
 #include "LoRaBoards.h"
 
+#include "soc/rtc.h"
+#ifdef ENABLE_BLE
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+#endif
+
 #if defined(HAS_SDCARD)
 SPIClass SDCardSPI(HSPI);
 #endif
@@ -32,8 +39,11 @@ static DevInfo_t  devInfo;
 
 #ifdef HAS_GPS
 static bool find_gps = false;
+String gps_model = "None";
 #endif
 
+
+uint32_t deviceOnline = 0x00;
 
 
 #ifdef HAS_PMU
@@ -45,6 +55,9 @@ static void setPmuFlag()
     pmuInterrupt = true;
 }
 #endif
+
+static void enable_slow_clock();
+
 
 bool beginPower()
 {
@@ -74,6 +87,8 @@ bool beginPower()
     if (!PMU) {
         return false;
     }
+
+    deviceOnline |= POWERMANAGE_ONLINE;
 
     PMU->setChargingLedMode(XPOWERS_CHG_LED_CTRL_CHG);
 
@@ -381,7 +396,7 @@ void disablePeripherals()
 #endif
 }
 
-void loopPMU()
+void loopPMU(void (*pressed_cb)(void))
 {
 #ifdef HAS_PMU
     if (!PMU) {
@@ -413,6 +428,9 @@ void loopPMU()
     }
     if (PMU->isPekeyShortPressIrq()) {
         Serial.println("isPekeyShortPress");
+        if (pressed_cb) {
+            pressed_cb();
+        }
     }
     if (PMU->isPekeyLongPressIrq()) {
         Serial.println("isPekeyLongPress");
@@ -463,6 +481,7 @@ bool beginSDCard()
         Serial.print("Sd Card init succeeded, The current available capacity is ");
         Serial.print(cardSize / 1024.0);
         Serial.println(" GB");
+        deviceOnline |= SDCARD_ONLINE;
         return true;
     } else {
         Serial.println("Warning: Failed to init Sd Card");
@@ -473,18 +492,20 @@ bool beginSDCard()
 
 void beginWiFi()
 {
+#ifdef ARDUINO_ARCH_ESP32
     if (!WiFi.softAP(BOARD_VARIANT_NAME)) {
         log_e("Soft AP creation failed.");
     }
     IPAddress myIP = WiFi.softAPIP();
     Serial.print("AP IP address: ");
     Serial.println(myIP);
+#endif
 }
 
 
 void printWakeupReason()
 {
-#ifdef ESP32
+#ifdef ARDUINO_ARCH_ESP32
     Serial.print("Reset reason:");
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -525,18 +546,17 @@ void getChipInfo()
 
     printWakeupReason();
 
-#if defined(CONFIG_IDF_TARGET_ESP32)  ||  defined(CONFIG_IDF_TARGET_ESP32S3)
 
     if (psramFound()) {
         uint32_t psram = ESP.getPsramSize();
         devInfo.psramSize = psram / 1024.0 / 1024.0;
         Serial.printf("PSRAM is enable! PSRAM: %.2fMB\n", devInfo.psramSize);
+        deviceOnline |= PSRAM_ONLINE;
     } else {
         Serial.println("PSRAM is disable!");
         devInfo.psramSize = 0;
     }
 
-#endif
 
     Serial.print("Flash:");
     devInfo.flashSize       = ESP.getFlashChipSize() / 1024.0 / 1024.0;
@@ -565,8 +585,12 @@ void getChipInfo()
     Serial.print("TIME:");
     Serial.println(__TIME__);
 
+    uint8_t mac[6];
+    char macStr[18] = { 0 };
+    esp_efuse_mac_get_default(mac);
+    sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     Serial.print("EFUSE MAC: ");
-    Serial.print( ESP.getEfuseMac(), HEX);
+    Serial.print(macStr);
     Serial.println();
 
     Serial.println("-----------------------------------");
@@ -612,11 +636,14 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef I2C_SDA
     Wire.begin(I2C_SDA, I2C_SCL);
+    Serial.println("Scan Wire...");
     scanDevices(&Wire);
 #endif
 
 #ifdef I2C1_SDA
     Wire1.begin(I2C1_SDA, I2C1_SCL);
+    Serial.println("Scan Wire1...");
+    scanDevices(&Wire1);
 #endif
 
 #ifdef HAS_GPS
@@ -672,8 +699,19 @@ void setupBoards(bool disable_u8g2 )
 
 
 #ifdef RADIO_LDO_EN
+    /*
+    * 2W LoRa LDO enable
+    * */
     pinMode(RADIO_LDO_EN, OUTPUT);
-    digitalWrite(RADIO_LDO_EN, HIGH);
+    digitalWrite(RADIO_LDO_EN, LOW);
+#endif
+
+#ifdef RADIO_CTRL
+    /*
+    * 2W LoRa RX TX Control
+    * */
+    pinMode(RADIO_CTRL, OUTPUT);
+    digitalWrite(RADIO_CTRL, LOW);
 #endif
 
     beginPower();
@@ -686,12 +724,38 @@ void setupBoards(bool disable_u8g2 )
 
     // beginWiFi();
 
-#ifdef HAS_GPS
-#ifdef T_BEAM_S3_BPF
-    find_gps = beginGPS();
-#endif
+#ifdef FAN_CTRL
+    pinMode(FAN_CTRL, OUTPUT);
 #endif
 
+#ifdef HAS_GPS
+    find_gps = beginGPS();
+    uint32_t baudrate[] = {9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 4800};
+    if (!find_gps) {
+        // Restore factory settings
+        for ( int i = 0; i < sizeof(baudrate) / sizeof(baudrate[0]); ++i) {
+            Serial.printf("Update baudrate : %u\n", baudrate[i]);
+            SerialGPS.updateBaudRate(baudrate[i]);
+            if (recoveryGPS()) {
+                Serial.println("UBlox GNSS init succeeded, using UBlox GNSS Module\n");
+                gps_model = "UBlox";
+                find_gps = true;
+                break;
+            }
+        }
+    } else {
+        gps_model = "L76K";
+    }
+
+    if (find_gps) {
+        deviceOnline |= GPS_ONLINE;
+    }
+
+#ifdef T_BEAM_S3_SUPREME
+    enable_slow_clock();
+#endif
+
+#endif
     Serial.println("init done . ");
 }
 
@@ -720,10 +784,8 @@ void printResult(bool radio_online)
 #endif
 
 #ifdef HAS_GPS
-#ifdef T_BEAM_S3_BPF
     Serial.print("GPS          : ");
     Serial.println(( find_gps ) ? "+" : "-");
-#endif
 #endif
 
     if (u8g2) {
@@ -754,10 +816,12 @@ void printResult(bool radio_online)
 }
 
 
-
+#ifdef BOARD_LED
 static uint8_t ledState = LOW;
 static const uint32_t debounceDelay = 50;
 static uint32_t lastDebounceTime = 0;
+#endif
+
 
 void flashLed()
 {
@@ -792,18 +856,23 @@ void scanDevices(TwoWire *w)
             case 0x77:
             case 0x76:
                 Serial.println("\tFind BMX280 Sensor!");
+                deviceOnline |= BME280_ONLINE;
                 break;
             case 0x34:
                 Serial.println("\tFind AXP192/AXP2101 PMU!");
+                deviceOnline |= POWERMANAGE_ONLINE;
                 break;
             case 0x3C:
                 Serial.println("\tFind SSD1306/SH1106 dispaly!");
+                deviceOnline |= DISPLAY_ONLINE;
                 break;
             case 0x51:
                 Serial.println("\tFind PCF8563 RTC!");
+                deviceOnline |= PCF8563_ONLINE;
                 break;
             case 0x1C:
                 Serial.println("\tFind QMC6310 MAG Sensor!");
+                deviceOnline |= QMC6310_ONLINE;
                 break;
             default:
                 Serial.print("\tI2C device found at address 0x");
@@ -843,6 +912,7 @@ bool beginGPS()
         // Get version information
         startTimeout = millis() + 3000;
         Serial.print("Try to init L76K . Wait stop .");
+        SerialGPS.flush();
         while (SerialGPS.available()) {
             Serial.print(".");
             SerialGPS.readString();
@@ -883,4 +953,213 @@ bool beginGPS()
     SerialGPS.write("$PCAS11,3*1E\r\n");
     return result;
 }
+
+
+
+static int getAck(uint8_t *buffer, uint16_t size, uint8_t requestedClass, uint8_t requestedID)
+{
+    uint16_t    ubxFrameCounter = 0;
+    bool        ubxFrame = 0;
+    uint32_t    startTime = millis();
+    uint16_t    needRead;
+
+    while (millis() - startTime < 800) {
+        while (SerialGPS.available()) {
+            int c = SerialGPS.read();
+            switch (ubxFrameCounter) {
+            case 0:
+                if (c == 0xB5) {
+                    ubxFrameCounter++;
+                }
+                break;
+            case 1:
+                if (c == 0x62) {
+                    ubxFrameCounter++;
+                } else {
+                    ubxFrameCounter = 0;
+                }
+                break;
+            case 2:
+                if (c == requestedClass) {
+                    ubxFrameCounter++;
+                } else {
+                    ubxFrameCounter = 0;
+                }
+                break;
+            case 3:
+                if (c == requestedID) {
+                    ubxFrameCounter++;
+                } else {
+                    ubxFrameCounter = 0;
+                }
+                break;
+            case 4:
+                needRead = c;
+                ubxFrameCounter++;
+                break;
+            case 5:
+                needRead |=  (c << 8);
+                ubxFrameCounter++;
+                break;
+            case 6:
+                if (needRead >= size) {
+                    ubxFrameCounter = 0;
+                    break;
+                }
+                if (SerialGPS.readBytes(buffer, needRead) != needRead) {
+                    ubxFrameCounter = 0;
+                } else {
+                    return needRead;
+                }
+                break;
+
+            default:
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
+bool recoveryGPS()
+{
+    uint8_t buffer[256];
+    uint8_t cfg_clear1[] = {0xB5, 0x62, 0x06, 0x09, 0x0D, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1C, 0xA2};
+    uint8_t cfg_clear2[] = {0xB5, 0x62, 0x06, 0x09, 0x0D, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x1B, 0xA1};
+    uint8_t cfg_clear3[] = {0xB5, 0x62, 0x06, 0x09, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x03, 0x1D, 0xB3};
+    SerialGPS.write(cfg_clear1, sizeof(cfg_clear1));
+
+    if (getAck(buffer, 256, 0x05, 0x01)) {
+        Serial.println("Get ack successes!");
+    }
+    SerialGPS.write(cfg_clear2, sizeof(cfg_clear2));
+    if (getAck(buffer, 256, 0x05, 0x01)) {
+        Serial.println("Get ack successes!");
+    }
+    SerialGPS.write(cfg_clear3, sizeof(cfg_clear3));
+    if (getAck(buffer, 256, 0x05, 0x01)) {
+        Serial.println("Get ack successes!");
+    }
+    // UBX-CFG-RATE, Size 8, 'Navigation/measurement rate settings'
+    uint8_t cfg_rate[] = {0xB5, 0x62, 0x06, 0x08, 0x00, 0x00, 0x0E, 0x30};
+    SerialGPS.write(cfg_rate, sizeof(cfg_rate));
+    if (getAck(buffer, 256, 0x06, 0x08)) {
+        Serial.println("Get ack successes!");
+    } else {
+        return false;
+    }
+    return true;
+}
+
 #endif
+
+
+#if defined(ARDUINO_ARCH_ESP32)
+
+//NCP18XH103F03RB: https://item.szlcsc.com/14214.html
+#define NTC_PIN 14 // NTC connection pins
+#define SERIES_RESISTOR 10000 // Series resistance value (10kΩ)
+#define B_COEFFICIENT 3950 // B value, set according to the NTC specification
+#define ROOM_TEMP 298.15 // 25°C absolute temperature (K)
+#define ROOM_TEMP_RESISTANCE 10000 // Resistance of NTC at 25°C (10kΩ)
+
+float getTempForNTC()
+{
+    static float temperature = 0.0f;
+#ifdef NTC_PIN
+    static uint32_t check_temperature = 0;
+    if (millis() > check_temperature) {
+        float voltage = analogReadMilliVolts(NTC_PIN) / 1000.0;
+        float resistance = SERIES_RESISTOR * ((3.3 / voltage) - 1); // Calculate the resistance of NTC
+
+        // Calculate temperature using the Steinhart-Hart equation
+        temperature = (1.0 / (log(resistance / ROOM_TEMP_RESISTANCE) / B_COEFFICIENT + 1.0 / ROOM_TEMP)) - 273.15;
+
+        Serial.print("Temperature: ");
+        Serial.print(temperature);
+        Serial.println(" °C");
+
+        check_temperature  = millis() + 1000;
+    }
+#endif
+    return temperature;
+}
+
+
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+
+void setupBLE()
+{
+#ifdef ENABLE_BLE
+
+    uint8_t mac[6];
+    char macStr[18] = { 0 };
+    esp_efuse_mac_get_default(mac);
+    sprintf(macStr, "%02X:%02X", mac[0], mac[1]);
+
+    String dev = BOARD_VARIANT_NAME;
+    dev.concat('-');
+    dev.concat(macStr);
+
+    Serial.print("Starting BLE:");
+    Serial.println(dev);
+
+    BLEDevice::init(dev.c_str());
+    BLEServer *pServer = BLEDevice::createServer();
+    BLEService *pService = pServer->createService(SERVICE_UUID);
+    BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+            CHARACTERISTIC_UUID,
+            BLECharacteristic::PROPERTY_READ |
+            BLECharacteristic::PROPERTY_WRITE);
+
+    pCharacteristic->setValue("Hello World");
+    pService->start();
+    // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
+    BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+    pAdvertising->addServiceUUID(SERVICE_UUID);
+    pAdvertising->setScanResponse(true);
+    pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+    pAdvertising->setMinPreferred(0x12);
+    BLEDevice::startAdvertising();
+    Serial.println("Characteristic defined! Now you can read it in your phone!");
+#endif
+}
+
+#define CALIBRATE_ONE(cali_clk) calibrate_one(cali_clk, #cali_clk)
+
+static uint32_t calibrate_one(rtc_cal_sel_t cal_clk, const char *name)
+{
+    const uint32_t cal_count = 1000;
+    const float factor = (1 << 19) * 1000.0f;
+    uint32_t cali_val;
+    for (int i = 0; i < 5; ++i) {
+        cali_val = rtc_clk_cal(cal_clk, cal_count);
+    }
+    return cali_val;
+}
+
+static void enable_slow_clock()
+{
+    rtc_clk_32k_enable(true);
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    uint32_t cal_32k = CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    if (cal_32k == 0) {
+        Serial.printf("32K XTAL OSC has not started up");
+    } else {
+        rtc_clk_slow_freq_set(RTC_SLOW_FREQ_32K_XTAL);
+        Serial.println("Switching RTC Source to 32.768Khz succeeded, using 32K XTAL");
+        CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+        CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    }
+    CALIBRATE_ONE(RTC_CAL_RTC_MUX);
+    CALIBRATE_ONE(RTC_CAL_32K_XTAL);
+    if (rtc_clk_slow_freq_get() != RTC_SLOW_FREQ_32K_XTAL) {
+        Serial.println("Warning: Failed to set rtc clk to 32.768Khz !!! "); return;
+    }
+    deviceOnline |= OSC32768_ONLINE;
+}
+
+
+#endif /*ARDUINO_ARCH_ESP32*/
+

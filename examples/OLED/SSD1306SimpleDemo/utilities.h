@@ -102,6 +102,7 @@
 #define HAS_PMU
 
 #define BOARD_VARIANT_NAME          "T-Beam"
+#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
 
 #elif defined(T3_V1_3_SX1276) || defined(T3_V1_3_SX1278)
 
@@ -385,7 +386,7 @@
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
-#define BOARD_VARIANT_NAME          "T3 S3 V1.X"
+#define BOARD_VARIANT_NAME          "T3-S3-V1.X"
 
 
 #elif defined(T_BEAM_S3_SUPREME_SX1262) || defined(T_BEAM_S3_SUPREME_LR1121)
@@ -404,20 +405,20 @@
 #endif
 #endif
 
-#define I2C_SDA                     17
-#define I2C_SCL                     18
+#define I2C_SDA                     (17)
+#define I2C_SCL                     (18)
 
-#define I2C1_SDA                    42
-#define I2C1_SCL                    41
-#define PMU_IRQ                     40
+#define I2C1_SDA                    (42)
+#define I2C1_SCL                    (41)
+#define PMU_IRQ                     (40)
 
-#define GPS_RX_PIN                  9
-#define GPS_TX_PIN                  8
-#define GPS_WAKEUP_PIN              7
-#define GPS_PPS_PIN                6
+#define GPS_RX_PIN                  (9)
+#define GPS_TX_PIN                  (8)
+#define GPS_WAKEUP_PIN              (7)
+#define GPS_PPS_PIN                 (6)
 
-#define BUTTON_PIN                  0
-#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define BUTTON_PIN                  (0)
+#define BUTTON_PIN_MASK             (GPIO_SEL_0)
 #define BUTTON_COUNT                (1)
 #define BUTTON_ARRAY                {BUTTON_PIN}
 
@@ -425,12 +426,12 @@
 #define RADIO_MISO_PIN              (13)
 #define RADIO_MOSI_PIN              (11)
 #define RADIO_CS_PIN                (10)
-#define RADIO_DIO0_PIN               (-1)
+#define RADIO_DIO0_PIN              (-1)
 #define RADIO_RST_PIN               (5)
 #define RADIO_DIO1_PIN              (1)
 #define RADIO_BUSY_PIN              (4)
 
-
+// LR1121 Version
 #define RADIO_DIO9_PIN               (1)
 
 #define SPI_MOSI                    (35)
@@ -445,11 +446,9 @@
 #define SDCARD_SCLK                 SPI_SCK
 #define SDCARD_CS                   SPI_CS
 
-#define PIN_NONE                    (-1)
 #define RTC_INT                     (14)
-#define BUTTON_PIN                  0
 
-#define GPS_BAUD_RATE               9600
+#define GPS_BAUD_RATE               (9600)
 
 #define HAS_SDCARD
 #define HAS_GPS
@@ -457,10 +456,11 @@
 #define HAS_PMU
 
 #define __HAS_SPI1__
-#define __HAS_SENSOR__
+#define HAS_SENSOR
 
 #define PMU_WIRE_PORT               Wire1
 #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
+#define DISPLAY_MODEL_SSD_LIB       SH1106Wire
 #define BOARD_VARIANT_NAME          "T-Beam S3"
 
 #elif defined(T_MOTION_S76G)
@@ -555,9 +555,9 @@
 #define GPS_PPS_PIN                 7
 
 #define BUTTON_PIN                  0
-#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define BUTTON_PIN_MASK             GPIO_SEL_0  /*BUTTON 1 = GPIO0*/
 #define BUTTON_COUNT                (2)
-#define BUTTON_ARRAY                {BUTTON_PIN,3}
+#define BUTTON_ARRAY                {BUTTON_PIN, 3 /*BUTTON 2 = GPIO3*/}
 
 #define RADIO_SCLK_PIN              (41)
 #define RADIO_MISO_PIN              (42)
@@ -583,7 +583,6 @@
 #define SDCARD_SCLK                 SPI_SCK
 #define SDCARD_CS                   SPI_CS
 
-#define PIN_NONE                    (-1)
 
 #define GPS_BAUD_RATE               9600
 
@@ -593,13 +592,81 @@
 #define HAS_PMU
 
 #define __HAS_SPI1__
-#define __HAS_SENSOR__
+#define HAS_SENSOR
 
 #define PMU_WIRE_PORT               Wire
 #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
+#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
 #define BOARD_VARIANT_NAME          "T-Beam BPF"
 
 
+#elif defined(T_BEAM_2W)
+
+#ifndef USING_SX1262
+#define USING_SX1262
+#endif
+
+#define I2C_SDA                     (8)
+#define I2C_SCL                     (9)
+#define GPS_RX_PIN                  (5)
+#define GPS_TX_PIN                  (6)
+#define GPS_PPS_PIN                 (7)
+
+#define BUTTON_PIN                  (0)         /*BUTTON 1 = GPIO0*/
+#define BUTTON2_PIN                 (3)         /*BUTTON 2 = GPIO3*/
+
+#define BUTTON_PIN_MASK             GPIO_SEL_0
+#define BUTTON_CONUT                (2)
+#define BUTTON_ARRAY                {BUTTON_PIN,BUTTON2_PIN/*BUTTON 2 = GPIO3*/}
+
+
+#define RADIO_SCLK_PIN              (16)
+#define RADIO_MISO_PIN              (17)
+#define RADIO_MOSI_PIN              (18)
+#define RADIO_CS_PIN                (15)
+#define RADIO_RST_PIN               (3)
+#define RADIO_LDO_EN                (40)
+#define RADIO_CTRL                  (21)
+
+#define RADIO_DIO1_PIN              (1)
+// #define RADIO_DIO3_PIN              (2)
+
+#define RADIO_BUSY_PIN              (38)
+
+#define SPI_MOSI                    (11)
+#define SPI_SCK                     (13)
+#define SPI_MISO                    (12)
+#define SPI_CS                      (10)
+
+#define SDCARD_MOSI                 SPI_MOSI
+#define SDCARD_MISO                 SPI_MISO
+#define SDCARD_SCLK                 SPI_SCK
+#define SDCARD_CS                   SPI_CS
+
+
+#define NTC_PIN                     (14)
+#define FAN_CTRL                    (41)
+#define ADC_PIN                     (4)
+
+#define GPS_BAUD_RATE               9600
+
+#define HAS_SDCARD
+#define HAS_GPS
+#define HAS_DISPLAY
+
+#define __HAS_SPI1__
+
+#define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
+#define DISPLAY_MODEL_SSD_LIB       SH1106Wire
+#define BOARD_VARIANT_NAME          "LoRa 2W"
+
+/*
+* 2w LoRa max set power is +3 dBm ,After passing through PA, the power can reach 33dBm
+* -3dBm = +27dBm
+* 0 dBm = +30dBm
+* 3 dBm = +33dBm
+* */
+#define RADIO_MAX_OUTPUT_POWER      3
 
 
 #else
