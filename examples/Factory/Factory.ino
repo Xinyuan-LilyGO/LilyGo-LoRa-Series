@@ -468,6 +468,17 @@ void setup()
 #endif
     }
 
+    WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+        Serial.println("WiFi connected");
+        Serial.println("IP address: ");
+        Serial.println(IPAddress(info.got_ip.ip_info.ip.addr));
+    }, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
+
+    WiFiEventId_t eventID = WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+        Serial.print("WiFi lost connection. Reason: ");
+        Serial.println(info.wifi_sta_disconnected.reason);
+    }, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_DISCONNECTED);
+
     setupBoards(true);
 
     setupBLE();
