@@ -729,7 +729,11 @@ void setupBoards(bool disable_u8g2 )
 #endif
 
 #ifdef HAS_GPS
+
+#ifdef T_BEAM_S3_SUPREME
+    // T-Beam v1.2 skips L76K
     find_gps = beginGPS();
+#endif
     uint32_t baudrate[] = {9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 4800};
     if (!find_gps) {
         // Restore factory settings

@@ -10,3 +10,4 @@ test
 script
 build
 LilyGoLoRaBoard
+record.*
