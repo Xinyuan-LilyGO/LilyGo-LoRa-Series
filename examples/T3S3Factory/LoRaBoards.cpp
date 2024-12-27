@@ -700,15 +700,19 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef RADIO_LDO_EN
     /*
-    * 2W LoRa LDO enable
+    * 2W LoRa LDO enable , Control SX1262 , LNA
+    * 2W Radio version must set LDO_EN to HIGH to initialize the Radio
     * */
     pinMode(RADIO_LDO_EN, OUTPUT);
-    digitalWrite(RADIO_LDO_EN, LOW);
+    digitalWrite(RADIO_LDO_EN, HIGH);
 #endif
 
 #ifdef RADIO_CTRL
     /*
     * 2W LoRa RX TX Control
+    * CTRL controls the LNA, not the PA.
+    * Only when RX DATA is on, set to 1 to turn on LNA
+    * When TX DATA is on, CTL is set to 0 and LNA is turned off.
     * */
     pinMode(RADIO_CTRL, OUTPUT);
     digitalWrite(RADIO_CTRL, LOW);
@@ -730,7 +734,7 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef HAS_GPS
 
-#ifdef T_BEAM_S3_SUPREME
+#if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_2W)
     // T-Beam v1.2 skips L76K
     find_gps = beginGPS();
 #endif
