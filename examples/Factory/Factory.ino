@@ -350,12 +350,6 @@ void handleMenu()
     case 0:
         break;
     case 1:
-#ifdef RADIO_LDO_EN
-        /*
-        * 2W LoRa LAN and PA Control ,Set high start power supply
-        * */
-        digitalWrite(RADIO_LDO_EN, HIGH);
-#endif
 #ifdef RADIO_CTRL
         /*
         * 2W LoRa LAN Control ,set Low turn off LAN , TX Mode
@@ -372,13 +366,6 @@ void handleMenu()
         break;
 
     case 2:
-#ifdef RADIO_LDO_EN
-        /*
-        * 2W LoRa LAN and PA Control ,Set high start power supply
-        * */
-        digitalWrite(RADIO_LDO_EN, HIGH);
-#endif
-
         Serial.println("Start receive");
         transmissionDirection = RECEIVE;
         transmissionState = radio.startReceive();
@@ -388,12 +375,6 @@ void handleMenu()
         break;
     default:
 
-#ifdef RADIO_LDO_EN
-        /*
-        * 2W LoRa LAN and PA Control ,Set low stop power supply
-        * */
-        digitalWrite(RADIO_LDO_EN, LOW);
-#endif
 
 #ifdef RADIO_CTRL
         /*
@@ -979,13 +960,13 @@ void hwProbe(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->drawString(62 + x, 16 + y, "OLED");
     display->drawString(62 + x, 32 + y, "PSRAM");
-#if HAS_SDCARD
+#ifdef HAS_SDCARD
     display->drawString(62 + x, 48 + y, "SDCARD");
 #endif
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
     display->drawString(display->width() + x,  16 + y, (deviceOnline & DISPLAY_ONLINE ) ? "+" : "-");
     display->drawString(display->width()  + x, 32 + y, (deviceOnline & PSRAM_ONLINE ) ? "+" : "-");
-#if HAS_SDCARD
+#ifdef HAS_SDCARD
     display->drawString(display->width()  + x, 48 + y, (deviceOnline & SDCARD_ONLINE ) ? "+" : "-");
 #endif
 #endif
@@ -1281,7 +1262,8 @@ void wifiTask(void *task)
     while (1) {
         wifiMulti.run();
         if (is_time_available) {
-            vTaskDelete(NULL);
+                Serial.println("---REMOVE TASK---");
+                vTaskDelete(NULL);
         }
         delay(1000);
     }
