@@ -99,7 +99,27 @@
 └── BPFFactory                               # T-Beam BPF factory test examples
 ```
 
-## 3️⃣Arduino IDE quick start:
+
+## 3️⃣ PlatformIO Quick Start (Recommended)
+
+1. For users using the ESP32 version (non ESP32S3 version), please install the **CH9102 USB bridge** driver for the first time.
+   - [Windows](https://www.wch-ic.com/downloads/CH343SER_ZIP.html)
+   - [Mac OS](https://www.wch-ic.com/downloads/CH34XSER_MAC_ZIP.html)
+2. Install [Visual Studio Code](https://code.visualstudio.com/) and [Python](https://www.python.org/)
+3. Search for the `PlatformIO` plugin in the `VisualStudioCode` extension and install it.
+4. After the installation is complete, you need to restart `VisualStudioCode`
+5. After restarting `VisualStudioCode`, select `File` in the upper left corner of `VisualStudioCode` -> `Open Folder` -> select the `LilyGo-LoRa-Series` directory
+6. Wait for the installation of third-party dependent libraries to complete
+7. Click on the `platformio.ini` file, and in the `platformio` column
+8. Select the board name you want to use in `default_envs` and uncomment it.
+9. Uncomment one of the lines `src_dir = xxxx` to make sure only one line works , Please note the example comments, indicating what works and what does not.
+10. Click the (✔) symbol in the lower left corner to compile
+11. Connect the board to the computer USB-C , Micro-USB is used for module firmware upgrade
+12. Click (→) to upload firmware
+13. Click (plug symbol) to monitor serial output
+14. If it cannot be written, or the USB device keeps flashing, please check the **FAQ** below
+
+## 4️⃣ Arduino IDE quick start
 
 1. Install [Arduino IDE](https://www.arduino.cc/en/software)
 2. Install [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
@@ -278,18 +298,19 @@
 6. Please uncomment the `utilities.h` file of each sketch according to your board model, otherwise the compilation will report an error.
 7. Upload sketch
 
-## 4️⃣ TTN
+
+## 5️⃣ TTN
 
 To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_Start](./docs/zh/LilyGo_LoRa_Series_Quick_Start_On_TTN_zh.md)
 
 
-## 5️⃣ Application
+## 6️⃣ Application
 
 - [T-Beam SoftRF](https://github.com/lyusupov/SoftRF)
 - [T-Beam Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter)
 - [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
 
-# 6️⃣ Datasheet
+# 7️⃣ Datasheet
 
 ##### T-Beam S3 Supreme datasheet
 
@@ -341,7 +362,7 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 
 [T3-TCXO schematic](schematic/T3_V3.0.pdf)
 
-# 7️⃣ FAQ
+# 8️⃣ FAQ
 
 1. T-Beam Supreme GPS backup power comes from 18650 battery. If you remove the 18650 battery, you will not be able to get GPS hot start. If you need to use GPS hot start, please connect the 18650 battery.
 2. There is no data output from the GPS. [Refer to GPS factory reset](firmware/GPS_Reset/README.MD)
