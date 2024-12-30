@@ -59,10 +59,9 @@ void hwProbe(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 #ifdef HAS_GPS
 void gpsInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
 #endif
-#ifdef HAS_PMU
+#if defined(HAS_PMU) || defined(ADC_PIN)
 void pmuInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 #endif
-
 #ifdef T_BEAM_S3_SUPREME
 void dateTimeInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
 void sensorInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
@@ -154,7 +153,7 @@ FrameCallback   frames[] = {
 #ifdef HAS_GPS
     gpsInfo,
 #endif
-#ifdef HAS_PMU
+#if defined(HAS_PMU) || defined(ADC_PIN)
     pmuInfo,
 #endif
 #ifdef T_BEAM_S3_SUPREME
@@ -836,23 +835,11 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
         display->drawString(0 + x, 32 + y, "TX :" + String(transmissionCounter));
     }
 
-    static char buffer[2][32] = {0};
 
 #ifdef NTC_PIN
-    sprintf(buffer[0], "%.2f*C", getTempForNTC());
-    display->drawString(0 + x, 48 + y, "Temp  ");
-    display->drawString(50 + x, 48 + y, buffer[0]);
-#endif
-
-#ifdef ADC_PIN
-    static  uint32_t batteryRunInterval = 0;
-    if (millis() > batteryRunInterval) {
-        analogReadResolution(12);
-        float voltage = (analogReadMilliVolts(ADC_PIN) * 2) / 1000.0;
-        sprintf(buffer[1], "%.2fV", voltage > 4.2 ? 4.2 : voltage);
-        display->drawString(50 + x, 48 + y, buffer[0]);
-        batteryRunInterval = millis() + 1000;
-    }
+    static char buffer[32];
+    sprintf(buffer, "NTC:%.2f*C", getTempForNTC());
+    display->drawString(0 + x, 48 + y, buffer);
 #endif
 }
 
@@ -1019,9 +1006,11 @@ void gpsInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, in
 }
 #endif
 
-#ifdef HAS_PMU
 void pmuInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
+    display->setFont(Roboto_Mono_Medium_12);
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+#ifdef HAS_PMU
     float batteryVoltage = PMU->getBattVoltage();
     static char buffer[3][80];
     snprintf(buffer[0], sizeof(buffer[0]), "SYS VOL:%.2f V", PMU->getSystemVoltage() / 1000.0);
@@ -1031,14 +1020,25 @@ void pmuInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     } else {
         snprintf(buffer[2], sizeof(buffer[2]), "USB LOST");
     }
-    display->setFont(Roboto_Mono_Medium_12);
-    display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->drawString(64 + x, 0 + y, "PMU");
     display->drawString(64 + x, 16 + y, buffer[0]);
     display->drawString(64 + x, 32 + y, buffer[1]);
     display->drawString(64 + x, 48 + y, buffer[2]);
-}
 #endif
+
+#ifdef ADC_PIN
+    static char buffer[64];
+    static  uint32_t interval = 0;
+    if (millis() > interval) {
+        analogReadResolution(12);
+        float voltage = (analogReadMilliVolts(ADC_PIN) * 2) / 1000.0;
+        snprintf(buffer, sizeof(buffer), "VOL:%.2f V", voltage > 4.2 ? 4.2 : voltage);
+        interval = millis() + 1000;
+    }
+    display->drawString(64 + x, 0 + y, "Battery");
+    display->drawString(64 + x, 32 + y, buffer);
+#endif
+}
 
 
 
@@ -1262,8 +1262,8 @@ void wifiTask(void *task)
     while (1) {
         wifiMulti.run();
         if (is_time_available) {
-                Serial.println("---REMOVE TASK---");
-                vTaskDelete(NULL);
+            Serial.println("---REMOVE TASK---");
+            vTaskDelete(NULL);
         }
         delay(1000);
     }
