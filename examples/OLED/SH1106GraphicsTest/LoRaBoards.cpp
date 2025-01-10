@@ -914,43 +914,43 @@ bool beginGPS()
     SerialGPS.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
     bool result = false;
     uint32_t startTimeout ;
-    for (int i = 0; i < 3; ++i) {
-        SerialGPS.write("$PCAS03,0,0,0,0,0,0,0,0,0,0,,,0,0*02\r\n");
-        delay(5);
-        // Get version information
-        startTimeout = millis() + 3000;
-        Serial.print("Try to init L76K . Wait stop .");
-        SerialGPS.flush();
-        while (SerialGPS.available()) {
-            Serial.print(".");
-            SerialGPS.readString();
-            if (millis() > startTimeout) {
-                Serial.println("Wait L76K stop NMEA timeout!");
-                return false;
-            }
-        };
-        Serial.println();
-        SerialGPS.flush();
-        delay(200);
+    SerialGPS.write("$PCAS03,0,0,0,0,0,0,0,0,0,0,,,0,0*02\r\n");
+    delay(5);
+    // Get version information
+    startTimeout = millis() + 3000;
+    Serial.print("Try to init L76K . Wait stop .");
+    SerialGPS.flush();
 
-        SerialGPS.write("$PCAS06,0*1B\r\n");
-        startTimeout = millis() + 500;
-        String ver = "";
-        while (!SerialGPS.available()) {
-            if (millis() > startTimeout) {
-                Serial.println("Get L76K timeout!");
-                return false;
-            }
+    while (SerialGPS.available()) {
+        // Serial.print(".");
+        Serial.flush();
+        SerialGPS.flush();
+        if (millis() > startTimeout) {
+            Serial.println("Wait L76K stop NMEA timeout!");
+            return false;
         }
-        SerialGPS.setTimeout(10);
-        ver = SerialGPS.readStringUntil('\n');
-        if (ver.startsWith("$GPTXT,01,01,02")) {
-            Serial.println("L76K GNSS init succeeded, using L76K GNSS Module\n");
-            result = true;
-            break;
+    };
+    Serial.println();
+    SerialGPS.flush();
+    delay(200);
+
+    SerialGPS.write("$PCAS06,0*1B\r\n");
+    startTimeout = millis() + 500;
+    String ver = "";
+    while (!SerialGPS.available()) {
+        if (millis() > startTimeout) {
+            Serial.println("Get L76K timeout!");
+            return false;
         }
-        delay(500);
     }
+    SerialGPS.setTimeout(10);
+    ver = SerialGPS.readStringUntil('\n');
+    if (ver.startsWith("$GPTXT,01,01,02")) {
+        Serial.println("L76K GNSS init succeeded, using L76K GNSS Module\n");
+        result = true;
+    }
+    delay(500);
+
     // Initialize the L76K Chip, use GPS + GLONASS
     SerialGPS.write("$PCAS04,5*1C\r\n");
     delay(250);
