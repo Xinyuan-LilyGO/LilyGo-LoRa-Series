@@ -196,6 +196,7 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         // esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0);
 
         // T3 V3.0 ext1 sleep  ~160uA
+        // T3 S3 V1.3 ext1 sleep  ~ 40uA
         esp_sleep_enable_ext1_wakeup(_BV(0), ESP_EXT1_WAKEUP_ALL_LOW);
 
         // T3 V3.0  Timer sleep ~ 160uA
@@ -215,7 +216,7 @@ void setup()
         gpio_hold_dis((gpio_num_t) RADIO_RST_PIN);
     }
 
-    setupBoards();
+    setupBoards(true/*Disable logo*/);
 
     setupBLE();
 
