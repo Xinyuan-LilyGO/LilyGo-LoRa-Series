@@ -712,7 +712,12 @@ void setup()
 
 // PMU Power key callback
 static uint8_t freq_index = 0;
-const float factory_freq[] = {433.0, 470.0, 850.0, 868.0, 915.0, 923.0};
+const float factory_freq[] = {433.0, 470.0, 850.0, 868.0, 915.0, 923.0
+#if   defined(USING_LR1121)
+                              , 2400, 2450
+#endif
+
+                             };
 float current_freq = CONFIG_RADIO_FREQ;
 
 void power_key_pressed()
@@ -729,6 +734,18 @@ void power_key_pressed()
     Serial.printf("setFrequency:%.2f\n", current_freq);
     freq_index++;
     freq_index %= sizeof(factory_freq) / sizeof(factory_freq[0]);
+
+#if   defined(USING_LR1121)
+    int8_t max_tx_power = 13;
+    if (current_freq < 2400) {
+        max_tx_power = 22;
+    }
+    if (radio.setOutputPower(max_tx_power) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.printf("Selected output power %d is invalid for this module!\n", max_tx_power);
+    }
+#else
+
+#endif
 
     switch (transmissionDirection) {
     case TRANSMISSION:
@@ -818,7 +835,6 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 #endif
         }
 
-        Serial.println("Radio TX done !");
         interval = millis() + 1000;
 
     }
