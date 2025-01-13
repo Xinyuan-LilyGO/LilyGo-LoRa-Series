@@ -355,13 +355,16 @@ void handleMenu()
         * */
         digitalWrite(RADIO_CTRL, LOW);
 #endif
-
+#ifdef RADIO_TX_CW
+        radio.transmitDirect();
+#else
         Serial.println("Start transmit");
         transmissionDirection = TRANSMISSION;
         transmissionState = radio.transmit((uint8_t *)&transmissionCounter, 4);
         if (transmissionState != RADIOLIB_ERR_NONE) {
             Serial.println(F("[Radio] transmit packet failed!"));
         }
+#endif
         break;
 
     case 2:
@@ -729,18 +732,26 @@ void power_key_pressed()
 
     // Set freq function
     radio.standby();
-    radio.setFrequency(factory_freq[freq_index]);
+    // check if we need to recalibrate image
+    bool skipCalibration = true;
+    int16_t state =  radio.setFrequency(factory_freq[freq_index], skipCalibration);
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.printf("Selected frequency %.2f is invalid for this module!\n", factory_freq[freq_index]);
+        return;
+    }
     current_freq = factory_freq[freq_index];
     Serial.printf("setFrequency:%.2f\n", current_freq);
     freq_index++;
     freq_index %= sizeof(factory_freq) / sizeof(factory_freq[0]);
 
 #if   defined(USING_LR1121)
+    bool forceHighPower = false;
     int8_t max_tx_power = 13;
     if (current_freq < 2400) {
         max_tx_power = 22;
+        forceHighPower = true;
     }
-    if (radio.setOutputPower(max_tx_power) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+    if (radio.setOutputPower(max_tx_power, forceHighPower) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.printf("Selected output power %d is invalid for this module!\n", max_tx_power);
     }
 #else
@@ -749,10 +760,14 @@ void power_key_pressed()
 
     switch (transmissionDirection) {
     case TRANSMISSION:
+#ifdef RADIO_TX_CW
+        radio.transmitDirect();
+#else
         transmissionState = radio.transmit((uint8_t *)&transmissionCounter, 4);
         if (transmissionState != RADIOLIB_ERR_NONE) {
             Serial.println(F("[Radio] transmit packet failed!"));
         }
+#endif
         break;
     default:
         transmissionState = radio.startReceive();
@@ -792,6 +807,7 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     static uint32_t interval = 0;
     display->setTextAlignment(TEXT_ALIGN_LEFT);
 
+#ifndef RADIO_TX_CW
     if (millis() > interval) {
         if (transmittedFlag) {
             // reset flag
@@ -838,6 +854,7 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
         interval = millis() + 1000;
 
     }
+#endif
     display->setFont(Roboto_Mono_Medium_12);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->drawString(64 + x, 0 + y, "RADIO TX");
@@ -1278,6 +1295,8 @@ void wifiTask(void *task)
     while (1) {
         wifiMulti.run();
         if (is_time_available) {
+            extern bool factory_send();
+            factory_send();
             Serial.println("---REMOVE TASK---");
             vTaskDelete(NULL);
         }
