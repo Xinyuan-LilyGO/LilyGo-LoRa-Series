@@ -909,9 +909,9 @@ void scanDevices(TwoWire *w)
 
 
 #ifdef HAS_GPS
-bool beginGPS()
+
+bool l76kProbe()
 {
-    SerialGPS.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
     bool result = false;
     uint32_t startTimeout ;
     SerialGPS.write("$PCAS03,0,0,0,0,0,0,0,0,0,0,,,0,0*02\r\n");
@@ -919,12 +919,13 @@ bool beginGPS()
     // Get version information
     startTimeout = millis() + 3000;
     Serial.print("Try to init L76K . Wait stop .");
-    SerialGPS.flush();
-
+    // SerialGPS.flush();
     while (SerialGPS.available()) {
+        int c = SerialGPS.read();
+        // Serial.write(c);
         // Serial.print(".");
-        Serial.flush();
-        SerialGPS.flush();
+        // Serial.flush();
+        // SerialGPS.flush();
         if (millis() > startTimeout) {
             Serial.println("Wait L76K stop NMEA timeout!");
             return false;
@@ -959,6 +960,19 @@ bool beginGPS()
     delay(250);
     // Switch to Vehicle Mode, since SoftRF enables Aviation < 2g
     SerialGPS.write("$PCAS11,3*1E\r\n");
+    return result;
+}
+
+bool beginGPS()
+{
+    SerialGPS.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
+    bool result = false;
+    for ( int i = 0; i < 3; ++i) {
+        result = l76kProbe();
+        if (result) {
+            return result;
+        }
+    }
     return result;
 }
 
