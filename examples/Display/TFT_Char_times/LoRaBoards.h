@@ -101,6 +101,8 @@ bool recoveryGPS();
 
 void loopPMU(void (*pressed_cb)(void));
 
+void scanWiFi();
+
 #ifdef HAS_PMU
 extern XPowersLibInterface *PMU;
 extern bool pmuInterrupt;
