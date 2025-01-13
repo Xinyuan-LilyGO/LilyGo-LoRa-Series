@@ -4,14 +4,19 @@
 
 ## Universal wireless communication library for embedded devices
 
-## See the [Wiki](https://github.com/jgromes/RadioLib/wiki) and [FAQ](https://github.com/jgromes/RadioLib/wiki/Frequently-Asked-Questions) for further information. See the [GitHub Pages](https://jgromes.github.io/RadioLib) for detailed and up-to-date API reference.
-
 RadioLib allows its users to integrate all sorts of different wireless communication modules, protocols and even digital modes into a single consistent system.
 Want to add a Bluetooth interface to your LoRa network? Sure thing! Do you just want to go really old-school and play around with radio teletype, slow-scan TV, or even Hellschreiber using nothing but a cheap radio module? Why not!
 
 RadioLib natively supports Arduino, but can run in non-Arduino environments as well! See [this Wiki page](https://github.com/jgromes/RadioLib/wiki/Porting-to-non-Arduino-Platforms) and [examples/NonArduino](https://github.com/jgromes/RadioLib/tree/master/examples/NonArduino).
 
 RadioLib was originally created as a driver for [__RadioShield__](https://github.com/jgromes/RadioShield), but it can be used to control as many different wireless modules as you like - or at least as many as your microcontroller can handle!
+
+### Quick links:
+* [__Wiki__](https://github.com/jgromes/RadioLib/wiki) - contains useful general information on using this library
+* [__FAQ__](https://github.com/jgromes/RadioLib/wiki/Frequently-Asked-Questions) - frequently asked questions, and answers
+* [__API Reference__](https://jgromes.github.io/RadioLib) - full API reference, automatically generated from the source code
+* [__Status Code Decoder__](https://radiolib-org.github.io/status_decoder/decode.html) - decoder for status codes returned by RadioLib methods
+* [__Debug Log Decoder__](https://radiolib-org.github.io/debug_decoder/decode.html) - decoder for RadioLib SPI debug logs
 
 ### Supported modules:
 * __CC1101__ FSK radio module
@@ -43,7 +48,7 @@ SX127x, RFM9x, SX126x, RF69, SX1231, CC1101, nRF24L01, RFM2x, Si443x, LR11x0 and
 SX127x, RFM9x, SX126x, RF69, SX1231, CC1101, nRF24L01, RFM2x, Si443x and SX128x
 * [__POCSAG__](https://www.sigidwiki.com/wiki/POCSAG) using 2-FSK for modules:  
 SX127x, RFM9x, RF69, SX1231, CC1101, nRF24L01, RFM2x and Si443x
-* [__LoRaWAN__](https://lora-alliance.org/) using LoRa for modules:  
+* [__LoRaWAN__](https://lora-alliance.org/) using LoRa and FSK for modules:  
 SX127x, RFM9x, SX126x, LR11x0 and SX128x  
 
 ### Supported Arduino platforms:
@@ -88,5 +93,8 @@ SX127x, RFM9x, SX126x, LR11x0 and SX128x
 
 * __PJRC__
   * [__Teensy__](https://github.com/PaulStoffregen/cores) - Teensy 2.x, 3.x and 4.x boards
+
+* __Silicon Labs__
+  * [__EFR32__](https://github.com/SiliconLabs/arduino) - Silicon Labs xG24, xG27 and other boards
 
 The list above is by no means exhaustive - RadioLib code is independent of the used platform! Compilation of all examples is tested for all platforms officially supported prior to releasing new version. In addition, RadioLib includes an internal hardware abstraction layer, which allows it to be easily ported even to non-Arduino environments.

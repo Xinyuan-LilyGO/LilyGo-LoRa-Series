@@ -33,7 +33,7 @@
 #define RADIOLIB_LR11X0_CMD_SET_DIO_AS_RF_SWITCH                (0x0112)
 #define RADIOLIB_LR11X0_CMD_SET_DIO_IRQ_PARAMS                  (0x0113)
 #define RADIOLIB_LR11X0_CMD_CLEAR_IRQ                           (0x0114)
-#define RADIOLIB_LR11X0_CMD_CONFIG_LF_LOCK                      (0x0116)
+#define RADIOLIB_LR11X0_CMD_CONFIG_LF_CLOCK                     (0x0116)
 #define RADIOLIB_LR11X0_CMD_SET_TCXO_MODE                       (0x0117)
 #define RADIOLIB_LR11X0_CMD_REBOOT                              (0x0118)
 #define RADIOLIB_LR11X0_CMD_GET_VBAT                            (0x0119)
@@ -281,7 +281,7 @@
 #define RADIOLIB_LR11X0_IRQ_ALL                                 (0x1BF80FFCUL)  //  31    0                all interrupts
 #define RADIOLIB_LR11X0_IRQ_NONE                                (0x00UL << 0)   //  31    0                no interrupts
 
-// RADIOLIB_LR11X0_CMD_CONFIG_LF_LOCK
+// RADIOLIB_LR11X0_CMD_CONFIG_LF_CLOCK
 #define RADIOLIB_LR11X0_LF_CLK_RC                               (0x00UL << 0)   //  1     0     32.768 kHz source: RC oscillator
 #define RADIOLIB_LR11X0_LF_CLK_XOSC                             (0x01UL << 0)   //  1     0                        crystal oscillator
 #define RADIOLIB_LR11X0_LF_CLK_EXT                              (0x02UL << 0)   //  1     0                        external signal on DIO11
@@ -1176,11 +1176,11 @@ class LR11x0: public PhysicalLayer {
     int16_t setCodingRate(uint8_t cr, bool longInterleave = false);
 
     /*!
-      \brief Sets LoRa or LR-FHSS sync word.
-      \param syncWord LoRa or LR-FHSS sync word to be set. For LoRa, only 8 least significant bits will be used
+      \brief Sets LoRa sync word.
+      \param syncWord LoRa sync word to be set.
       \returns \ref status_codes
     */
-    int16_t setSyncWord(uint32_t syncWord);
+    int16_t setSyncWord(uint8_t syncWord);
 
     /*!
       \brief Sets GFSK bit rate. Allowed values range from 0.6 to 300.0 kbps.
@@ -1828,6 +1828,7 @@ class LR11x0: public PhysicalLayer {
     float dataRateMeasured = 0;
 
     uint8_t wifiScanMode = 0;
+    bool gnss = false;
 
     int16_t modSetup(float tcxoVoltage, uint8_t modem);
     static int16_t SPIparseStatus(uint8_t in);

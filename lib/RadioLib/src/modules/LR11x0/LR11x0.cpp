@@ -110,7 +110,8 @@ int16_t LR11x0::beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid, float tcxoV
   state = setLrFhssConfig(bw, cr);
   RADIOLIB_ASSERT(state);
 
-  state = setSyncWord(0x12AD101B);
+  uint8_t syncWord[] = { 0x12, 0xAD, 0x10, 0x1B };
+  state = setSyncWord(syncWord, 4);
   RADIOLIB_ASSERT(state);
 
   state = setRegulatorLDO();
@@ -128,6 +129,8 @@ int16_t LR11x0::beginGNSS(uint8_t constellations, float tcxoVoltage) {
   state = this->clearErrors();
   RADIOLIB_ASSERT(state);
 
+  // set GNSS flag to reserve DIO11 for LF clock
+  this->gnss = true;
   state = this->configLfClock(RADIOLIB_LR11X0_LF_BUSY_RELEASE_DISABLED | RADIOLIB_LR11X0_LF_CLK_XOSC);
   RADIOLIB_ASSERT(state);
 
@@ -353,10 +356,9 @@ int16_t LR11x0::standby(uint8_t mode, bool wakeup) {
   this->mod->setRfSwitchState(Module::MODE_IDLE);
 
   if(wakeup) {
-    // pull NSS low for a while to wake up
-    this->mod->hal->digitalWrite(this->mod->getCs(), this->mod->hal->GpioLevelLow);
-    this->mod->hal->delay(1);
-    this->mod->hal->digitalWrite(this->mod->getCs(), this->mod->hal->GpioLevelHigh);
+    // send a NOP command - this pulls the NSS low to exit the sleep mode,
+    // while preventing interference with possible other SPI transactions
+    (void)this->mod->SPIwriteStream((uint16_t)RADIOLIB_LR11X0_CMD_NOP, NULL, 0, false, false);
   }
 
   uint8_t buff[] = { mode };
@@ -758,20 +760,16 @@ int16_t LR11x0::setCodingRate(uint8_t cr, bool longInterleave) {
   return(setModulationParamsLoRa(this->spreadingFactor, this->bandwidth, this->codingRate, this->ldrOptimize));
 }
 
-int16_t LR11x0::setSyncWord(uint32_t syncWord) {
+int16_t LR11x0::setSyncWord(uint8_t syncWord) {
   // check active modem
   uint8_t type = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
   int16_t state = getPacketType(&type);
   RADIOLIB_ASSERT(state);
-  if(type == RADIOLIB_LR11X0_PACKET_TYPE_LORA) {
-    return(setLoRaSyncWord(syncWord & 0xFF));
-  
-  } else if(type == RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS) {
-    return(lrFhssSetSyncWord(syncWord));
- 
+  if(type != RADIOLIB_LR11X0_PACKET_TYPE_LORA) {
+    return(RADIOLIB_ERR_WRONG_MODEM);
   }
   
-  return(RADIOLIB_ERR_WRONG_MODEM);
+  return(setLoRaSyncWord(syncWord));
 }
 
 int16_t LR11x0::setBitRate(float br) {
@@ -885,27 +883,36 @@ int16_t LR11x0::setSyncWord(uint8_t* syncWord, size_t len) {
   uint8_t type = RADIOLIB_LR11X0_PACKET_TYPE_NONE;
   int16_t state = getPacketType(&type);
   RADIOLIB_ASSERT(state);
-  if(type == RADIOLIB_LR11X0_PACKET_TYPE_LORA) {
+  if(type == RADIOLIB_LR11X0_PACKET_TYPE_GFSK) {
+    // update sync word length
+    this->syncWordLength = len*8;
+    state = setPacketParamsGFSK(this->preambleLengthGFSK, this->preambleDetLength, this->syncWordLength, this->addrComp, this->packetType, RADIOLIB_LR11X0_MAX_PACKET_LENGTH, this->crcTypeGFSK, this->whitening);
+    RADIOLIB_ASSERT(state);
+
+    // sync word is passed most-significant byte first
+    uint8_t fullSyncWord[RADIOLIB_LR11X0_GFSK_SYNC_WORD_LEN] = { 0 };
+    memcpy(fullSyncWord, syncWord, len);
+    return(setGfskSyncWord(fullSyncWord));
+
+  } else if(type == RADIOLIB_LR11X0_PACKET_TYPE_LORA) {
     // with length set to 1 and LoRa modem active, assume it is the LoRa sync word
     if(len > 1) {
       return(RADIOLIB_ERR_INVALID_SYNC_WORD);
     }
     return(setSyncWord(syncWord[0]));
 
-  } else if(type != RADIOLIB_LR11X0_PACKET_TYPE_GFSK) {
-    return(RADIOLIB_ERR_WRONG_MODEM);
+  } else if(type == RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS) {
+    // with length set to 4 and LR-FHSS modem active, assume it is the LR-FHSS sync word
+    if(len != sizeof(uint32_t)) {
+      return(RADIOLIB_ERR_INVALID_SYNC_WORD);
+    }
+    uint32_t sync = 0;
+    memcpy(&sync, syncWord, sizeof(uint32_t));
+    return(lrFhssSetSyncWord(sync));
   
   }
 
-  // update sync word length
-  this->syncWordLength = len*8;
-  state = setPacketParamsGFSK(this->preambleLengthGFSK, this->preambleDetLength, this->syncWordLength, this->addrComp, this->packetType, RADIOLIB_LR11X0_MAX_PACKET_LENGTH, this->crcTypeGFSK, this->whitening);
-  RADIOLIB_ASSERT(state);
-
-  // sync word is passed most-significant byte first
-  uint8_t fullSyncWord[RADIOLIB_LR11X0_GFSK_SYNC_WORD_LEN] = { 0 };
-  memcpy(fullSyncWord, syncWord, len);
-  return(setGfskSyncWord(fullSyncWord));
+  return(RADIOLIB_ERR_WRONG_MODEM);
 }
 
 int16_t LR11x0::setSyncBits(uint8_t *syncWord, uint8_t bitsLen) {
@@ -2032,13 +2039,13 @@ int16_t LR11x0::getModem(ModemType_t* modem) {
 
   switch(packetType) {
     case(RADIOLIB_LR11X0_PACKET_TYPE_LORA):
-      *modem = ModemType_t::LoRa;
+      *modem = ModemType_t::RADIOLIB_MODEM_LORA;
       return(RADIOLIB_ERR_NONE);
     case(RADIOLIB_LR11X0_PACKET_TYPE_GFSK):
-      *modem = ModemType_t::FSK;
+      *modem = ModemType_t::RADIOLIB_MODEM_FSK;
       return(RADIOLIB_ERR_NONE);
     case(RADIOLIB_LR11X0_PACKET_TYPE_LR_FHSS):
-      *modem = ModemType_t::LRFHSS;
+      *modem = ModemType_t::RADIOLIB_MODEM_LRFHSS;
       return(RADIOLIB_ERR_NONE);
   }
   
@@ -2060,6 +2067,7 @@ int16_t LR11x0::modSetup(float tcxoVoltage, uint8_t modem) {
   this->mod->spiConfig.stream = true;
   this->mod->spiConfig.parseStatusCb = SPIparseStatus;
   this->mod->spiConfig.checkStatusCb = SPIcheckStatus;
+  this->gnss = false;
 
   // try to find the LR11x0 chip - this will also reset the module at least once
   if(!LR11x0::findChip(this->chipType)) {
@@ -2446,7 +2454,7 @@ int16_t LR11x0::setDioIrqParams(uint32_t irq1, uint32_t irq2) {
 }
 
 int16_t LR11x0::setDioIrqParams(uint32_t irq) {
-  return(setDioIrqParams(irq,irq));
+  return(setDioIrqParams(irq, this->gnss ? 0 : irq));
 }
 
 int16_t LR11x0::clearIrq(uint32_t irq) {
@@ -2457,7 +2465,7 @@ int16_t LR11x0::clearIrq(uint32_t irq) {
 }
 
 int16_t LR11x0::configLfClock(uint8_t setup) {
-  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_CONFIG_LF_LOCK, true, &setup, 1));
+  return(this->SPIcommand(RADIOLIB_LR11X0_CMD_CONFIG_LF_CLOCK, true, &setup, 1));
 }
 
 int16_t LR11x0::setTcxoMode(uint8_t tune, uint32_t delay) {

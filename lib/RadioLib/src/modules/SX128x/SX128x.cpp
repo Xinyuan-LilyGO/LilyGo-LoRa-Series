@@ -327,8 +327,8 @@ int16_t SX128x::transmit(const uint8_t* data, size_t len, uint8_t addr) {
   int16_t state = standby();
   RADIOLIB_ASSERT(state);
 
-  // calculate timeout in ms (500% of expected time-on-air)
-  RadioLibTime_t timeout = (getTimeOnAir(len) * 5) / 1000;
+  // calculate timeout in ms (5ms + 500 % of expected time-on-air)
+  RadioLibTime_t timeout = 5 + (getTimeOnAir(len) * 5) / 1000;
   RADIOLIB_DEBUG_BASIC_PRINTLN("Timeout in %lu ms", timeout);
 
   // start transmission
@@ -480,8 +480,9 @@ int16_t SX128x::standby(uint8_t mode, bool wakeup) {
   this->mod->setRfSwitchState(Module::MODE_IDLE);
 
   if(wakeup) {
-    // pull NSS low to wake up
-    this->mod->hal->digitalWrite(this->mod->getCs(), this->mod->hal->GpioLevelLow);
+    // send a NOP command - this pulls the NSS low to exit the sleep mode,
+    // while preventing interference with possible other SPI transactions
+    (void)this->mod->SPIwriteStream((uint16_t)RADIOLIB_SX128X_CMD_NOP, NULL, 0, false, false);
   }
 
   uint8_t data[] = { mode };
@@ -589,7 +590,11 @@ int16_t SX128x::startReceive() {
 }
 
 int16_t SX128x::startReceive(uint16_t timeout, RadioLibIrqFlags_t irqFlags, RadioLibIrqFlags_t irqMask, size_t len) {
-  (void)len;
+  // in implicit header mode, use the provided length if it is nonzero
+  // otherwise we trust the user has previously set the payload length manually
+  if((this->headerType == RADIOLIB_SX128X_LORA_HEADER_IMPLICIT) && (len != 0)) {
+    this->payloadLen = len;
+  }
   
   // check active modem
   if(getPacketType() == RADIOLIB_SX128X_PACKET_TYPE_RANGING) {
@@ -858,10 +863,10 @@ int16_t SX128x::checkOutputPower(int8_t pwr, int8_t* clipped) {
 
 int16_t SX128x::setModem(ModemType_t modem) {
   switch(modem) {
-    case(ModemType_t::LoRa): {
+    case(ModemType_t::RADIOLIB_MODEM_LORA): {
       return(this->begin());
     } break;
-    case(ModemType_t::FSK): {
+    case(ModemType_t::RADIOLIB_MODEM_FSK): {
       return(this->beginGFSK());
     } break;
     default:
@@ -875,10 +880,10 @@ int16_t SX128x::getModem(ModemType_t* modem) {
   uint8_t packetType = getPacketType();
   switch(packetType) {
     case(RADIOLIB_SX128X_PACKET_TYPE_LORA):
-      *modem = ModemType_t::LoRa;
+      *modem = ModemType_t::RADIOLIB_MODEM_LORA;
       return(RADIOLIB_ERR_NONE);
     case(RADIOLIB_SX128X_PACKET_TYPE_GFSK):
-      *modem = ModemType_t::FSK;
+      *modem = ModemType_t::RADIOLIB_MODEM_FSK;
       return(RADIOLIB_ERR_NONE);
   }
   

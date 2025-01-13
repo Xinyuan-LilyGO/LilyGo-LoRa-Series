@@ -272,9 +272,10 @@ class Module {
       \param lsb Least significant bit of the register variable. Bits below this one will not be affected by the write operation.
       \param checkInterval Number of milliseconds between register writing and verification reading. Some registers need up to 10ms to process the change.
       \param checkMask Mask of bits to check, only bits set to 1 will be verified.
+      \param force Write new value even if the old value is the same.
       \returns \ref status_codes
     */
-    int16_t SPIsetRegValue(uint32_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2, uint8_t checkMask = 0xFF);
+    int16_t SPIsetRegValue(uint32_t reg, uint8_t value, uint8_t msb = 7, uint8_t lsb = 0, uint8_t checkInterval = 2, uint8_t checkMask = 0xFF, bool force = false);
 
     /*!
       \brief SPI burst read method.
@@ -382,12 +383,9 @@ class Module {
     int16_t SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write, uint8_t* dataOut, uint8_t* dataIn, size_t numBytes, bool waitForGpio);
 
     // pin number access methods
-
-    /*!
-      \brief Access method to get the pin number of SPI chip select.
-      \returns Pin number of SPI chip select configured in the constructor.
-    */
-    uint32_t getCs() const { return(csPin); }
+    // getCs is omitted on purpose, as it can interfere when accessing the SPI in a concurrent environment
+    // so it is considered to be part of the SPI pins and hence not accessible from outside
+    // see https://github.com/jgromes/RadioLib/discussions/1364
 
     /*!
       \brief Access method to get the pin number of interrupt/GPIO.

@@ -68,7 +68,7 @@ void setup() {
   // Manages uplink intervals to the TTN Fair Use Policy
   node.setDutyCycle(true, 1250);
 
-  // Enable the dwell time limits - 400ms is the limit for the US
+  // Update dwell time limits - 400ms is the limit for the US
   node.setDwellTime(true, 400);
 
   Serial.println(F("Ready!\n"));

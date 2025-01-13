@@ -762,6 +762,14 @@ class SX127x: public PhysicalLayer {
     void clearFifoEmptyAction();
 
     /*!
+      \brief Set FIFO threshold level.
+      Be aware that threshold is also set in setFifoFullAction method.
+      setFifoThreshold method must be called AFTER calling setFifoFullAction!
+      \param threshold Threshold level in bytes.
+    */
+    void setFifoThreshold(uint8_t threshold);
+
+    /*!
       \brief Set interrupt service routine function to call when FIFO is full.
       \param func Pointer to interrupt service routine.
     */
@@ -1241,12 +1249,14 @@ class SX127x: public PhysicalLayer {
     uint8_t codingRate = 0;
     bool crcEnabled = false;
     bool ookEnabled = false;
+    bool implicitHdr = false;
 
     int16_t configFSK();
     int16_t getActiveModem();
     int16_t setFrequencyRaw(float newFreq);
     int16_t setBitRateCommon(float br, uint8_t fracRegAddr);
     float getRSSI(bool packet, bool skipReceive, int16_t offset);
+    int16_t setHeaderType(uint8_t headerType, uint8_t bitIndex, size_t len = 0xFF);
 
 #if !RADIOLIB_GODMODE
   private:

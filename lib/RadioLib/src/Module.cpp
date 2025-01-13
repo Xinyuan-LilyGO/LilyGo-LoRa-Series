@@ -56,13 +56,21 @@ int16_t Module::SPIgetRegValue(uint32_t reg, uint8_t msb, uint8_t lsb) {
   return(maskedValue);
 }
 
-int16_t Module::SPIsetRegValue(uint32_t reg, uint8_t value, uint8_t msb, uint8_t lsb, uint8_t checkInterval, uint8_t checkMask) {
+int16_t Module::SPIsetRegValue(uint32_t reg, uint8_t value, uint8_t msb, uint8_t lsb, uint8_t checkInterval, uint8_t checkMask, bool force) {
   if((msb > 7) || (lsb > 7) || (lsb > msb)) {
     return(RADIOLIB_ERR_INVALID_BIT_RANGE);
   }
 
+  // read the current value
   uint8_t currentValue = SPIreadRegister(reg);
   uint8_t mask = ~((0b11111111 << (msb + 1)) | (0b11111111 >> (8 - lsb)));
+
+  // check if we actually need to update the register
+  if((currentValue & mask) == (value & mask) && !force) {
+    return(RADIOLIB_ERR_NONE);
+  }
+
+  // update the register
   uint8_t newValue = (currentValue & ~mask) | (value & mask);
   SPIwriteRegister(reg, newValue);
 

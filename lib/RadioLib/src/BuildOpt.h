@@ -133,10 +133,8 @@
  * RADIOLIB_DEFAULT_SPI - default SPIClass instance to use.
  * RADIOLIB_NONVOLATILE - macro to place variable into program storage (usually Flash).
  * RADIOLIB_NONVOLATILE_READ_BYTE - function/macro to read variables saved in program storage (usually Flash).
- * RADIOLIB_TYPE_ALIAS - construct to create an alias for a type, usually vai the `using` keyword.
+ * RADIOLIB_TYPE_ALIAS - construct to create an alias for a type, usually via the `using` keyword.
  * RADIOLIB_TONE_UNSUPPORTED - some platforms do not have tone()/noTone(), which is required for AFSK.
- *
- * In addition, some platforms may require RadioLib to disable specific drivers (such as ESP8266).
  *
  * Users may also specify their own configuration by uncommenting the RADIOLIB_CUSTOM_ARDUINO,
  * and then specifying all platform parameters in the section below. This will override automatic
@@ -365,6 +363,13 @@
   #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
   #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
 
+#elif defined(ARDUINO_ARCH_SILABS)
+  // Silicon Labs Arduino
+  #define RADIOLIB_PLATFORM                           "Arduino Silicon Labs"
+  #define RADIOLIB_ARDUINOHAL_PIN_MODE_CAST           (PinMode)
+  #define RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST         (PinStatus)
+  #define RADIOLIB_ARDUINOHAL_INTERRUPT_MODE_CAST     (PinStatus)
+
 #else
   // other Arduino platforms not covered by the above list - this may or may not work
   #define RADIOLIB_PLATFORM                           "Unknown Arduino"
@@ -578,7 +583,7 @@
 // version definitions
 #define RADIOLIB_VERSION_MAJOR  7
 #define RADIOLIB_VERSION_MINOR  1
-#define RADIOLIB_VERSION_PATCH  0
+#define RADIOLIB_VERSION_PATCH  2
 #define RADIOLIB_VERSION_EXTRA  0
 
 #define RADIOLIB_VERSION (((RADIOLIB_VERSION_MAJOR) << 24) | ((RADIOLIB_VERSION_MINOR) << 16) | ((RADIOLIB_VERSION_PATCH) << 8) | (RADIOLIB_VERSION_EXTRA))
