@@ -1295,8 +1295,6 @@ void wifiTask(void *task)
     while (1) {
         wifiMulti.run();
         if (is_time_available) {
-            extern bool factory_send();
-            factory_send();
             Serial.println("---REMOVE TASK---");
             vTaskDelete(NULL);
         }
