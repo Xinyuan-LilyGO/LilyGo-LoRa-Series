@@ -732,9 +732,13 @@ void power_key_pressed()
 
     // Set freq function
     radio.standby();
+#if  defined(USING_LR1121)
     // check if we need to recalibrate image
     bool skipCalibration = true;
     int16_t state =  radio.setFrequency(factory_freq[freq_index], skipCalibration);
+#else
+    int16_t state =  radio.setFrequency(factory_freq[freq_index]);
+#endif
     if (state != RADIOLIB_ERR_NONE) {
         Serial.printf("Selected frequency %.2f is invalid for this module!\n", factory_freq[freq_index]);
         return;
