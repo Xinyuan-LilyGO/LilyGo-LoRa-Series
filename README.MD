@@ -294,6 +294,8 @@
      | Upload Speed                         | 921600                              |
      | Programmer                           | **Esptool**                         |
 
+     - T3-S3 SX1280/PA Version QWIIC GPIO10,GPIO21 Unavailable, already used as SX1280 RX TX antenna switching function
+
      </details>
 6. Please uncomment the `utilities.h` file of each sketch according to your board model, otherwise the compilation will report an error.
 7. Upload sketch
