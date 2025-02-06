@@ -546,7 +546,7 @@ void setup()
     display.flipScreenVertically();
 
     Serial.printf("[%s]:", CONFIG_RADIO_TYPE);
-    Serial.print(F(" Initializing ... "));
+    Serial.print(F(" Initializing Radio ... "));
     int  state = radio.begin();
     if ( state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
@@ -554,6 +554,8 @@ void setup()
     } else {
         Serial.println(F("failed!"));
     }
+
+    Serial.printf("Freq:%.2f TxPower:%d Bandwidth:%.2f\n", CONFIG_RADIO_FREQ, CONFIG_RADIO_OUTPUT_POWER, CONFIG_RADIO_BW);
 
 #if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
     //The SX1280 version needs to set RX, TX antenna switching pins
@@ -725,6 +727,9 @@ float current_freq = CONFIG_RADIO_FREQ;
 
 void power_key_pressed()
 {
+#ifdef JAPAN_MIC
+    return;
+#endif
     // Turn on/off display
     // static bool isOn = true;
     // isOn ? display.displayOff()  : display.displayOn();
