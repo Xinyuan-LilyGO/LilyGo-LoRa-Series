@@ -448,3 +448,16 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
      ![t-beams3-supreme-ant-915M](./images/t-beams3-supreme-ant-915M.jpg)
 
      </details>
+
+10. T3-S3 Qwiic GPIO10, GPIO21 cannot be used?
+     <details>
+     <summary>
+     Click to view detailed
+     </summary>
+
+     - If you are using the SX1280/SX1280PA version, these two GPIOs are already connected to the Radio TX/RX Pin and cannot be used.
+     - If you are using the SX1262/SX1276 version, you can use GPIO10,21 by removing the two resistors in the figure below. Otherwise, the GPIO is connected to Radio DIO3,DIO4 by default.
+
+     ![T3-S3-QWIIC](./images/T3-S3-QWIIC.png)
+
+     </details>
