@@ -99,8 +99,15 @@
 └── BPFFactory                               # T-Beam BPF factory test examples
 ```
 
+## 3️⃣Use reference
 
-## 3️⃣ PlatformIO Quick Start (Recommended)
+|    Product    |                        Youtube  link                        |                                                   explanation                                                   | Status |
+| :-----------: | :---------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------: | :----: |
+|    T -BEAM    | [Youtube link](https://www.youtube.com/watch?v=Xf1Wf-aTSmc) | How do I drive the T-Beam display  How to use T-Beam for positioning,How to use T-Beams  for communication test |   ✅    |
+| LilyGo device | [Youtube link](https://www.youtube.com/watch?v=f3BybP3L7ls) |                                 How to enter boot mode to download the firmware                                 |   ✅    |
+
+
+## 4️⃣ PlatformIO Quick Start (Recommended)
 
 1. For users using the ESP32 version (non ESP32S3 version), please install the **CH9102 USB bridge** driver for the first time.
    - [Windows](https://www.wch-ic.com/downloads/CH343SER_ZIP.html)
@@ -119,7 +126,7 @@
 13. Click (plug symbol) to monitor serial output
 14. If it cannot be written, or the USB device keeps flashing, please check the **FAQ** below
 
-## 4️⃣ Arduino IDE quick start
+## 5️⃣ Arduino IDE quick start
 
 1. Install [Arduino IDE](https://www.arduino.cc/en/software)
 2. Install [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
@@ -301,18 +308,18 @@
 7. Upload sketch
 
 
-## 5️⃣ TTN
+## 6️⃣ TTN
 
 To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_Start](./docs/zh/LilyGo_LoRa_Series_Quick_Start_On_TTN_zh.md)
 
 
-## 6️⃣ Application
+## 7️⃣ Application
 
 - [T-Beam SoftRF](https://github.com/lyusupov/SoftRF)
 - [T-Beam Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter)
 - [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
 
-# 7️⃣ Datasheet
+# 8️⃣ Datasheet
 
 ##### T-Beam S3 Supreme datasheet
 
@@ -364,7 +371,7 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 
 [T3-TCXO schematic](schematic/T3_V3.0.pdf)
 
-# 8️⃣ FAQ
+# 9️⃣ FAQ
 
 1. T-Beam Supreme GPS backup power comes from 18650 battery. If you remove the 18650 battery, you will not be able to get GPS hot start. If you need to use GPS hot start, please connect the 18650 battery.
 2. There is no data output from the GPS. [Refer to GPS factory reset](firmware/GPS_Reset/README.MD)
