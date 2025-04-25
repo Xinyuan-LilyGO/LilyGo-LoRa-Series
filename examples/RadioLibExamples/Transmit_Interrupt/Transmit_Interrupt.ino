@@ -150,6 +150,7 @@ void setup()
 
     printResult(state == RADIOLIB_ERR_NONE);
 
+    Serial.printf("[%s]:", RADIO_TYPE_STR);
     Serial.print(F("Radio Initializing ... "));
     if (state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));

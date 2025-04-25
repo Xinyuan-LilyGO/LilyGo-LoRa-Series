@@ -83,7 +83,6 @@ static void beginSensor();
 
 #define CONFIG_RADIO_OUTPUT_POWER   17
 #define CONFIG_RADIO_BW             125.0
-#define CONFIG_RADIO_TYPE           "SX1276"
 
 SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
@@ -97,7 +96,6 @@ SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO
 
 #define CONFIG_RADIO_OUTPUT_POWER   17
 #define CONFIG_RADIO_BW             125.0
-#define CONFIG_RADIO_TYPE           "SX1278"
 SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1262)
@@ -111,7 +109,6 @@ SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO
 #define CONFIG_RADIO_OUTPUT_POWER   RADIO_MAX_OUTPUT_POWER
 #endif
 #define CONFIG_RADIO_BW             125.0
-#define CONFIG_RADIO_TYPE           "SX1262"
 
 SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
@@ -119,14 +116,12 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 #define CONFIG_RADIO_FREQ           2400.0
 #define CONFIG_RADIO_OUTPUT_POWER   13
 #define CONFIG_RADIO_BW             203.125
-#define CONFIG_RADIO_TYPE           "SX1280"
 SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif  defined(USING_SX1280PA)
 #define CONFIG_RADIO_FREQ           2400.0
 #define CONFIG_RADIO_OUTPUT_POWER   3           // PA Version power range : -18 ~ 3dBm
 #define CONFIG_RADIO_BW             203.125
-#define CONFIG_RADIO_TYPE           "SX1280PA"
 SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif   defined(USING_LR1121)
@@ -140,7 +135,6 @@ SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 // #define CONFIG_RADIO_FREQ           868.0
 // #define CONFIG_RADIO_OUTPUT_POWER   22
 // #define CONFIG_RADIO_BW             125.0
-#define CONFIG_RADIO_TYPE           "LR1121"
 
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif  /*Radio option*/
@@ -625,7 +619,7 @@ void setup()
 
     display.flipScreenVertically();
 
-    Serial.printf("[%s]:", CONFIG_RADIO_TYPE);
+    Serial.printf("[%s]:", RADIO_TYPE_STR);
     Serial.print(F(" Initializing Radio ... "));
 
 #ifdef RADIO_TX_CW

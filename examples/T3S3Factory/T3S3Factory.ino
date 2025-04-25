@@ -258,7 +258,8 @@ void setup()
 
     display.flipScreenVertically();
 
-    Serial.print(F("[Radio] Initializing ... "));
+    Serial.printf("[%s]:", RADIO_TYPE_STR);
+    Serial.print(F("Radio Initializing ... "));
     int  state = radio.begin();
     if ( state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
