@@ -2,7 +2,7 @@
 
 ## **[中文](./README_CN.MD) | English**
 
-## News:
+## News
 
 - This warehouse currently only maintains the version of LilyGo that is on sale , For the LilyGo discontinued version of the LoRa board, please jump to [Archive package](https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/releases/tag/v0.0.1) to download
 - Arduino IDE users need to configure the board to be used in the <utilities.h> file in the sketch directory before using the example. The <utilities.h> file contains the pin definitions of the board. If you do not select it, an error will occur during compilation.
@@ -42,7 +42,7 @@
 
 ## 2️⃣Example description
 
-```
+```bash
 ./examples/
 ├── ArduinoLoRa                              # Only support SX1276/SX1278 radio module
 │   ├── LoRaReceiver
@@ -169,72 +169,72 @@
      <details>
      <summary>Click to view T-Beam-V1.X Arduino IDE options</summary>
 
-     | T-Beam-V1.X                          | Value                                                   |
-     | ------------------------------------ | ------------------------------------------------------- |
-     | Board                                | **ESP32 Dev Module**                                    |
-     | Port                                 | Your port                                               |
-     | CPU Frequency                        | 240MHZ(WiFi/BT)                                         |
-     | Core Debug Level                     | None                                                    |
-     | Erase All Flash Before Sketch Upload | Disable                                                 |
-     | Events Run On                        | Core1                                                   |
-     | Flash Frequency                      | 80MHZ                                                   |
-     | Flash Mode                           | QIO                                                     |
-     | Flash Size                           | **4MB(32Mb)**                                           |
-     | JTAG Adapter                         | Disabled                                                |
-     | Arduino Runs On                      | Core1                                                   |
-     | Partition Scheme                     | **Default 4M Flash with spiffs(1.2M APP/1.5MB SPIFFS)** |
-     | PSRAM                                | **Enable**                                              |
-     | Upload Speed                         | 921600                                                  |
-     | Programmer                           | **Esptool**                                             |
+     | T-Beam-V1.X                          | Value                                |
+     | ------------------------------------ | ------------------------------------ |
+     | Board                                | **ESP32 Dev Module**                 |
+     | Port                                 | Your port                            |
+     | CPU Frequency                        | 240MHZ(WiFi/BT)                      |
+     | Core Debug Level                     | None                                 |
+     | Erase All Flash Before Sketch Upload | Disable                              |
+     | Events Run On                        | Core1                                |
+     | Flash Frequency                      | 80MHZ                                |
+     | Flash Mode                           | QIO                                  |
+     | Flash Size                           | **4MB(32Mb)**                        |
+     | JTAG Adapter                         | Disabled                             |
+     | Arduino Runs On                      | Core1                                |
+     | Partition Scheme                     | **Huge APP (3MB No OTA/1MB SPIFFS)** |
+     | PSRAM                                | **Enable**                           |
+     | Upload Speed                         | 921600                               |
+     | Programmer                           | **Esptool**                          |
 
      </details>
 
      <details>
      <summary>Click to view LoRa32 V1.x or T3 TCXO Arduino IDE options</summary>
 
-     | T-Beam-V1.X                          | Value                                                   |
-     | ------------------------------------ | ------------------------------------------------------- |
-     | Board                                | **ESP32 Dev Module**                                    |
-     | Port                                 | Your port                                               |
-     | CPU Frequency                        | 240MHZ(WiFi/BT)                                         |
-     | Core Debug Level                     | None                                                    |
-     | Erase All Flash Before Sketch Upload | Disable                                                 |
-     | Events Run On                        | Core1                                                   |
-     | Flash Frequency                      | 80MHZ                                                   |
-     | Flash Mode                           | QIO                                                     |
-     | Flash Size                           | **4MB(32Mb)**                                           |
-     | JTAG Adapter                         | Disabled                                                |
-     | Arduino Runs On                      | Core1                                                   |
-     | Partition Scheme                     | **Default 4M Flash with spiffs(1.2M APP/1.5MB SPIFFS)** |
-     | PSRAM                                | **Disable**                                             |
-     | Upload Speed                         | 921600                                                  |
-     | Programmer                           | **Esptool**                                             |
+     | LoRa32 V1.x  or T3 TCXO              | Value                                |
+     | ------------------------------------ | ------------------------------------ |
+     | Board                                | **ESP32 Dev Module**                 |
+     | Port                                 | Your port                            |
+     | CPU Frequency                        | 240MHZ(WiFi/BT)                      |
+     | Core Debug Level                     | None                                 |
+     | Erase All Flash Before Sketch Upload | Disable                              |
+     | Events Run On                        | Core1                                |
+     | Flash Frequency                      | 80MHZ                                |
+     | Flash Mode                           | QIO                                  |
+     | Flash Size                           | **4MB(32Mb)**                        |
+     | JTAG Adapter                         | Disabled                             |
+     | Arduino Runs On                      | Core1                                |
+     | Partition Scheme                     | **Huge APP (3MB No OTA/1MB SPIFFS)** |
+     | PSRAM                                | **Disable**                          |
+     | Upload Speed                         | 921600                               |
+     | Programmer                           | **Esptool**                          |
 
      </details>
 
      <details>
-     <summary>Click to view T3-S3 Arduino IDE options</summary>
+     <summary>Click to view T3-S3 V.1x (V1.1~V1.3) Arduino IDE options</summary>
 
-     | T3-S3                                | Value                                                   |
-     | ------------------------------------ | ------------------------------------------------------- |
-     | Board                                | **ESP32S3 Dev Module**                                  |
-     | Port                                 | Your port                                               |
-     | USB CDC On Boot                      | Enable                                                  |
-     | CPU Frequency                        | 240MHZ(WiFi)                                            |
-     | Core Debug Level                     | None                                                    |
-     | USB DFU On Boot                      | Disable                                                 |
-     | Erase All Flash Before Sketch Upload | Disable                                                 |
-     | Events Run On                        | Core1                                                   |
-     | Flash Mode                           | QIO 80MHZ                                               |
-     | Flash Size                           | **4MB(32Mb)**                                           |
-     | Arduino Runs On                      | Core1                                                   |
-     | USB Firmware MSC On Boot             | Disable                                                 |
-     | Partition Scheme                     | **Default 4M Flash with spiffs(1.2M APP/1.5MB SPIFFS)** |
-     | PSRAM                                | **QSPI PSRAM**                                          |
-     | Upload Mode                          | **UART0/Hardware CDC**                                  |
-     | Upload Speed                         | 921600                                                  |
-     | USB Mode                             | **CDC and JTAG**                                        |
-     | Programmer                           | **Esptool**                                             |
+     | T3-S3 V.1x                           | Value                                |
+     | ------------------------------------ | ------------------------------------ |
+     | Board                                | **ESP32S3 Dev Module**               |
+     | Port                                 | Your port                            |
+     | USB CDC On Boot                      | Enable                               |
+     | CPU Frequency                        | 240MHZ(WiFi)                         |
+     | Core Debug Level                     | None                                 |
+     | USB DFU On Boot                      | Disable                              |
+     | Erase All Flash Before Sketch Upload | Disable                              |
+     | Events Run On                        | Core1                                |
+     | Flash Mode                           | QIO 80MHZ                            |
+     | Flash Size                           | **4MB(32Mb)**                        |
+     | Arduino Runs On                      | Core1                                |
+     | USB Firmware MSC On Boot             | Disable                              |
+     | Partition Scheme                     | **Huge APP (3MB No OTA/1MB SPIFFS)** |
+     | PSRAM                                | **QSPI PSRAM**                       |
+     | Upload Mode                          | **UART0/Hardware CDC**               |
+     | Upload Speed                         | 921600                               |
+     | USB Mode                             | **CDC and JTAG**                     |
+     | Programmer                           | **Esptool**                          |
 
      </details>
 
@@ -253,15 +253,15 @@
      | USB support (if available)  | CDC (generic 'Serial' supersede U(S)ART) |
      | U(S)ART support             | Enabled (generic 'Serial')               |
      | USB speed (if available)    | Low/Full Speed                           |
-    
+
      - To upload a sketch, you need to hold down the BOOT button on the board and then plug in the USB. At this time, it will enter the DFU mode to allow program writing.
-    
+
      </details>
 
      <details>
      <summary>Click to view T3-C6 Arduino IDE options</summary>
 
-     | T3-S3                                | Value                                                   |
+     | T3-C6                                | Value                                                   |
      | ------------------------------------ | ------------------------------------------------------- |
      | Board                                | **ESP32C6 Dev Module**                                  |
      | Port                                 | Your port                                               |
@@ -283,7 +283,7 @@
      <details>
      <summary>Click to view T-Beam PBF Arduino IDE options</summary>
 
-     | T3-S3                                | Value                               |
+     | T-Beam PBF                           | Value                               |
      | ------------------------------------ | ----------------------------------- |
      | Board                                | **ESP32S3 Dev Module**              |
      | Port                                 | Your port                           |
@@ -326,6 +326,7 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 - [T-Beam Supreme schematic](schematic/LilyGo_T-BeamS3Supreme.pdf)
 - [AXP2101 datasheet](./lib/XPowersLib/datasheet/AXP2101_Datasheet_V1.0_en.pdf)
 - [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
+- [LR1121 datasheet](https://www.semtech.com/products/wireless-rf/lora-connect/lr1121)
 - [GSP MAX-M10 datasheet](https://www.u-blox.com/zh/product/max-m10-series)
 - [PCF8563 datasheet](./lib/SensorsLib/datasheet/PCF8563%20Datasheet%20Rev.11.pdf)
 - [QMI8658 datasheet](./lib/SensorsLib/datasheet/QMI8658A%20Datasheet%20Rev1.0.pdf)
@@ -345,9 +346,11 @@ To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_St
 ##### T3-S3 (ESP32S3) datasheet
 
 - [T3_S3_V1.2 schematic](schematic/T3_S3_V1.2.pdf)
+- [T3_S3_V1.3 schematic](schematic/T3_S3_V1.3.pdf)
 - [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 - [SX1278 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1278)
 - [SX1276 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
+- [LR1121 datasheet](https://www.semtech.com/products/wireless-rf/lora-connect/lr1121)
 - [SX1280 datasheet](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
 
 ##### LoRa32(ESP32) datasheet
