@@ -4,7 +4,7 @@
  * @license   MIT
  * @copyright Copyright (c) 2024  ShenZhen XinYuan Electronic Technology Co., Ltd
  * @date      2024-04-24
- * @last-update 2024-08-07
+ * @last-update 2025-04-09
  *
  */
 
@@ -17,7 +17,7 @@
 #include <BLEServer.h>
 #endif
 
-#if defined(HAS_SDCARD)
+#if defined(HAS_SDCARD) && !defined(SD_SHARE_SPI_BUS)
 SPIClass SDCardSPI(HSPI);
 #endif
 
@@ -472,21 +472,82 @@ bool beginDisplay()
     return false;
 }
 
+#ifdef HAS_SDCARD
+bool writeFile(const char *path, const char *buffer)
+{
+    bool rlst = false;
+    File file = SD.open(path, FILE_WRITE);
+    if (!file) {
+        Serial.println("Failed to open file for writing");
+        return false;
+    }
+    if (file.print(buffer)) {
+        Serial.println("File written");
+        rlst = true;
+    } else {
+        Serial.println("Write failed");
+        rlst = false;
+    }
+    file.close();
+    return  rlst;
+}
+
+
+bool readFile(const char *path, uint8_t *buffer, size_t size)
+{
+    File file = SD.open(path, FILE_READ);
+    if (!file) {
+        Serial.println("Failed to open file for reading");
+        return false;
+    }
+    file.read(buffer, size);
+    file.close();
+    return false;
+}
+
+bool testSDWriteAndRead()
+{
+    const char *path = "/test_sd.txt";
+    const char *message = "This is a string for reading and writing SD card.";
+    uint8_t buffer[128] = {0};
+
+    if (!writeFile(path, message)) {
+        Serial.println("SD Text write failed");
+        return false;
+    }
+    delay(100);
+
+    readFile(path, buffer, 128);
+
+    if (memcmp(buffer, message, strlen(message)) != 0) {
+        Serial.println("SD verification failed");
+        return false;
+    }
+    Serial.println("SD verification successful");
+    return true;
+}
+#endif /*HAS_SDCARD*/
 
 bool beginSDCard()
 {
-#ifdef SDCARD_CS
-    if (SD.begin(SDCARD_CS, SDCardSPI)) {
+#ifdef HAS_SDCARD
+#if defined(HAS_SDCARD) && defined(SD_SHARE_SPI_BUS)
+    bool rlst = SD.begin(SDCARD_CS);
+#else
+    bool rlst = SD.begin(SDCARD_CS, SDCardSPI);
+#endif
+
+    if (rlst) {
         uint32_t cardSize = SD.cardSize() / (1024 * 1024);
         Serial.print("Sd Card init succeeded, The current available capacity is ");
         Serial.print(cardSize / 1024.0);
         Serial.println(" GB");
         deviceOnline |= SDCARD_ONLINE;
-        return true;
+        return testSDWriteAndRead();
     } else {
         Serial.println("Warning: Failed to init Sd Card");
     }
-#endif
+#endif /*HAS_SDCARD*/
     return false;
 }
 
@@ -630,9 +691,18 @@ void setupBoards(bool disable_u8g2 )
     SPI.begin();
 #endif
 
-#ifdef HAS_SDCARD
+
+#if defined(HAS_SDCARD)
+#if defined(SD_SHARE_SPI_BUS)
+    // Share spi bus with lora , set lora cs,rst to high
+    pinMode(RADIO_CS_PIN, OUTPUT);
+    pinMode(RADIO_RST_PIN, OUTPUT);
+    digitalWrite(RADIO_CS_PIN, HIGH);
+    digitalWrite(RADIO_RST_PIN, HIGH);
+#else
     SDCardSPI.begin(SDCARD_SCLK, SDCARD_MISO, SDCARD_MOSI);
-#endif
+#endif /*SD_SHARE_SPI_BUS*/
+#endif /*HAS_SDCARD*/
 
 #ifdef I2C_SDA
     Wire.begin(I2C_SDA, I2C_SCL);
@@ -688,6 +758,11 @@ void setupBoards(bool disable_u8g2 )
     digitalWrite(GPS_RST_PIN, HIGH);
 #endif
 
+#ifdef GPS_WAKEUP_PIN
+    pinMode(GPS_WAKEUP_PIN, OUTPUT);
+    digitalWrite(GPS_WAKEUP_PIN, HIGH);
+#endif
+
 
 #if defined(ARDUINO_ARCH_STM32)
     SerialGPS.println("@GSR"); delay(300);
@@ -718,6 +793,10 @@ void setupBoards(bool disable_u8g2 )
     digitalWrite(RADIO_CTRL, LOW);
 #endif
 
+#ifdef RADIO_DIO2_PIN
+    pinMode(RADIO_DIO2_PIN, INPUT);
+#endif
+
     beginPower();
 
     beginSDCard();
@@ -736,7 +815,7 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef HAS_GPS
 
-#if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_2W)
+#if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_2W) || defined(T_BEAM_S3_BPF)
     // T-Beam v1.2 skips L76K
     find_gps = beginGPS();
 #endif
@@ -1081,7 +1160,7 @@ bool recoveryGPS()
 #if defined(ARDUINO_ARCH_ESP32)
 
 //NCP18XH103F03RB: https://item.szlcsc.com/14214.html
-#define NTC_PIN 14 // NTC connection pins
+// #define NTC_PIN 14 // NTC connection pins
 #define SERIES_RESISTOR 10000 // Series resistance value (10kΩ)
 #define B_COEFFICIENT 3950 // B value, set according to the NTC specification
 #define ROOM_TEMP 298.15 // 25°C absolute temperature (K)
@@ -1099,9 +1178,9 @@ float getTempForNTC()
         // Calculate temperature using the Steinhart-Hart equation
         temperature = (1.0 / (log(resistance / ROOM_TEMP_RESISTANCE) / B_COEFFICIENT + 1.0 / ROOM_TEMP)) - 273.15;
 
-        Serial.print("Temperature: ");
-        Serial.print(temperature);
-        Serial.println(" °C");
+        // Serial.print("Temperature: ");
+        // Serial.print(temperature);
+        // Serial.println(" °C");
 
         check_temperature  = millis() + 1000;
     }

@@ -145,6 +145,11 @@
 #define HAS_DISPLAY
 #define BOARD_VARIANT_NAME          "T3 V1.3"
 
+#define BAT_ADC_PULLUP_RES          (100000.0)
+#define BAT_ADC_PULLDOWN_RES        (100000.0)
+#define BAT_MAX_VOLTAGE             (4.2)
+#define BAT_VOL_COMPENSATION        (0.0)
+
 #elif defined(T3_V1_6_SX1276) || defined(T3_V1_6_SX1278)
 
 
@@ -189,6 +194,10 @@
 
 #define BOARD_VARIANT_NAME          "T3 V1.6"
 
+#define BAT_ADC_PULLUP_RES          (100000.0)
+#define BAT_ADC_PULLDOWN_RES        (100000.0)
+#define BAT_MAX_VOLTAGE             (4.2)
+#define BAT_VOL_COMPENSATION        (0.0)
 
 #elif defined(T3_V1_6_SX1276_TCXO)
 
@@ -230,7 +239,10 @@
 
 #define BOARD_VARIANT_NAME          "T3 V1.6 TCXO"
 
-
+#define BAT_ADC_PULLUP_RES          (100000.0)
+#define BAT_ADC_PULLDOWN_RES        (100000.0)
+#define BAT_MAX_VOLTAGE             (4.2)
+#define BAT_VOL_COMPENSATION        (0.0)
 
 #elif defined(T3_V3_0)
 
@@ -276,8 +288,6 @@
 #define BOARD_LED                   25
 #define LED_ON                      HIGH
 
-#define ADC_PIN                     35
-
 #define HAS_SDCARD
 #define HAS_DISPLAY
 
@@ -286,6 +296,10 @@
 #define BUTTON_PIN                  0
 #define ADC_PIN                     35
 
+#define BAT_ADC_PULLUP_RES          (100000.0)
+#define BAT_ADC_PULLDOWN_RES        (100000.0)
+#define BAT_MAX_VOLTAGE             (4.2)
+#define BAT_VOL_COMPENSATION        (0.0)
 
 #elif   defined(T3_S3_V1_2_SX1262)    ||   defined(ARDUINO_LILYGO_T3S3_SX1262)   ||    \
         defined(T3_S3_V1_2_SX1276)    ||   defined(ARDUINO_LILYGO_T3S3_SX1276)   ||    \
@@ -344,6 +358,11 @@
 #define ADC_PIN                     1
 
 #define RADIO_RST_PIN               8
+
+#define BAT_ADC_PULLUP_RES          (100000.0)
+#define BAT_ADC_PULLDOWN_RES        (100000.0)
+#define BAT_MAX_VOLTAGE             (4.2)
+#define BAT_VOL_COMPENSATION        (0.0)
 
 #if defined(USING_SX1262)
 
@@ -545,33 +564,33 @@
 #define USING_SX1278
 #endif
 
-#define I2C_SDA                     8
-#define I2C_SCL                     9
+#define I2C_SDA                     (8)
+#define I2C_SCL                     (9)
 
-#define PMU_IRQ                     4
+#define PMU_IRQ                     (4)
 
-#define GPS_RX_PIN                  5
-#define GPS_TX_PIN                  6
-#define GPS_PPS_PIN                 7
+#define GPS_RX_PIN                  (5)
+#define GPS_TX_PIN                  (6)
+#define GPS_PPS_PIN                 (7)
 
-#define BUTTON_PIN                  0
+#define BUTTON_PIN                  (0)
+#define BUTTON2_PIN                 (3)         /*BUTTON 2 = GPIO3*/
 #define BUTTON_PIN_MASK             GPIO_SEL_0  /*BUTTON 1 = GPIO0*/
 #define BUTTON_COUNT                (2)
-#define BUTTON_ARRAY                {BUTTON_PIN, 3 /*BUTTON 2 = GPIO3*/}
+#define BUTTON_ARRAY                {BUTTON_PIN, BUTTON2_PIN /*BUTTON 2 = GPIO3*/}
 
-#define RADIO_SCLK_PIN              (41)
-#define RADIO_MISO_PIN              (42)
-#define RADIO_MOSI_PIN              (2)
+#define RADIO_SCLK_PIN              (12)//(41)
+#define RADIO_MISO_PIN              (13)//(42)
+#define RADIO_MOSI_PIN              (11)//(2)
 #define RADIO_CS_PIN                (1)
 #define RADIO_RST_PIN               (18)
 
 #define RADIO_DIO0_PIN              (14)
 #define RADIO_DIO1_PIN              (21)
-#define RADIO_DIO2_PIN              (15)
 
-#define RADIO_TCXO_ENABLE           (17)
+// #define RADIO_TCXO_ENABLE           (17)
 #define RADIO_LDO_EN                (16)
-#define RADIO_BUSY_PIN              (RADIO_DIO1_PIN)
+#define RADIO_CTRL                  (39)
 
 #define SPI_MOSI                    (11)
 #define SPI_SCK                     (12)
@@ -590,13 +609,11 @@
 #define HAS_GPS
 #define HAS_DISPLAY
 #define HAS_PMU
-
-#define __HAS_SPI1__
-#define HAS_SENSOR
+#define SD_SHARE_SPI_BUS              
 
 #define PMU_WIRE_PORT               Wire
 #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
-#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
+#define DISPLAY_MODEL_SSD_LIB       SH1106Wire
 #define BOARD_VARIANT_NAME          "T-Beam BPF"
 
 
@@ -608,49 +625,53 @@
 
 #define I2C_SDA                     (8)
 #define I2C_SCL                     (9)
+
 #define GPS_RX_PIN                  (5)
 #define GPS_TX_PIN                  (6)
 #define GPS_PPS_PIN                 (7)
+#define GPS_EN_PIN                  (10)
 
 #define BUTTON_PIN                  (0)         /*BUTTON 1 = GPIO0*/
-#define BUTTON2_PIN                 (3)         /*BUTTON 2 = GPIO3*/
+#define BUTTON2_PIN                 (2)         /*BUTTON 2 = GPIO3*/
 
 #define BUTTON_PIN_MASK             GPIO_SEL_0
 #define BUTTON_CONUT                (2)
 #define BUTTON_ARRAY                {BUTTON_PIN,BUTTON2_PIN/*BUTTON 2 = GPIO3*/}
-
-
-#define RADIO_SCLK_PIN              (16)
-#define RADIO_MISO_PIN              (17)
-#define RADIO_MOSI_PIN              (18)
-#define RADIO_CS_PIN                (15)
-#define RADIO_RST_PIN               (3)
-#define RADIO_LDO_EN                (40)
-#define RADIO_CTRL                  (21)
-
-#define RADIO_DIO1_PIN              (1)
-// #define RADIO_DIO3_PIN              (2)
-
-#define RADIO_BUSY_PIN              (38)
 
 #define SPI_MOSI                    (11)
 #define SPI_SCK                     (13)
 #define SPI_MISO                    (12)
 #define SPI_CS                      (10)
 
-#define SDCARD_MOSI                 SPI_MOSI
-#define SDCARD_MISO                 SPI_MISO
-#define SDCARD_SCLK                 SPI_SCK
-#define SDCARD_CS                   SPI_CS
+#define RADIO_SCLK_PIN              (16)
+#define RADIO_MISO_PIN              (17)
+#define RADIO_MOSI_PIN              (18)
 
+#define RADIO_CS_PIN                (15)
+#define RADIO_RST_PIN               (3)
+#define RADIO_LDO_EN                (40)
+#define RADIO_CTRL                  (21)
+#define RADIO_DIO1_PIN              (1)
+#define RADIO_BUSY_PIN              (38)
+
+// #define SDCARD_MOSI                 SPI_MOSI
+// #define SDCARD_MISO                 SPI_MISO
+// #define SDCARD_SCLK                 SPI_SCK
+// #define SDCARD_CS                   SPI_CS
 
 #define NTC_PIN                     (14)
 #define FAN_CTRL                    (41)
 #define ADC_PIN                     (4)
 
+#define BAT_ADC_PULLUP_RES          (300000.0)
+#define BAT_ADC_PULLDOWN_RES        (150000.0)
+#define BAT_MAX_VOLTAGE             (7.4)
+#define BAT_VOL_COMPENSATION        (0.25)
+#define GPS_SLEEP_HOLD_ON_LOW
+
 #define GPS_BAUD_RATE               9600
 
-#define HAS_SDCARD
+// #define HAS_SDCARD
 #define HAS_GPS
 #define HAS_DISPLAY
 
