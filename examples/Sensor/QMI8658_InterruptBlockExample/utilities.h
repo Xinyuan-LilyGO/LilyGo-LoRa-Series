@@ -689,7 +689,6 @@
 * */
 #define RADIO_MAX_OUTPUT_POWER      3
 
-
 #else
 #error "When using it for the first time, please define the board model in <utilities.h>"
 #endif
@@ -697,6 +696,20 @@
 
 
 
+
+#if  defined(USING_SX1262)
+#define RADIO_TYPE_STR  "SX1262"
+#elif defined(USING_SX1276)
+#define RADIO_TYPE_STR  "SX1276"
+#elif defined(USING_SX1278)
+#define RADIO_TYPE_STR  "SX1278"
+#elif defined(USING_LR1121)
+#define RADIO_TYPE_STR  "LR1121"
+#elif defined(USING_SX1280)
+#define RADIO_TYPE_STR  "SX1280"
+#elif defined(USING_SX1280PA)
+#define RADIO_TYPE_STR  "SX1280PA"
+#endif
 
 
 
