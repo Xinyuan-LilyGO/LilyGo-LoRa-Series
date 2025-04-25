@@ -505,8 +505,11 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 
         if (state == RADIOLIB_ERR_NONE) {
             // packet was successfully received
-            Serial.println(F("[Radio] Received packet!"));
             radioRSSI = radio.getRSSI();
+
+            Serial.println(F("[Radio] Received packet!"));
+            Serial.print(F("[Payload]  ")); Serial.println(recvCounter);
+            Serial.print(F("[RSSI]  ")); Serial.println(radioRSSI);
 
         } else if (state == RADIOLIB_ERR_CRC_MISMATCH) {
             // packet was received, but is malformed
