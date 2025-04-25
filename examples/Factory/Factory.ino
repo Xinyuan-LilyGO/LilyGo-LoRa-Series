@@ -73,14 +73,28 @@ static void beginSensor();
 
 
 #if     defined(USING_SX1276)
+
+#ifdef T_BEAM_S3_BPF
+// BPF Freq range : 144Mhz ~ 148MHz
+#define CONFIG_RADIO_FREQ           144.0
+#else  /*T_BEAM_S3_BPF*/
 #define CONFIG_RADIO_FREQ           868.0
+#endif /*T_BEAM_S3_BPF*/
+
 #define CONFIG_RADIO_OUTPUT_POWER   17
 #define CONFIG_RADIO_BW             125.0
 #define CONFIG_RADIO_TYPE           "SX1276"
+
 SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1278)
+#ifdef T_BEAM_S3_BPF
+// BPF Freq range : 144Mhz ~ 148MHz
+#define CONFIG_RADIO_FREQ           144.0
+#else
 #define CONFIG_RADIO_FREQ           433.0
+#endif /*T_BEAM_S3_BPF*/
+
 #define CONFIG_RADIO_OUTPUT_POWER   17
 #define CONFIG_RADIO_BW             125.0
 #define CONFIG_RADIO_TYPE           "SX1278"
@@ -129,7 +143,7 @@ SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 #define CONFIG_RADIO_TYPE           "LR1121"
 
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
-#endif
+#endif  /*Radio option*/
 
 enum TransmissionDirection {
     TRANSMISSION,
@@ -145,6 +159,7 @@ bool            wifi_is_config = false;
 bool            is_time_available = false;
 DISPLAY_MODEL_SSD_LIB     display(0x3c, I2C_SDA, I2C_SCL);
 OLEDDisplayUi   ui( &display );
+bool            led_blink = false;
 
 FrameCallback   frames[] = {
     hwProbe,
@@ -171,11 +186,11 @@ WiFiMulti       wifiMulti;
 
 #ifdef HAS_GPS
 TinyGPSPlus     gps;
-#endif
+#endif /*HAS_GPS*/
 
 #ifdef BUTTON2_PIN
 AceButton       button2;
-#endif
+#endif /*BUTTON2_PIN*/
 
 String macStr;
 
@@ -222,69 +237,112 @@ void sleepDevice()
 
     Wire.end();
 
-    // GPS pins
-#ifdef HAS_GPS
+#ifdef SerialGPS
     SerialGPS.end();
-    pinMode(GPS_RX_PIN, INPUT);
-    pinMode(GPS_TX_PIN, INPUT);
 #endif
 
+    const uint8_t device_pins[] = {
+
+        // GPS pins
+#ifdef HAS_GPS
+        GPS_RX_PIN,
+        GPS_TX_PIN,
+#endif
+#ifdef GPS_PPS_PIN
+        GPS_PPS_PIN,
+#endif
 #ifdef OLED_RST
-    pinMode(OLED_RST, INPUT);
+        OLED_RST,
 #endif
-    // Wire pins
-    pinMode(I2C_SDA, INPUT);
-    pinMode(I2C_SCL, INPUT);
+#ifdef GPS_EN_PIN
+        GPS_EN_PIN,
+#endif
+        // Wire pins
+        I2C_SDA,
+        I2C_SCL,
 
-
-    // Radio pins
+        // Radio pins
 #ifdef RADIO_DIO0_PIN
-    pinMode(RADIO_DIO0_PIN, INPUT);
+        RADIO_DIO0_PIN,
 #endif
 #ifdef RADIO_DIO1_PIN
-    pinMode(RADIO_DIO1_PIN, INPUT);
+        RADIO_DIO1_PIN,
 #endif
 #ifdef RADIO_DIO9_PIN
-    pinMode(RADIO_DIO9_PIN, INPUT);
+        RADIO_DIO9_PIN,
 #endif
 #ifdef RADIO_BUSY_PIN
-    pinMode(RADIO_BUSY_PIN, INPUT);
+        RADIO_BUSY_PIN,
 #endif
-    pinMode(RADIO_CS_PIN, INPUT);
-    pinMode(RADIO_RST_PIN, INPUT);
-    pinMode(RADIO_SCLK_PIN, INPUT);
-    pinMode(RADIO_MISO_PIN, INPUT);
-    pinMode(RADIO_MOSI_PIN, INPUT);
+        RADIO_CS_PIN,
+#ifdef HAS_PMU
+        RADIO_RST_PIN,
+#endif
+        RADIO_SCLK_PIN,
+        RADIO_MISO_PIN,
+        RADIO_MOSI_PIN,
 
-    // SD Card pins
+        // SD Card pins
 #ifdef SDCARD_MOSI
-    pinMode(SDCARD_MOSI, INPUT);
-    pinMode(SDCARD_MISO, INPUT);
-    pinMode(SDCARD_SCLK, INPUT);
-    pinMode(SDCARD_CS, INPUT);
+        SDCARD_MOSI,
+        SDCARD_MISO,
+        SDCARD_SCLK,
+        SDCARD_CS,
 #endif
 
 #ifdef HAS_PMU
-    pinMode(PMU_IRQ, INPUT);
+        PMU_IRQ,
 #endif
 
 #ifdef BOARD_LED
-    pinMode(BOARD_LED, INPUT);
+        BOARD_LED,
 #endif
 
 #ifdef ADC_PIN
-    pinMode(ADC_PIN, INPUT);
+        ADC_PIN,
 #endif
-
-    pinMode(BUTTON_PIN, INPUT);
+        BUTTON_PIN,
 
 #ifdef IMU_INT
-    pinMode(IMU_INT, INPUT);
+        IMU_INT,
 #endif
 
 #ifdef BUTTON2_PIN
-    pinMode(BUTTON2_PIN, INPUT);
+        BUTTON2_PIN,
 #endif
+
+#ifdef RADIO_LDO_EN
+        RADIO_LDO_EN,
+#endif
+
+#ifdef RADIO_CTRL
+        RADIO_CTRL,
+#endif
+
+#ifdef FAN_CTRL
+        FAN_CTRL,
+#endif
+    };
+
+    for (auto pin : device_pins) {
+        gpio_reset_pin((gpio_num_t )pin);
+        pinMode(pin, OPEN_DRAIN);
+    }
+
+#ifdef GPS_SLEEP_HOLD_ON_LOW
+    pinMode(GPS_EN_PIN, OUTPUT);
+    digitalWrite(GPS_EN_PIN, LOW);
+    gpio_hold_en((gpio_num_t) GPS_EN_PIN);
+    gpio_deep_sleep_hold_en();
+#endif
+
+#ifdef RADIO_LDO_EN
+    pinMode(RADIO_LDO_EN, OUTPUT);
+    digitalWrite(RADIO_LDO_EN, LOW);
+    gpio_hold_en((gpio_num_t) RADIO_LDO_EN);
+    gpio_deep_sleep_hold_en();
+#endif
+
 
 #if CONFIG_IDF_TARGET_ESP32
     esp_sleep_ext1_wakeup_mode_t wakeup_mode = ESP_EXT1_WAKEUP_ALL_LOW;
@@ -312,7 +370,7 @@ void sleepDevice()
     // GPIO WAKE UP EXT 1 +  OLED  Display  ~ 450 uA ,
     // See sleep_current.jpg
     // Serial.println("GPIO WAKE UP EXT 1");
-    // esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), wakeup_mode);
+    esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), wakeup_mode);
 
 
     // GPIO WAKE UP EXT 1 + TIMER WAKE UP NO  OLED  Display ~ 440 uA
@@ -326,9 +384,9 @@ void sleepDevice()
     // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP  NO  OLED  Display ~ 540 uA
     // GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP  +  OLED  Display  ~ 580 uA
     // Serial.println("GPIO WAKE UP EXT0 + EXT 1 + TIMER WAKE UP");
-    esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 0);
-    esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), wakeup_mode);
-    esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_4, 0);
+    // esp_sleep_enable_ext1_wakeup(_BV(BUTTON_PIN), wakeup_mode);
+    // esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
 
 
     Serial.flush();
@@ -347,27 +405,40 @@ void handleMenu()
     Serial.printf("currentFrames : %d\n", currentFrames);
     switch (currentFrames) {
     case 0:
+#ifdef RADIO_TX_CW
+        radio.standby();
+#endif
         break;
     case 1:
 #ifdef RADIO_CTRL
+        Serial.println("Turn off LAN,Trun on PA, Enter Tx mode.");
         /*
         * 2W LoRa LAN Control ,set Low turn off LAN , TX Mode
         * */
         digitalWrite(RADIO_CTRL, LOW);
-#endif
+#endif /*RADIO_CTRL*/
+
 #ifdef RADIO_TX_CW
         radio.transmitDirect();
-#else
+#else /*RADIO_TX_CW*/
         Serial.println("Start transmit");
         transmissionDirection = TRANSMISSION;
         transmissionState = radio.transmit((uint8_t *)&transmissionCounter, 4);
         if (transmissionState != RADIOLIB_ERR_NONE) {
-            Serial.println(F("[Radio] transmit packet failed!"));
+            Serial.print(F("[Radio] transmit packet failed! err:"));
+            Serial.println(transmissionState);
         }
-#endif
+#endif /*RADIO_TX_CW*/
         break;
 
     case 2:
+#ifdef RADIO_CTRL
+        Serial.println("Turn on LAN, Enter Rx mode.");
+        /*
+        * 2W LoRa LAN Control ,set HIGH turn on LAN ,RX Mode
+        * */
+        digitalWrite(RADIO_CTRL, HIGH);
+#endif /*RADIO_CTRL*/
         Serial.println("Start receive");
         transmissionDirection = RECEIVE;
         transmissionState = radio.startReceive();
@@ -375,16 +446,15 @@ void handleMenu()
             Serial.println(F("[Radio] Received packet failed!"));
         }
         break;
+
     default:
-
-
 #ifdef RADIO_CTRL
+        Serial.println("Turn on LAN, Enter Rx mode.");
         /*
         * 2W LoRa LAN Control ,set HIGH turn on LAN ,RX Mode
         * */
         digitalWrite(RADIO_CTRL, HIGH);
-#endif
-        transmissionState = radio.startReceive();
+#endif /*RADIO_CTRL*/
         break;
     }
     ui.transitionToFrame(currentFrames);
@@ -398,10 +468,10 @@ void prevButtonHandleEvent(AceButton   *button, uint8_t eventType, uint8_t butto
         Serial.printf("prevButtonHandleEvent currentFrames:%d frames_count:%d\n", currentFrames, max_frames);
 #ifdef BUTTON2_PIN
         currentFrames =  ((currentFrames + 1) >= max_frames) ? currentFrames : currentFrames + 1;
-#else
+#else /*BUTTON2_PIN*/
         currentFrames++;
         currentFrames %= max_frames;
-#endif
+#endif /*BUTTON2_PIN*/
         handleMenu();
         break;
     case AceButton::kEventLongPressed:
@@ -425,7 +495,7 @@ void nextButtonHandleEvent(AceButton   *button, uint8_t eventType, uint8_t butto
 #ifdef FAN_CTRL
         Serial.println("Long pressed! ,on/off FAN");
         digitalWrite(FAN_CTRL, 1 - digitalRead(FAN_CTRL));
-#endif
+#endif /*FAN_CTRL*/
         break;
     }
 }
@@ -439,16 +509,26 @@ void timeavailable(struct timeval *t)
     if (deviceOnline & PCF8563_ONLINE) {
         rtc.hwClockWrite();
     }
-#endif
+#endif /*T_BEAM_S3_SUPREME*/
 }
 
 void setup()
 {
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_ALL) {
-#ifndef HAS_PMU
+
         gpio_deep_sleep_hold_dis();
+#ifndef HAS_PMU
         gpio_hold_dis((gpio_num_t) RADIO_RST_PIN);
-#endif
+#endif /*HAS_PMU*/
+
+#ifdef GPS_SLEEP_HOLD_ON_LOW
+        gpio_hold_dis((gpio_num_t) GPS_EN_PIN);
+#endif /*GPS_SLEEP_HOLD_ON_LOW*/
+
+#ifdef RADIO_LDO_EN
+        gpio_hold_dis((gpio_num_t) RADIO_LDO_EN);
+#endif /*RADIO_LDO_EN*/
+
     }
 
     WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -517,7 +597,7 @@ void setup()
     pinMode(BUTTON2_PIN, INPUT_PULLUP);
     button2.init(BUTTON2_PIN);
     button2.setButtonConfig(&nextButtonConfigure);
-#endif
+#endif /*BUTTON2_PIN*/
 
 
     // Initialising the UI will init the display too.
@@ -547,7 +627,14 @@ void setup()
 
     Serial.printf("[%s]:", CONFIG_RADIO_TYPE);
     Serial.print(F(" Initializing Radio ... "));
+
+#ifdef RADIO_TX_CW
+    Serial.println("Begin Radio FSK.");
+    int  state = radio.beginFSK();
+#else
+    Serial.println("Begin Radio LoRa.");
     int  state = radio.begin();
+#endif
     if ( state == RADIOLIB_ERR_NONE) {
         Serial.println(F("success!"));
         deviceOnline |= RADIO_ONLINE;
@@ -576,6 +663,7 @@ void setup()
             while (true);
         }
 
+#ifndef RADIO_TX_CW
         /*
         *   Sets LoRa link bandwidth.
         *   SX1278/SX1276 : Allowed values are 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250 and 500 kHz. Only available in %LoRa mode.
@@ -620,6 +708,7 @@ void setup()
             Serial.println(F("Unable to set sync word!"));
             while (true);
         }
+#endif /*RADIO_TX_CW*/
 
         /*
         * Sets transmission output power.
@@ -727,23 +816,24 @@ float current_freq = CONFIG_RADIO_FREQ;
 
 void power_key_pressed()
 {
-#ifdef JAPAN_MIC
-    return;
-#endif
+#if defined(JAPAN_MIC) || defined(T_BEAM_S3_BPF)
     // Turn on/off display
-    // static bool isOn = true;
-    // isOn ? display.displayOff()  : display.displayOn();
-    // isOn ^= 1;
+    static bool isOn = true;
+    isOn ? display.displayOff()  : display.displayOn();
+    isOn ^= 1;
+    return;
+#else /*defined(JAPAN_MIC) || defined(T_BEAM_S3_BPF)*/
 
-    // Set freq function
+// Set freq function
     radio.standby();
 #if  defined(USING_LR1121)
     // check if we need to recalibrate image
     bool skipCalibration = true;
     int16_t state =  radio.setFrequency(factory_freq[freq_index], skipCalibration);
-#else
+#else /*defined(USING_LR1121)*/
     int16_t state =  radio.setFrequency(factory_freq[freq_index]);
-#endif
+#endif /*defined(USING_LR1121)*/
+
     if (state != RADIOLIB_ERR_NONE) {
         Serial.printf("Selected frequency %.2f is invalid for this module!\n", factory_freq[freq_index]);
         return;
@@ -763,20 +853,18 @@ void power_key_pressed()
     if (radio.setOutputPower(max_tx_power, forceHighPower) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.printf("Selected output power %d is invalid for this module!\n", max_tx_power);
     }
-#else
-
-#endif
+#endif /*defined(USING_LR1121)*/
 
     switch (transmissionDirection) {
     case TRANSMISSION:
 #ifdef RADIO_TX_CW
         radio.transmitDirect();
-#else
+#else /*RADIO_TX_CW*/
         transmissionState = radio.transmit((uint8_t *)&transmissionCounter, 4);
         if (transmissionState != RADIOLIB_ERR_NONE) {
             Serial.println(F("[Radio] transmit packet failed!"));
         }
-#endif
+#endif /*RADIO_TX_CW*/
         break;
     default:
         transmissionState = radio.startReceive();
@@ -785,6 +873,7 @@ void power_key_pressed()
         }
         break;
     }
+#endif /*defined(JAPAN_MIC) || defined(T_BEAM_S3_BPF)*/
 }
 
 void loop()
@@ -798,7 +887,7 @@ void loop()
 #endif
 
 #ifdef HAS_PMU
-    loopPMU(power_key_pressed);
+    // loopPMU(power_key_pressed);
 #endif
 
     button.check();
@@ -817,7 +906,7 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     display->setTextAlignment(TEXT_ALIGN_LEFT);
 
 #ifndef RADIO_TX_CW
-    if (millis() > interval) {
+    if (millis() > interval && transmissionDirection == TRANSMISSION ) {
         if (transmittedFlag) {
             // reset flag
             transmittedFlag = false;
@@ -858,6 +947,12 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 #ifdef BOARD_LED
             digitalWrite(BOARD_LED, 1 - digitalRead(BOARD_LED));
 #endif
+#ifdef HAS_PMU
+            if (PMU) {
+                PMU->setChargingLedMode(led_blink);
+                led_blink ^= 1;
+            }
+#endif
         }
 
         interval = millis() + 1000;
@@ -870,7 +965,9 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 
     if (transmissionState !=  RADIOLIB_ERR_NONE) {
         display->setTextAlignment(TEXT_ALIGN_CENTER);
-        display->drawString(64 + x, 32 + y, "Radio Tx Failed!");
+        static char buffer[64];
+        snprintf(buffer, 64, "Radio Tx FAIL:%d", transmissionState);
+        display->drawString(64 + x, 32 + y, buffer);
     } else {
         display->setTextAlignment(TEXT_ALIGN_LEFT);
         display->drawString(0 + x, 16 + y, "Freq:" + String(current_freq) + "MHz");
@@ -881,6 +978,7 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 #ifdef NTC_PIN
     static char buffer[32];
     sprintf(buffer, "NTC:%.2f*C", getTempForNTC());
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->drawString(0 + x, 48 + y, buffer);
 #endif
 }
@@ -896,7 +994,7 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     display->setTextAlignment(TEXT_ALIGN_LEFT);
 
     // check if the flag is set
-    if (transmittedFlag) {
+    if (transmittedFlag  && transmissionDirection == RECEIVE) {
         Serial.println("Radio RX done !");
 
 #ifdef BOARD_LED
@@ -977,27 +1075,35 @@ void hwProbe(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     display->drawString(display->width()  + x,  51 + y, (deviceOnline & OSC32768_ONLINE ) ? "+" : "-");
 
 #else
-    display->drawString(x, 16 + y, "Power");
-    display->drawString(x, 32 + y, "Radio");
-    display->drawString(x, 48 + y, "GPS");
+    display->drawString(x, 16 + y, "Radio");
+    display->drawString(x, 32 + y, "GPS");
+    display->drawString(x, 48 + y, "OLED");
 
     display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->drawString(52 + x, 16 + y,  (deviceOnline & POWERMANAGE_ONLINE ) ? "+" : "-");
-    display->drawString(52  + x, 32 + y, (deviceOnline & RADIO_ONLINE ) ? "+" : "-");
-    display->drawString(52  + x, 48 + y, (deviceOnline & GPS_ONLINE ) ? "+" : "-");
+    display->drawString(52 + x, 16 + y,  (deviceOnline & RADIO_ONLINE ) ? "+" : "-");
+
+    display->drawString(52  + x, 32 + y, (deviceOnline & GPS_ONLINE ) ? "+" : "-");
+    display->drawString(52  + x, 48 + y, (deviceOnline & DISPLAY_ONLINE ) ? "+" : "-");
 
     display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->drawString(62 + x, 16 + y, "OLED");
-    display->drawString(62 + x, 32 + y, "PSRAM");
+    display->drawString(62 + x, 16 + y, "PSRAM");
 #ifdef HAS_SDCARD
-    display->drawString(62 + x, 48 + y, "SDCARD");
+    display->drawString(62 + x, 32 + y, "SDCARD");
 #endif
+#ifdef HAS_PMU
+    display->drawString(62 + x, 48 + y, "Power");
+#endif
+
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->drawString(display->width() + x,  16 + y, (deviceOnline & DISPLAY_ONLINE ) ? "+" : "-");
-    display->drawString(display->width()  + x, 32 + y, (deviceOnline & PSRAM_ONLINE ) ? "+" : "-");
+    display->drawString(display->width() + x,  16 + y, (deviceOnline & PSRAM_ONLINE ) ? "+" : "-");
 #ifdef HAS_SDCARD
-    display->drawString(display->width()  + x, 48 + y, (deviceOnline & SDCARD_ONLINE ) ? "+" : "-");
-#endif
+    display->drawString(display->width()  + x, 32 + y, (deviceOnline & SDCARD_ONLINE ) ? "+" : "-");
+#endif /*HAS_SDCARD*/
+
+#ifdef HAS_PMU
+    display->drawString(display->width()  + x, 48 + y, (deviceOnline & POWERMANAGE_ONLINE ) ? "+" : "-");
+#endif /*HAS_PMU*/
+
 #endif
 }
 
@@ -1070,11 +1176,16 @@ void pmuInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 
 #ifdef ADC_PIN
     static char buffer[64];
-    static  uint32_t interval = 0;
+    static uint32_t interval = 0;
     if (millis() > interval) {
-        analogReadResolution(12);
-        float voltage = (analogReadMilliVolts(ADC_PIN) * 2) / 1000.0;
-        snprintf(buffer, sizeof(buffer), "VOL:%.2f V", voltage > 4.2 ? 4.2 : voltage);
+        // analogReadResolution(12); //Default is 12 bits, not need set
+        const float vRef = 3.3;
+        const int adcResolution = 4095;
+        uint16_t  adcValue = analogRead(ADC_PIN);
+        float dividedVoltage = (float)adcValue / adcResolution * vRef;
+        float batteryVoltage = dividedVoltage * (BAT_ADC_PULLUP_RES + BAT_ADC_PULLDOWN_RES) / BAT_ADC_PULLDOWN_RES;
+        batteryVoltage += BAT_VOL_COMPENSATION; // Voltage compensation
+        snprintf(buffer, sizeof(buffer), "VOL:%.2f V", batteryVoltage > BAT_MAX_VOLTAGE ? BAT_MAX_VOLTAGE : batteryVoltage);
         interval = millis() + 1000;
     }
     display->drawString(64 + x, 0 + y, "Battery");
