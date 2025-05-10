@@ -96,7 +96,7 @@
 │   ├── QMI8658_ReadFromFifoExample
 │   └── QMI8658_WakeOnMotion
 |── T3S3Factory                              # T3 S3 factory test examples
-└── BPFFactory                               # T-Beam BPF factory test examples
+└── Factory                                  # T-Beam & T-Beam S3 and BPF factory test examples
 ```
 
 ## 3️⃣Use reference
