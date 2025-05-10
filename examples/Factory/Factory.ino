@@ -404,7 +404,7 @@ void handleMenu()
 #ifdef RADIO_CTRL
         Serial.println("Turn off LAN,Trun on PA, Enter Tx mode.");
         /*
-        * 2W LoRa LAN Control ,set Low turn off LAN , TX Mode
+        * 2W and BPF LoRa LAN Control ,set Low turn off LAN , TX Mode
         * */
         digitalWrite(RADIO_CTRL, LOW);
 #endif /*RADIO_CTRL*/

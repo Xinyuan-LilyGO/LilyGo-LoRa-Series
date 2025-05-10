@@ -3,18 +3,18 @@
 #include "LoRaBoards.h"
 
 #ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           868.0
+    #define CONFIG_RADIO_FREQ           868.0
 #endif
 #ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   17
+    #define CONFIG_RADIO_OUTPUT_POWER   17
 #endif
 #ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             125.0
+    #define CONFIG_RADIO_BW             125.0
 #endif
 
 
 #if !defined(USING_SX1276) && !defined(USING_SX1278)
-#error "LoRa example is only allowed to run SX1276/78. For other RF models, please run examples/RadioLibExamples
+    #error "LoRa example is only allowed to run SX1276/78. For other RF models, please run examples/RadioLibExamples
 #endif
 
 int counter = 0;
@@ -29,6 +29,14 @@ void setup()
     pinMode(RADIO_TCXO_ENABLE, OUTPUT);
     digitalWrite(RADIO_TCXO_ENABLE, HIGH);
 #endif
+
+#ifdef RADIO_CTRL
+    Serial.println("Turn off LAN,Trun on PA, Enter Tx mode.");
+    /*
+    * BPF LoRa LAN Control ,set Low turn off LAN , TX Mode
+    * */
+    digitalWrite(RADIO_CTRL, LOW);
+#endif /*RADIO_CTRL*/
 
     Serial.println("LoRa Sender");
     LoRa.setPins(RADIO_CS_PIN, RADIO_RST_PIN, RADIO_DIO0_PIN);
