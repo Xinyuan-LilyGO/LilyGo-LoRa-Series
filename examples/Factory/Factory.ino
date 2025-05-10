@@ -29,23 +29,23 @@
 #include "LoRaBoards.h"
 
 #ifndef WIFI_SSID
-#define WIFI_SSID             "Your WiFi SSID"
+    #define WIFI_SSID             "Your WiFi SSID"
 #endif
 #ifndef WIFI_PASSWORD
-#define WIFI_PASSWORD         "Your WiFi PASSWORD"
+    #define WIFI_PASSWORD         "Your WiFi PASSWORD"
 #endif
 
 #ifdef T_BEAM_S3_SUPREME
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BME280.h>
-#include <SensorQMI8658.hpp>
-#include <SensorQMC6310.hpp>
-#include <SensorPCF8563.hpp>
+    #include <Adafruit_Sensor.h>
+    #include <Adafruit_BME280.h>
+    #include <SensorQMI8658.hpp>
+    #include <SensorQMC6310.hpp>
+    #include <SensorPCF8563.hpp>
 
-SensorQMC6310  qmc;
-SensorQMI8658  qmi;
-SensorPCF8563  rtc;
-Adafruit_BME280 bme;
+    SensorQMC6310  qmc;
+    SensorQMI8658  qmi;
+    SensorPCF8563  rtc;
+    Adafruit_BME280 bme;
 #endif
 
 using namespace ace_button;
@@ -57,86 +57,86 @@ void wifiTask(void *task);
 void hwProbe(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 
 #ifdef HAS_GPS
-void gpsInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
+    void gpsInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
 #endif
 #if defined(HAS_PMU) || defined(ADC_PIN)
-void pmuInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
+    void pmuInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 #endif
 #ifdef T_BEAM_S3_SUPREME
-void dateTimeInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
-void sensorInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
-void imuInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
-static void beginSensor();
+    void dateTimeInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
+    void sensorInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
+    void imuInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
+    static void beginSensor();
 #else
-#define beginSensor()
+    #define beginSensor()
 #endif
 
 
 #if     defined(USING_SX1276)
 
-#ifdef T_BEAM_S3_BPF
-// BPF Freq range : 144Mhz ~ 148MHz
-#define CONFIG_RADIO_FREQ           144.0
-#else  /*T_BEAM_S3_BPF*/
-#define CONFIG_RADIO_FREQ           868.0
-#endif /*T_BEAM_S3_BPF*/
+    #ifdef T_BEAM_S3_BPF
+        // BPF Freq range : 144Mhz ~ 148MHz
+        #define CONFIG_RADIO_FREQ           144.0
+    #else  /*T_BEAM_S3_BPF*/
+        #define CONFIG_RADIO_FREQ           868.0
+    #endif /*T_BEAM_S3_BPF*/
 
-#define CONFIG_RADIO_OUTPUT_POWER   17
-#define CONFIG_RADIO_BW             125.0
+    #define CONFIG_RADIO_OUTPUT_POWER   17
+    #define CONFIG_RADIO_BW             125.0
 
-SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
+    SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1278)
-#ifdef T_BEAM_S3_BPF
-// BPF Freq range : 144Mhz ~ 148MHz
-#define CONFIG_RADIO_FREQ           144.0
-#else
-#define CONFIG_RADIO_FREQ           433.0
-#endif /*T_BEAM_S3_BPF*/
+    #ifdef T_BEAM_S3_BPF
+        // BPF Freq range : 144Mhz ~ 148MHz
+        #define CONFIG_RADIO_FREQ           144.0
+    #else
+        #define CONFIG_RADIO_FREQ           433.0
+    #endif /*T_BEAM_S3_BPF*/
 
-#define CONFIG_RADIO_OUTPUT_POWER   17
-#define CONFIG_RADIO_BW             125.0
-SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
+    #define CONFIG_RADIO_OUTPUT_POWER   17
+    #define CONFIG_RADIO_BW             125.0
+    SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1262)
-#define CONFIG_RADIO_FREQ           868.0
-#ifndef RADIO_MAX_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   22
-#else
-/*
-* 2w LoRa max set power is +3 dBm ,After passing through PA, the power can reach 33dBm
-* */
-#define CONFIG_RADIO_OUTPUT_POWER   RADIO_MAX_OUTPUT_POWER
-#endif
-#define CONFIG_RADIO_BW             125.0
+    #define CONFIG_RADIO_FREQ           868.0
+    #ifndef RADIO_MAX_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   22
+    #else
+        /*
+        * 2w LoRa max set power is +3 dBm ,After passing through PA, the power can reach 33dBm
+        * */
+        #define CONFIG_RADIO_OUTPUT_POWER   RADIO_MAX_OUTPUT_POWER
+    #endif
+    #define CONFIG_RADIO_BW             125.0
 
-SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif   defined(USING_SX1280)
-#define CONFIG_RADIO_FREQ           2400.0
-#define CONFIG_RADIO_OUTPUT_POWER   13
-#define CONFIG_RADIO_BW             203.125
-SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    #define CONFIG_RADIO_FREQ           2400.0
+    #define CONFIG_RADIO_OUTPUT_POWER   13
+    #define CONFIG_RADIO_BW             203.125
+    SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif  defined(USING_SX1280PA)
-#define CONFIG_RADIO_FREQ           2400.0
-#define CONFIG_RADIO_OUTPUT_POWER   3           // PA Version power range : -18 ~ 3dBm
-#define CONFIG_RADIO_BW             203.125
-SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    #define CONFIG_RADIO_FREQ           2400.0
+    #define CONFIG_RADIO_OUTPUT_POWER   3           // PA Version power range : -18 ~ 3dBm
+    #define CONFIG_RADIO_BW             203.125
+    SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif   defined(USING_LR1121)
 
-// The maximum power of LR1121 2.4G band can only be set to 13 dBm
-#define CONFIG_RADIO_FREQ           2450.0
-#define CONFIG_RADIO_OUTPUT_POWER   13
-#define CONFIG_RADIO_BW             125.0
+    // The maximum power of LR1121 2.4G band can only be set to 13 dBm
+    #define CONFIG_RADIO_FREQ           2450.0
+    #define CONFIG_RADIO_OUTPUT_POWER   13
+    #define CONFIG_RADIO_BW             125.0
 
-// The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
-// #define CONFIG_RADIO_FREQ           868.0
-// #define CONFIG_RADIO_OUTPUT_POWER   22
-// #define CONFIG_RADIO_BW             125.0
+    // The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
+    // #define CONFIG_RADIO_FREQ           868.0
+    // #define CONFIG_RADIO_OUTPUT_POWER   22
+    // #define CONFIG_RADIO_BW             125.0
 
-LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif  /*Radio option*/
 
 enum TransmissionDirection {
@@ -179,11 +179,11 @@ AceButton       button;
 WiFiMulti       wifiMulti;
 
 #ifdef HAS_GPS
-TinyGPSPlus     gps;
+    TinyGPSPlus     gps;
 #endif /*HAS_GPS*/
 
 #ifdef BUTTON2_PIN
-AceButton       button2;
+    AceButton       button2;
 #endif /*BUTTON2_PIN*/
 
 String macStr;
@@ -349,17 +349,14 @@ void sleepDevice()
 #endif
 
     /*
-    *
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    * The following power consumption test is only for T-Beam V1.2, not S3 and other models
-    *
-    * * * */
+     * |     GPIO WAKE UP EXT 1      |
+     * | Board            | Current  |
+     * | ---------------- | -------- |
+     * | T-BeamV 1.2 OLED | ~ 450 uA |
+     * | T-BeamV 1.2      | ~ 440 uA |
+     * | T-BeamV BPF V1.2 | ~ 350 uA |
+     *
+     */
     // GPIO WAKE UP EXT 1 NO  OLED  Display ~ 440 uA ,
     // GPIO WAKE UP EXT 1 +  OLED  Display  ~ 450 uA ,
     // See sleep_current.jpg
@@ -818,7 +815,7 @@ void power_key_pressed()
     return;
 #else /*defined(JAPAN_MIC) || defined(T_BEAM_S3_BPF)*/
 
-// Set freq function
+    // Set freq function
     radio.standby();
 #if  defined(USING_LR1121)
     // check if we need to recalibrate image
@@ -875,7 +872,7 @@ void loop()
 #ifdef HAS_GPS
     while (SerialGPS.available()) {
         int r = SerialGPS.read();
-        if(frames[currentFrames] == gpsInfo){
+        if (frames[currentFrames] == gpsInfo) {
             Serial.write(r);
         }
         gps.encode(r);
