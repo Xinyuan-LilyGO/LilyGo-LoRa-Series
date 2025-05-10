@@ -20,103 +20,103 @@
 #include "LoRaBoards.h"
 
 #if     defined(USING_SX1276)
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           868.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   17
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             125.0
-#endif
-SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
+    #ifndef CONFIG_RADIO_FREQ
+        #define CONFIG_RADIO_FREQ           868.0
+    #endif
+    #ifndef CONFIG_RADIO_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   17
+    #endif
+    #ifndef CONFIG_RADIO_BW
+        #define CONFIG_RADIO_BW             125.0
+    #endif
+    SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1278)
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           433.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   17
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             125.0
-#endif
-SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
+    #ifndef CONFIG_RADIO_FREQ
+        #define CONFIG_RADIO_FREQ           433.0
+    #endif
+    #ifndef CONFIG_RADIO_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   17
+    #endif
+    #ifndef CONFIG_RADIO_BW
+        #define CONFIG_RADIO_BW             125.0
+    #endif
+    SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 #elif   defined(USING_SX1262)
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           850.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   22
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             125.0
-#endif
+    #ifndef CONFIG_RADIO_FREQ
+        #define CONFIG_RADIO_FREQ           850.0
+    #endif
+    #ifndef CONFIG_RADIO_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   22
+    #endif
+    #ifndef CONFIG_RADIO_BW
+        #define CONFIG_RADIO_BW             125.0
+    #endif
 
-SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif   defined(USING_SX1280)
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           2400.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   13
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             203.125
-#endif
-SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    #ifndef CONFIG_RADIO_FREQ
+        #define CONFIG_RADIO_FREQ           2400.0
+    #endif
+    #ifndef CONFIG_RADIO_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   13
+    #endif
+    #ifndef CONFIG_RADIO_BW
+        #define CONFIG_RADIO_BW             203.125
+    #endif
+    SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif  defined(USING_SX1280PA)
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           2400.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   3           // PA Version power range : -18 ~ 3dBm
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             203.125
-#endif
-SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    #ifndef CONFIG_RADIO_FREQ
+        #define CONFIG_RADIO_FREQ           2400.0
+    #endif
+    #ifndef CONFIG_RADIO_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   3           // PA Version power range : -18 ~ 3dBm
+    #endif
+    #ifndef CONFIG_RADIO_BW
+        #define CONFIG_RADIO_BW             203.125
+    #endif
+    SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif   defined(USING_SX1268)
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           433.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   22
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             125.0
-#endif
-SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    #ifndef CONFIG_RADIO_FREQ
+        #define CONFIG_RADIO_FREQ           433.0
+    #endif
+    #ifndef CONFIG_RADIO_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   22
+    #endif
+    #ifndef CONFIG_RADIO_BW
+        #define CONFIG_RADIO_BW             125.0
+    #endif
+    SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif   defined(USING_LR1121)
 
-// The maximum power of LR1121 2.4G band can only be set to 13 dBm
-// #ifndef CONFIG_RADIO_FREQ
-// #define CONFIG_RADIO_FREQ           2450.0
-// #endif
-// #ifndef CONFIG_RADIO_OUTPUT_POWER
-// #define CONFIG_RADIO_OUTPUT_POWER   13
-// #endif
-// #ifndef CONFIG_RADIO_BW
-// #define CONFIG_RADIO_BW             125.0
-// #endif
+    // The maximum power of LR1121 2.4G band can only be set to 13 dBm
+    // #ifndef CONFIG_RADIO_FREQ
+    // #define CONFIG_RADIO_FREQ           2450.0
+    // #endif
+    // #ifndef CONFIG_RADIO_OUTPUT_POWER
+    // #define CONFIG_RADIO_OUTPUT_POWER   13
+    // #endif
+    // #ifndef CONFIG_RADIO_BW
+    // #define CONFIG_RADIO_BW             125.0
+    // #endif
 
-// The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           868.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   22
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             125.0
-#endif
+    // The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
+    #ifndef CONFIG_RADIO_FREQ
+        #define CONFIG_RADIO_FREQ           868.0
+    #endif
+    #ifndef CONFIG_RADIO_OUTPUT_POWER
+        #define CONFIG_RADIO_OUTPUT_POWER   22
+    #endif
+    #ifndef CONFIG_RADIO_BW
+        #define CONFIG_RADIO_BW             125.0
+    #endif
 
-LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+    LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
 
 // flag to indicate that a packet was received
@@ -329,6 +329,14 @@ void setup()
     };
     radio.setRfSwitchTable(pins, table);
 #endif
+
+#ifdef RADIO_CTRL
+    Serial.println("Turn on LAN, Enter Rx mode.");
+    /*
+    * 2W and BPF LoRa LAN Control ,set HIGH turn on LAN ,RX Mode
+    * */
+    digitalWrite(RADIO_CTRL, HIGH);
+#endif /*RADIO_CTRL*/
 
     delay(1000);
 

@@ -426,7 +426,7 @@ void handleMenu()
 #ifdef RADIO_CTRL
         Serial.println("Turn on LAN, Enter Rx mode.");
         /*
-        * 2W LoRa LAN Control ,set HIGH turn on LAN ,RX Mode
+        * 2W and BPF LoRa LAN Control ,set HIGH turn on LAN ,RX Mode
         * */
         digitalWrite(RADIO_CTRL, HIGH);
 #endif /*RADIO_CTRL*/
@@ -442,7 +442,7 @@ void handleMenu()
 #ifdef RADIO_CTRL
         Serial.println("Turn on LAN, Enter Rx mode.");
         /*
-        * 2W LoRa LAN Control ,set HIGH turn on LAN ,RX Mode
+        * 2W and BPF LoRa LAN Control ,set HIGH turn on LAN ,RX Mode
         * */
         digitalWrite(RADIO_CTRL, HIGH);
 #endif /*RADIO_CTRL*/
