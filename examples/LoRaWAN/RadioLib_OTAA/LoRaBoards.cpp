@@ -775,8 +775,8 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef RADIO_LDO_EN
     /*
-    * 2W LoRa LDO enable , Control SX1262 , LNA
-    * 2W Radio version must set LDO_EN to HIGH to initialize the Radio
+    * 2W and BPF LoRa LDO enable , Control SX1262 , LNA
+    * 2W and BPF  Radio version must set LDO_EN to HIGH to initialize the Radio
     * */
     pinMode(RADIO_LDO_EN, OUTPUT);
     digitalWrite(RADIO_LDO_EN, HIGH);
@@ -784,7 +784,7 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef RADIO_CTRL
     /*
-    * 2W LoRa RX TX Control
+    * 2W and BPF LoRa RX TX Control
     * CTRL controls the LNA, not the PA.
     * Only when RX DATA is on, set to 1 to turn on LNA
     * When TX DATA is on, CTL is set to 0 and LNA is turned off.
