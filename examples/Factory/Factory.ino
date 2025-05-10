@@ -875,7 +875,9 @@ void loop()
 #ifdef HAS_GPS
     while (SerialGPS.available()) {
         int r = SerialGPS.read();
-        // Serial.write(r);
+        if(frames[currentFrames] == gpsInfo){
+            Serial.write(r);
+        }
         gps.encode(r);
     }
 #endif
