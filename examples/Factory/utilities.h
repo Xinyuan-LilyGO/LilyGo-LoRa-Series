@@ -4,7 +4,7 @@
  * @license   MIT
  * @copyright Copyright (c) 2024  ShenZhen XinYuan Electronic Technology Co., Ltd
  * @date      2024-05-12
- * @last-update 2024-08-07
+ * @last-update 2025-05-26
  */
 #pragma once
 
@@ -40,6 +40,8 @@
 // #define T3_C6
 
 // #define T_BEAM_S3_BPF
+
+// #define T_BEAM_2W
 
 
 #define UNUSED_PIN                   (0)
@@ -609,7 +611,7 @@
 #define HAS_GPS
 #define HAS_DISPLAY
 #define HAS_PMU
-#define SD_SHARE_SPI_BUS              
+#define SD_SHARE_SPI_BUS
 
 #define PMU_WIRE_PORT               Wire
 #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
@@ -629,13 +631,13 @@
 #define GPS_RX_PIN                  (5)
 #define GPS_TX_PIN                  (6)
 #define GPS_PPS_PIN                 (7)
-#define GPS_EN_PIN                  (10)
+#define GPS_EN_PIN                  (16)
 
-#define BUTTON_PIN                  (0)         /*BUTTON 1 = GPIO0*/
-#define BUTTON2_PIN                 (2)         /*BUTTON 2 = GPIO3*/
+#define BUTTON_PIN                  (0)          /*BUTTON 1 = GPIO0*/
+#define BUTTON2_PIN                 (17)         /*BUTTON 2 = GPIO17*/
 
 #define BUTTON_PIN_MASK             GPIO_SEL_0
-#define BUTTON_CONUT                (2)
+#define BUTTON_COUNT                (2)
 #define BUTTON_ARRAY                {BUTTON_PIN,BUTTON2_PIN/*BUTTON 2 = GPIO3*/}
 
 #define SPI_MOSI                    (11)
@@ -643,9 +645,11 @@
 #define SPI_MISO                    (12)
 #define SPI_CS                      (10)
 
-#define RADIO_SCLK_PIN              (16)
-#define RADIO_MISO_PIN              (17)
-#define RADIO_MOSI_PIN              (18)
+#define SDCARD_CS                   SPI_CS
+
+#define RADIO_SCLK_PIN              (SPI_SCK)
+#define RADIO_MISO_PIN              (SPI_MISO)
+#define RADIO_MOSI_PIN              (SPI_MOSI)
 
 #define RADIO_CS_PIN                (15)
 #define RADIO_RST_PIN               (3)
@@ -654,10 +658,10 @@
 #define RADIO_DIO1_PIN              (1)
 #define RADIO_BUSY_PIN              (38)
 
-// #define SDCARD_MOSI                 SPI_MOSI
-// #define SDCARD_MISO                 SPI_MISO
-// #define SDCARD_SCLK                 SPI_SCK
-// #define SDCARD_CS                   SPI_CS
+#define BOARD_LED                   18
+#define LED_ON                      HIGH
+#define LED_OFF                     LOW
+
 
 #define NTC_PIN                     (14)
 #define FAN_CTRL                    (41)
@@ -671,23 +675,15 @@
 
 #define GPS_BAUD_RATE               9600
 
-// #define HAS_SDCARD
+#define HAS_SDCARD
 #define HAS_GPS
 #define HAS_DISPLAY
-
+#define SD_SHARE_SPI_BUS           // SD-CARD AND RADIO SHARE SPI BUS
 #define __HAS_SPI1__
 
 #define DISPLAY_MODEL               U8G2_SH1106_128X64_NONAME_F_HW_I2C
 #define DISPLAY_MODEL_SSD_LIB       SH1106Wire
 #define BOARD_VARIANT_NAME          "LoRa 2W"
-
-/*
-* 2w LoRa max set power is +3 dBm ,After passing through PA, the power can reach 33dBm
-* -3dBm = +27dBm
-* 0 dBm = +30dBm
-* 3 dBm = +33dBm
-* */
-#define RADIO_MAX_OUTPUT_POWER      3
 
 #else
 #error "When using it for the first time, please define the board model in <utilities.h>"

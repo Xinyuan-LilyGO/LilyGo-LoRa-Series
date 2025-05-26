@@ -324,18 +324,25 @@ void sleepDevice()
     }
 
 #ifdef GPS_SLEEP_HOLD_ON_LOW
+
+#ifdef GPS_PPS_PIN
+    pinMode(GPS_PPS_PIN, OUTPUT);
+    digitalWrite(GPS_PPS_PIN, LOW);
+    gpio_hold_en((gpio_num_t) GPS_PPS_PIN);
+#endif /*GPS_PPS_PIN*/
+
     pinMode(GPS_EN_PIN, OUTPUT);
     digitalWrite(GPS_EN_PIN, LOW);
     gpio_hold_en((gpio_num_t) GPS_EN_PIN);
     gpio_deep_sleep_hold_en();
-#endif
+#endif /*GPS_SLEEP_HOLD_ON_LOW*/
 
 #ifdef RADIO_LDO_EN
     pinMode(RADIO_LDO_EN, OUTPUT);
     digitalWrite(RADIO_LDO_EN, LOW);
     gpio_hold_en((gpio_num_t) RADIO_LDO_EN);
     gpio_deep_sleep_hold_en();
-#endif
+#endif /*RADIO_LDO_EN*/
 
 
 #if CONFIG_IDF_TARGET_ESP32
