@@ -100,14 +100,7 @@ SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO
 
 #elif   defined(USING_SX1262)
 #define CONFIG_RADIO_FREQ           868.0
-#ifndef RADIO_MAX_OUTPUT_POWER
 #define CONFIG_RADIO_OUTPUT_POWER   22
-#else
-/*
-* 2w LoRa max set power is +3 dBm ,After passing through PA, the power can reach 33dBm
-* */
-#define CONFIG_RADIO_OUTPUT_POWER   RADIO_MAX_OUTPUT_POWER
-#endif
 #define CONFIG_RADIO_BW             125.0
 
 SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
