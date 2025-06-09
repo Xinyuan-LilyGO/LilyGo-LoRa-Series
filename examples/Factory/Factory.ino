@@ -355,6 +355,7 @@ void sleepDevice()
      * | T-BeamV 1.2 OLED | ~ 450 uA |
      * | T-BeamV 1.2      | ~ 440 uA |
      * | T-BeamV BPF V1.2 | ~ 350 uA |
+     * | T-BeamV 2W v1.0  | ~ 442 uA |
      *
      */
     // GPIO WAKE UP EXT 1 NO  OLED  Display ~ 440 uA ,
