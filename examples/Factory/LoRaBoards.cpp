@@ -724,7 +724,7 @@ void setupBoards(bool disable_u8g2 )
 #endif /*GPS_EN_PIN*/
 
 #ifdef GPS_PPS_PIN
-    pinMode(GPS_EN_PIN, INPUT);
+    pinMode(GPS_PPS_PIN, INPUT);
 #endif
 
 #if defined(ARDUINO_ARCH_ESP32)

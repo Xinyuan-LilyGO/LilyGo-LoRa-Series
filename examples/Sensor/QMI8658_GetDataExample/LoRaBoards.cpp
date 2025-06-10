@@ -4,7 +4,7 @@
  * @license   MIT
  * @copyright Copyright (c) 2024  ShenZhen XinYuan Electronic Technology Co., Ltd
  * @date      2024-04-24
- * @last-update 2025-04-09
+ * @last-update 2025-05-26
  *
  */
 
@@ -717,6 +717,16 @@ void setupBoards(bool disable_u8g2 )
 #endif
 
 #ifdef HAS_GPS
+
+#ifdef GPS_EN_PIN
+    pinMode(GPS_EN_PIN, OUTPUT);
+    digitalWrite(GPS_EN_PIN, HIGH);
+#endif /*GPS_EN_PIN*/
+
+#ifdef GPS_PPS_PIN
+    pinMode(GPS_PPS_PIN, INPUT);
+#endif
+
 #if defined(ARDUINO_ARCH_ESP32)
     SerialGPS.begin(GPS_BAUD_RATE, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN);
 #elif defined(ARDUINO_ARCH_STM32)
