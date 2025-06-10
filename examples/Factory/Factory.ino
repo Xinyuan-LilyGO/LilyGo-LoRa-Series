@@ -249,7 +249,7 @@ void sleepDevice()
         I2C_SCL,
 
         // Radio pins
-#ifdef RADIO_DIO0_PIN
+#if RADIO_DIO0_PIN != -1
         RADIO_DIO0_PIN,
 #endif
 #ifdef RADIO_DIO1_PIN
@@ -620,7 +620,7 @@ void setup()
     Serial.printf("[%s]:", RADIO_TYPE_STR);
     Serial.print(F(" Initializing Radio ... "));
 
-#ifdef RADIO_TX_CW
+#if defined(RADIO_TX_CW) && !defined(USING_LR1121)
     Serial.println("Begin Radio FSK.");
     int  state = radio.beginFSK();
 #else
@@ -881,7 +881,7 @@ void loop()
 #endif
 
 #ifdef HAS_PMU
-    // loopPMU(power_key_pressed);
+    loopPMU(power_key_pressed);
 #endif
 
     button.check();
