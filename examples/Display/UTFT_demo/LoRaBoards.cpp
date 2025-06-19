@@ -379,6 +379,16 @@ void disablePeripherals()
         // GNSS VDD
         PMU->disablePowerOutput(XPOWERS_ALDO3);
 
+#if defined(T_BEAM_S3_SUPREME)
+        PMU->disablePowerOutput(XPOWERS_ALDO4);
+        PMU->disablePowerOutput(XPOWERS_ALDO1);
+        PMU->disablePowerOutput(XPOWERS_BLDO1);
+        PMU->disablePowerOutput(XPOWERS_BLDO2);
+        PMU->disablePowerOutput(XPOWERS_DCDC3);
+        PMU->disablePowerOutput(XPOWERS_DCDC4);
+        PMU->disablePowerOutput(XPOWERS_DCDC5);
+#endif
+
     } else if (PMU->getChipModel() == XPOWERS_AXP192) {
 
         // Disable all PMU interrupts
@@ -704,11 +714,7 @@ void setupBoards(bool disable_u8g2 )
 #endif /*SD_SHARE_SPI_BUS*/
 #endif /*HAS_SDCARD*/
 
-#ifdef I2C_SDA
-    Wire.begin(I2C_SDA, I2C_SCL);
-    Serial.println("Scan Wire...");
-    scanDevices(&Wire);
-#endif
+
 
 #ifdef I2C1_SDA
     Wire1.begin(I2C1_SDA, I2C1_SCL);
@@ -758,21 +764,11 @@ void setupBoards(bool disable_u8g2 )
     digitalWrite(BOARD_LED, LED_ON);
 #endif
 
-#ifdef GPS_EN_PIN
-    pinMode(GPS_EN_PIN, OUTPUT);
-    digitalWrite(GPS_EN_PIN, HIGH);
-#endif
 
 #ifdef GPS_RST_PIN
     pinMode(GPS_RST_PIN, OUTPUT);
     digitalWrite(GPS_RST_PIN, HIGH);
 #endif
-
-#ifdef GPS_WAKEUP_PIN
-    pinMode(GPS_WAKEUP_PIN, OUTPUT);
-    digitalWrite(GPS_WAKEUP_PIN, HIGH);
-#endif
-
 
 #if defined(ARDUINO_ARCH_STM32)
     SerialGPS.println("@GSR"); delay(300);
@@ -808,6 +804,13 @@ void setupBoards(bool disable_u8g2 )
 #endif
 
     beginPower();
+
+    // Perform an I2C scan after power-on operation
+#ifdef I2C_SDA
+    Wire.begin(I2C_SDA, I2C_SCL);
+    Serial.println("Scan Wire...");
+    scanDevices(&Wire);
+#endif
 
     beginSDCard();
 

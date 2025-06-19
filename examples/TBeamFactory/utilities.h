@@ -433,7 +433,7 @@
 
 #define GPS_RX_PIN                  (9)
 #define GPS_TX_PIN                  (8)
-#define GPS_WAKEUP_PIN              (7)
+#define GPS_EN_PIN                  (7)         //L76K only
 #define GPS_PPS_PIN                 (6)
 
 #define BUTTON_PIN                  (0)
@@ -635,7 +635,7 @@
 #define BUTTON2_PIN                 (2)         /*BUTTON 2 = GPIO3*/
 
 #define BUTTON_PIN_MASK             GPIO_SEL_0
-#define BUTTON_CONUT                (2)
+#define BUTTON_COUNT                (2)
 #define BUTTON_ARRAY                {BUTTON_PIN,BUTTON2_PIN/*BUTTON 2 = GPIO3*/}
 
 #define SPI_MOSI                    (11)
