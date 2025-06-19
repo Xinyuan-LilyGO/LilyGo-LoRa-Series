@@ -224,6 +224,10 @@ void sleepDevice()
 
     Wire.end();
 
+#ifdef I2C1_SDA
+    Wire1.end();
+#endif
+
 #ifdef SerialGPS
     SerialGPS.end();
 #endif
@@ -247,6 +251,11 @@ void sleepDevice()
         // Wire pins
         I2C_SDA,
         I2C_SCL,
+
+#ifdef I2C1_SDA
+        I2C1_SDA,
+        I2C1_SCL,
+#endif
 
         // Radio pins
 #if RADIO_DIO0_PIN != -1
@@ -317,17 +326,18 @@ void sleepDevice()
     }
 
 #ifdef GPS_SLEEP_HOLD_ON_LOW
-
 #ifdef GPS_PPS_PIN
     pinMode(GPS_PPS_PIN, OUTPUT);
     digitalWrite(GPS_PPS_PIN, LOW);
     gpio_hold_en((gpio_num_t) GPS_PPS_PIN);
 #endif /*GPS_PPS_PIN*/
 
+#ifdef GPS_EN_PIN
     pinMode(GPS_EN_PIN, OUTPUT);
     digitalWrite(GPS_EN_PIN, LOW);
     gpio_hold_en((gpio_num_t) GPS_EN_PIN);
     gpio_deep_sleep_hold_en();
+#endif
 #endif /*GPS_SLEEP_HOLD_ON_LOW*/
 
 #ifdef RADIO_LDO_EN
@@ -350,12 +360,13 @@ void sleepDevice()
 
     /*
      * |     GPIO WAKE UP EXT 1      |
-     * | Board            | Current  |
-     * | ---------------- | -------- |
-     * | T-BeamV 1.2 OLED | ~ 450 uA |
-     * | T-BeamV 1.2      | ~ 440 uA |
-     * | T-BeamV BPF V1.2 | ~ 350 uA |
-     * | T-BeamV 2W v1.0  | ~ 442 uA |
+     * | Board             | Current  |
+     * | ----------------  | -------- |
+     * | T-BeamV 1.2 OLED  | ~ 450 uA |
+     * | T-BeamV 1.2       | ~ 440 uA |
+     * | T-Beam  BPF V1.2  | ~ 350 uA |
+     * | T-Beam  2W v1.0   | ~ 442 uA |
+     * | T-BeamS3 Supreme  | ~ 1.45mA |
      *
      */
     // GPIO WAKE UP EXT 1 NO  OLED  Display ~ 440 uA ,
