@@ -147,6 +147,9 @@ bool            is_time_available = false;
 DISPLAY_MODEL_SSD_LIB     display(0x3c, I2C_SDA, I2C_SCL);
 OLEDDisplayUi   ui( &display );
 bool            led_blink = false;
+bool            update_use_second = false;
+uint32_t        gps_use_second = 0;
+uint32_t        gps_start_ms = 0;
 
 FrameCallback   frames[] = {
     hwProbe,
@@ -258,9 +261,12 @@ void sleepDevice()
 #endif
 
         // Radio pins
+#ifdef RADIO_DIO0_PIN
 #if RADIO_DIO0_PIN != -1
         RADIO_DIO0_PIN,
 #endif
+#endif
+
 #ifdef RADIO_DIO1_PIN
         RADIO_DIO1_PIN,
 #endif
@@ -805,6 +811,9 @@ void setup()
     if (wifi_is_config) {
         xTaskCreate(wifiTask, "wifi", 4 * 2048, NULL, 10, NULL);
     }
+
+    // Record GPS start time
+    gps_start_ms = millis();
 }
 
 // PMU Power key callback
@@ -1143,8 +1152,19 @@ void gpsInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, in
     static char buffer[buffer_size];
     display->setFont(Roboto_Mono_Medium_12);
     display->setTextAlignment(TEXT_ALIGN_CENTER);
-    display->drawString(64 + x, 0 + y, "GPS");
+
+    if (update_use_second) {
+        display->drawString(48 + x, 0 + y, "GPS Use" + String(gps_use_second) + "S");
+    } else {
+        display->drawString(64 + x, 0 + y, "GPS");
+    }
     if (gps.location.isValid() && gps.date.isValid() && gps.time.isValid()) {
+
+        if (!update_use_second) {
+            update_use_second = true;
+            gps_use_second = (millis() - gps_start_ms) / 1000;
+        }
+
         display->setTextAlignment(TEXT_ALIGN_LEFT);
         snprintf(buffer, buffer_size, "lat:%.6f",  gps.location.lat());
         display->drawString(0 + x, 16 + y, buffer);
