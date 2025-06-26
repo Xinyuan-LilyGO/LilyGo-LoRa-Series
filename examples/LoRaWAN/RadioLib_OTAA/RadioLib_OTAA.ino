@@ -323,7 +323,7 @@ void setup()
             Serial.print(F("Boots since unsuccessful join: "));
             // Serial.println(bootCountSinceUnsuccessfulJoin);
             Serial.print(F("Retrying join in "));
-            Serial.print(sleepForSeconds);
+            Serial.print(sleepForSeconds / 1000);
             Serial.println(F(" seconds"));
 
             delay(sleepForSeconds);
