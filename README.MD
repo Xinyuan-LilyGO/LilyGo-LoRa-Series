@@ -20,7 +20,7 @@
 | [T3-S3 SX1276][7]                  | ESP32-S3FH4R2          | 4MB(Quad-SPI)  | 2MB(Quad-SPI)  |
 | [T3-S3 SX1262][8]                  | ESP32-S3FH4R2          | 4MB(Quad-SPI)  | 2MB(Quad-SPI)  |
 | [LoRa32 V1.3][8]                   | ESP32-D0WDQ6-V3        | 4MB(Quad-SPI)  | ❌              |
-| [LoRa32 V2.1][11]                  | ESP32-PICO-D4          | 4MB(Quad-SPI)  | ❌              |
+| [LoRa32 V1.6.1][11]                  | ESP32-PICO-D4          | 4MB(Quad-SPI)  | ❌              |
 | [T-Motion][9]                      | STM32L073RZ            | 192 Kbyte      | (20-Kbyte RAM) |
 | [T-Lora C6][10]                    | ESP32-C6-MINI-1U       | 4MB(Quad-SPI)  | ❌              |
 | [T-Beam BPF][12]                   | ESP32-S3-WROOM-1-N16R8 | 16MB(Quad-SPI) | 8MB(OPI)       |
@@ -37,7 +37,7 @@
 [8]: https://www.lilygo.cc/products/lora-v1-3 "LoRa V1.3"
 [9]: https://www.lilygo.cc/products/t-motion-s76g-stm32-lora "T-Motion"
 [10]: https://www.lilygo.cc/products/t-lora-c6 "T-Lora C6"
-[11]: https://www.lilygo.cc/products/lora32-v2-1_1-6 "LoRa32 V2.1_1.6"
+[11]: https://lilygo.cc/products/lora3 "LoRa32 V1.6.1"
 [12]: https://www.lilygo.cc/products "T-Beam BPF"
 [13]: https://lilygo.cc/products/t3-tcxo "T-3 TCXO"
 [15]: https://lilygo.cc/ "T-Beam 2W"
