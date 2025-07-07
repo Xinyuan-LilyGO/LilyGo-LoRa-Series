@@ -8,11 +8,10 @@
 
 * This page introduces the hardware parameters related to `LilyGo T-Beam-BPF`
 
-### Notes on use:
+### Notes on use
 
 1. The device will not be powered when the battery is inserted for the first time, because the onboard BMS is in shipping mode at this time. You need to exit shipping mode and insert the USB-C into the board to activate the device power supply. If the battery is removed and re-inserted, you need to repeat the above steps
 2. Please be sure to connect the antenna before transmitting, otherwise it is easy to damage the RF module
-
 
 ### 📍 Pins Map
 
@@ -22,6 +21,8 @@
 | Uart1 RX                | 44(External QWIIC Socket)      | ✅️    |
 | SDA                     | 8 (External QWIIC Socket same) | ❌    |
 | SCL                     | 9 (External QWIIC Socket same) | ❌    |
+| OLED(**SH1106**) SDA    | Share with I2C bus             | ❌    |
+| OLED(**SH1106**) SCL    | Share with I2C bus             | ❌    |
 | SPI MOSI                | 11                             | ❌    |
 | SPI MISO                | 13                             | ❌    |
 | SPI SCK                 | 12                             | ❌    |
@@ -123,8 +124,8 @@
 | ------------------- | ------------------------------ |
 | RF  Module          | SX1278 TCXO (XP02P181T)        |
 | Frequency range     | 144~148MHZ                     |
-| Transfer rate(LoRa) | 0.018K～37.5Kbps@ LoRa         |
-| Transfer rate(FSK)  | 1.2K～300Kbps@FSK              |
+| Transfer rate(LoRa) | 0.018K～37.5Kbps               |
+| Transfer rate(FSK)  | 1.2K～300Kbps                  |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK |
 
 > \[!IMPORTANT]
