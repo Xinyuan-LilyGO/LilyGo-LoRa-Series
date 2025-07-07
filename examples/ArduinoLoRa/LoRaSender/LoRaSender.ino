@@ -1,4 +1,5 @@
 // Only supports SX1276/SX1278
+// 仅支持 SX1276/SX1278 无线电模块,SX1280,SX1262等其他无线电模块请使用RadioLibExamples目录的示例
 #include <LoRa.h>
 #include "LoRaBoards.h"
 
@@ -15,6 +16,7 @@
 
 #if !defined(USING_SX1276) && !defined(USING_SX1278)
 #error "LoRa example is only allowed to run SX1276/78. For other RF models, please run examples/RadioLibExamples
+// 仅支持 SX1276/SX1278 无线电模块,SX1280,SX1262等其他无线电模块请使用RadioLibExamples目录的示例
 #endif
 
 int counter = 0;
