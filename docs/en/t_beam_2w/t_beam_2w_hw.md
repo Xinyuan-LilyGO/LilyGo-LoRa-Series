@@ -74,20 +74,17 @@
 | Uart1 RX                | 44(External QWIIC Socket)      | ✅️    |
 | SDA                     | 8 (External QWIIC Socket same) | ❌    |
 | SCL                     | 9 (External QWIIC Socket same) | ❌    |
-| SPI MOSI                | 11                             | ❌    |
-| SPI MISO                | 12                             | ❌    |
-| SPI SCK                 | 13                             | ❌    |
 | SD CS                   | 10                             | ❌    |
-| SD MOSI                 | Share with SPI bus             | ❌    |
-| SD MISO                 | Share with SPI bus             | ❌    |
-| SD SCK                  | Share with SPI bus             | ❌    |
+| SD MOSI                 | 11                             | ❌    |
+| SD MISO                 | 12                             | ❌    |
+| SD SCK                  | 13                             | ❌    |
 | GNSS(**L76K**) TX       | 6                              | ❌    |
 | GNSS(**L76K**) RX       | 5                              | ❌    |
 | GNSS(**L76K**) PPS      | 7                              | ❌    |
 | GNSS(**L76K**) Wake-up  | 16                             | ❌    |
-| LoRa(**SX1262**) SCK    | Share with SPI bus             | ❌    |
-| LoRa(**SX1262**) MISO   | Share with SPI bus             | ❌    |
-| LoRa(**SX1262**) MOSI   | Share with SPI bus             | ❌    |
+| LoRa(**SX1262**) SCK    | 16                             | ❌    |
+| LoRa(**SX1262**) MISO   | 17                             | ❌    |
+| LoRa(**SX1262**) MOSI   | 18                             | ❌    |
 | LoRa(**SX1262**) RESET  | 3                              | ❌    |
 | LoRa(**SX1262**) DIO1   | 1                              | ❌    |
 | LoRa(**SX1262**) CS     | 15                             | ❌    |
