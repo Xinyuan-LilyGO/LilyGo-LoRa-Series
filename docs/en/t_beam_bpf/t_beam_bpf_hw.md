@@ -16,36 +16,36 @@
 
 ### 📍 Pins Map
 
-| Name                    | GPIO NUM                  | Free |
-| ----------------------- | ------------------------- | ---- |
-| Uart1 TX                | 43(External QWIIC Socket) | ✅️    |
-| Uart1 RX                | 44(External QWIIC Socket) | ✅️    |
-| SDA                     | 8                         | ❌    |
-| SCL                     | 9                         | ❌    |
-| SPI MOSI                | 11                        | ❌    |
-| SPI MISO                | 13                        | ❌    |
-| SPI SCK                 | 12                        | ❌    |
-| SD CS                   | 10                        | ❌    |
-| SD MOSI                 | Share with SPI bus        | ❌    |
-| SD MISO                 | Share with SPI bus        | ❌    |
-| SD SCK                  | Share with SPI bus        | ❌    |
-| GNSS(**L76K**) TX       | 6                         | ❌    |
-| GNSS(**L76K**) RX       | 5                         | ❌    |
-| GNSS(**L76K**) PPS      | 7                         | ❌    |
-| LoRa(**SX1278**) SCK    | Share with SPI bus        | ❌    |
-| LoRa(**SX1278**) MISO   | Share with SPI bus        | ❌    |
-| LoRa(**SX1278**) MOSI   | Share with SPI bus        | ❌    |
-| LoRa(**SX1278**) RESET  | 18                        | ❌    |
-| LoRa(**SX1278**) DIO0   | 14                        | ❌    |
-| LoRa(**SX1278**) DIO1   | 21                        | ❌    |
-| LoRa(**SX1278**) CS     | 1                         | ❌    |
-| LoRa(**SX1278**) LDO EN | 16                        | ❌    |
-| LoRa(**SX1278**) Ctrl   | 39                        | ❌    |
-| Button1 (BOOT)          | 0                         | ❌    |
-| Button2                 | 3                         | ❌    |
-| PMU (**AXP2101**) IRQ   | 4                         | ❌    |
-| PMU (**AXP2101**) SDA   | Share with I2C bus        | ❌    |
-| PMU (**AXP2101**) SCL   | Share with I2C bus        | ❌    |
+| Name                    | GPIO NUM                       | Free |
+| ----------------------- | ------------------------------ | ---- |
+| Uart1 TX                | 43(External QWIIC Socket)      | ✅️    |
+| Uart1 RX                | 44(External QWIIC Socket)      | ✅️    |
+| SDA                     | 8 (External QWIIC Socket same) | ❌    |
+| SCL                     | 9 (External QWIIC Socket same) | ❌    |
+| SPI MOSI                | 11                             | ❌    |
+| SPI MISO                | 13                             | ❌    |
+| SPI SCK                 | 12                             | ❌    |
+| SD CS                   | 10                             | ❌    |
+| SD MOSI                 | Share with SPI bus             | ❌    |
+| SD MISO                 | Share with SPI bus             | ❌    |
+| SD SCK                  | Share with SPI bus             | ❌    |
+| GNSS(**L76K**) TX       | 6                              | ❌    |
+| GNSS(**L76K**) RX       | 5                              | ❌    |
+| GNSS(**L76K**) PPS      | 7                              | ❌    |
+| LoRa(**SX1278**) SCK    | Share with SPI bus             | ❌    |
+| LoRa(**SX1278**) MISO   | Share with SPI bus             | ❌    |
+| LoRa(**SX1278**) MOSI   | Share with SPI bus             | ❌    |
+| LoRa(**SX1278**) RESET  | 18                             | ❌    |
+| LoRa(**SX1278**) DIO0   | 14                             | ❌    |
+| LoRa(**SX1278**) DIO1   | 21                             | ❌    |
+| LoRa(**SX1278**) CS     | 1                              | ❌    |
+| LoRa(**SX1278**) LDO EN | 16                             | ❌    |
+| LoRa(**SX1278**) Ctrl   | 39                             | ❌    |
+| Button1 (BOOT)          | 0                              | ❌    |
+| Button2                 | 3                              | ❌    |
+| PMU (**AXP2101**) IRQ   | 4                              | ❌    |
+| PMU (**AXP2101**) SDA   | Share with I2C bus             | ❌    |
+| PMU (**AXP2101**) SCL   | Share with I2C bus             | ❌    |
 
 > \[!IMPORTANT]
 > 
@@ -64,7 +64,7 @@
 
 | Devices               | 7-Bit Address | Share Bus |
 | --------------------- | ------------- | --------- |
-| Touch Panel FT6336U   | 0x3C          | ✅️         |
+| OLED Display SH1106   | 0x3C          | ✅️         |
 | Power Manager AXP2101 | 0x34          | ✅️         |
 
 ### ⚡ Electrical parameters
