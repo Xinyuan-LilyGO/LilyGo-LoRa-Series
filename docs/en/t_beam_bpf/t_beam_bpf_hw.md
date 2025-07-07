@@ -50,9 +50,12 @@
 > \[!IMPORTANT]
 > 
 > LDO EN pin is control pin inside the module:
+> 
 > 1. High level turns on the Radio
 > 2. Low level turns off the Radio
+> 
 > LoRa Ctrl pin is internal LNA power control of the module:
+> 
 > 1. When receiving data, set it to high level and turn on the LNA power;
 > 2. When transmitting data and sleeping, set it to low level and turn off the LNA power.
 >
