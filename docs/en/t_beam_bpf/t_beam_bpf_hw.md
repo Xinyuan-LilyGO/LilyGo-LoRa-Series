@@ -13,6 +13,57 @@
 1. The device will not be powered when the battery is inserted for the first time, because the onboard BMS is in shipping mode at this time. You need to exit shipping mode and insert the USB-C into the board to activate the device power supply. If the battery is removed and re-inserted, you need to repeat the above steps
 2. Please be sure to connect the antenna before transmitting, otherwise it is easy to damage the RF module
 
+## PlatformIO Quick Start
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/) and [Python](https://www.python.org/)
+2. Search for the `PlatformIO` plugin in the `Visual Studio Code` extension and install it.
+3. After the installation is complete, you need to restart `Visual Studio Code`
+4. After restarting `Visual Studio Code`, select `File` in the upper left corner of `Visual Studio Code` -> `Open Folder` -> select the `LilyGo-LoRa-Series` directory
+5. Wait for the installation of third-party dependent libraries to complete
+6. Click on the `platformio.ini` file, and in the `platformio` column
+7. Select the board name you want to use in `default_envs` and uncomment it.
+8. Uncomment one of the lines `src_dir = xxxx` to make sure only one line works , Please note the example comments, indicating what works and what does not.
+9. Click the (✔) symbol in the lower left corner to compile
+10. Connect the board to the computer USB-C , Micro-USB is used for module firmware upgrade
+11. Click (→) to upload firmware
+12. Click (plug symbol) to monitor serial output
+13. If it cannot be written, or the USB device keeps flashing, please check the **FAQ** below
+
+## Arduino IDE quick start
+
+1. Install [Arduino IDE](https://www.arduino.cc/en/software)
+2. Install [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
+3. Copy all folders in the `lib` directory to the `Sketchbook location` directory. How to find the location of your own libraries, [please see here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer)
+    * Windows: `C:\Users\{username}\Documents\Arduino`
+    * macOS: `/Users/{username}/Documents/Arduino`
+    * Linux: `/home/{username}/Arduino`
+4. Open the corresponding example
+    * Open the downloaded `LilyGo-LoRa-Series`
+    * Open `examples`
+    * Select the sample file and open the file ending with `ino`
+5. On Arduino ISelect the corresponding board in the DE tool project and click on the corresponding option in the list below to select
+
+    | Name                                 | Value                               |
+    | ------------------------------------ | ----------------------------------- |
+    | Board                                | **ESP32S3 Dev Module**              |
+    | Port                                 | Your port                           |
+    | USB CDC On Boot                      | Enable                              |
+    | CPU Frequency                        | 240MHZ(WiFi)                        |
+    | Core Debug Level                     | None                                |
+    | USB DFU On Boot                      | Disable                             |
+    | Erase All Flash Before Sketch Upload | Disable                             |
+    | Flash Mode                           | QIO 80Mhz                           |
+    | Flash Size                           | **16MB(128Mb)**                     |
+    | Arduino Runs On                      | Core1                               |
+    | USB Firmware MSC On Boot             | Disable                             |
+    | Partition Scheme                     | **16M Flash (3MB APP/9.9MB FATFS)** |
+    | PSRAM                                | **OPI PSRAM**                       |
+    | Upload Speed                         | 921600                              |
+    | Programmer                           | **Esptool**                         |
+
+1. Please uncomment the `utilities.h` file of each sketch according to your board model e.g `T_BEAM_S3_BPF`, otherwise the compilation will report an error.
+2. Upload sketch
+
 ### 📍 Pins Map
 
 | Name                    | GPIO NUM                       | Free |

@@ -22,6 +22,64 @@
 [1]: https://www.lilygo.cc/products/t-beam-v1-1-esp32-lora-module "T-Beam Meshtastic"
 [2]: https://www.lilygo.cc/products/t-beam-softrf "T-Beam SoftRF"
 
+### PlatformIO Quick Start
+
+1. Install the **CH9102 USB bridge** driver for the first time.
+   * [Windows](https://www.wch-ic.com/downloads/CH343SER_ZIP.html)
+   * [Mac OS](https://www.wch-ic.com/downloads/CH34XSER_MAC_ZIP.html)
+2. Install [Visual Studio Code](https://code.visualstudio.com/) and [Python](https://www.python.org/)
+3. Search for the `PlatformIO` plugin in the `Visual Studio Code` extension and install it.
+4. After the installation is complete, you need to restart `Visual Studio Code`
+5. After restarting `Visual Studio Code`, select `File` in the upper left corner of `Visual Studio Code` -> `Open Folder` -> select the `LilyGo-LoRa-Series` directory
+6. Wait for the installation of third-party dependent libraries to complete
+7. Click on the `platformio.ini` file, and in the `platformio` column
+8. Select the board name you want to use in `default_envs` and uncomment it.
+9. Uncomment one of the lines `src_dir = xxxx` to make sure only one line works , Please note the example comments, indicating what works and what does not.
+10. Click the (✔) symbol in the lower left corner to compile
+11. Connect the board to the computer USB-C , Micro-USB is used for module firmware upgrade
+12. Click (→) to upload firmware
+13. Click (plug symbol) to monitor serial output
+14. If it cannot be written, or the USB device keeps flashing, please check the **FAQ** below
+
+### Arduino IDE quick start
+
+1. Install the **CH9102 USB bridge** driver for the first time.
+   * [Windows](https://www.wch-ic.com/downloads/CH343SER_ZIP.html)
+   * [Mac OS](https://www.wch-ic.com/downloads/CH34XSER_MAC_ZIP.html)
+2. Install [Arduino IDE](https://www.arduino.cc/en/software)
+3. Install [Arduino ESP32](https://docs.espressif.com/projects/arduino-esp32/en/latest/)
+4. Copy all folders in the `lib` directory to the `Sketchbook location` directory. How to find the location of your own libraries, [please see here](https://support.arduino.cc/hc/en-us/articles/4415103213714-Find-sketches-libraries-board-cores-and-other-files-on-your-computer)
+    * Windows: `C:\Users\{username}\Documents\Arduino`
+    * macOS: `/Users/{username}/Documents/Arduino`
+    * Linux: `/home/{username}/Arduino`
+5. Open the corresponding example
+    * Open the downloaded `LilyGo-LoRa-Series`
+    * Open `examples`
+    * Select the sample file and open the file ending with `ino`
+6. On Arduino ISelect the corresponding board in the DE tool project and click on the corresponding option in the list below to select
+
+    | Name                                 | Value                                |
+    | ------------------------------------ | ------------------------------------ |
+    | Board                                | **ESP32 Dev Module**                 |
+    | Port                                 | Your port                            |
+    | CPU Frequency                        | 240MHZ(WiFi/BT)                      |
+    | Core Debug Level                     | None                                 |
+    | Erase All Flash Before Sketch Upload | Disable                              |
+    | Events Run On                        | Core1                                |
+    | Flash Frequency                      | 80MHZ                                |
+    | Flash Mode                           | QIO                                  |
+    | Flash Size                           | **4MB(32Mb)**                        |
+    | JTAG Adapter                         | Disabled                             |
+    | Arduino Runs On                      | Core1                                |
+    | Partition Scheme                     | **Huge APP (3MB No OTA/1MB SPIFFS)** |
+    | PSRAM                                | **Enable**                           |
+    | Upload Speed                         | 921600                               |
+    | Programmer                           | **Esptool**                          |
+
+6. Please uncomment the `utilities.h` file of each sketch according to your board model ,e.g `T_BEAM_SX1262`,`T_BEAM_SX1276`,`T_BEAM_SX1278`, otherwise the compilation will report an error.
+7. Upload sketch
+
+
 ### 📍 Pins Map
 
 | Name                          | GPIO NUM           | Free |
@@ -121,3 +179,10 @@
 * [SX1276 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
 * [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 * [GSP NEO-6/NEO-8 datasheet](https://www.u-blox.com/en/product/neo-6-series)
+
+### Application
+
+* [T-Beam SoftRF](https://github.com/lyusupov/SoftRF)
+* [T-Beam Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter)
+* [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
+
