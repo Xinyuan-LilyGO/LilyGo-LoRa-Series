@@ -10,6 +10,10 @@
 
 
 // Support board list , Macro definition below, select the board definition to be used
+// 将要使用的板子型号注释打开,只能打开一个型号,如果不明白自己买的型号是什么,请找客服核对型号
+
+
+/***********************************  Model definition start 型号定义起始 ***********************************/
 
 // #define T3_V1_3_SX1276
 // #define T3_V1_3_SX1278
@@ -42,6 +46,8 @@
 // #define T_BEAM_S3_BPF
 
 // #define T_BEAM_2W
+
+/***********************************  Model definition end 型号定义结尾 ***********************************/
 
 
 #define UNUSED_PIN                   (0)
@@ -686,7 +692,7 @@
 #define BOARD_VARIANT_NAME          "LoRa 2W"
 
 #else
-#error "When using it for the first time, please define the board model in <utilities.h>"
+#error "When using it for the first time, please define the board model in <utilities.h> 首次使用时，请在<utilities.h> 文件最上方定义板卡模型"
 #endif
 
 
