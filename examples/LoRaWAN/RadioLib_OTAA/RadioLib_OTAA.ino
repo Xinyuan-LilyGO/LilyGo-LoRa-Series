@@ -126,10 +126,10 @@ String stateDecode(const int16_t result)
         return "RADIOLIB_ERR_COMMAND_QUEUE_ITEM_NOT_FOUND";
     case RADIOLIB_ERR_JOIN_NONCE_INVALID:
         return "RADIOLIB_ERR_JOIN_NONCE_INVALID";
-    case RADIOLIB_ERR_N_FCNT_DOWN_INVALID:
-        return "RADIOLIB_ERR_N_FCNT_DOWN_INVALID";
-    case RADIOLIB_ERR_A_FCNT_DOWN_INVALID:
-        return "RADIOLIB_ERR_A_FCNT_DOWN_INVALID";
+    case RADIOLIB_ERR_MIC_MISMATCH:
+        return "RADIOLIB_ERR_MIC_MISMATCH";
+    case RADIOLIB_ERR_MULTICAST_FCNT_INVALID:
+        return "RADIOLIB_ERR_MULTICAST_FCNT_INVALID";
     case RADIOLIB_ERR_DWELL_TIME_EXCEEDED:
         return "RADIOLIB_ERR_DWELL_TIME_EXCEEDED";
     case RADIOLIB_ERR_CHECKSUM_MISMATCH:
@@ -323,7 +323,7 @@ void setup()
             Serial.print(F("Boots since unsuccessful join: "));
             // Serial.println(bootCountSinceUnsuccessfulJoin);
             Serial.print(F("Retrying join in "));
-            Serial.print(sleepForSeconds);
+            Serial.print(sleepForSeconds / 1000);
             Serial.println(F(" seconds"));
 
             delay(sleepForSeconds);
