@@ -20,6 +20,7 @@
 - 🔧 **[LoRa32 TCXO Quick Start](./docs/en/t3_tcxo_sx1276/t3_tcxo_sx1276_hw.md)**
 - 🔧 **[T3-C6 Quick Start](./docs/en/t3_c6_sx1262/t3_c6_sx1262_hw.md)**
 - 🔧 **[T3-S3-SX1262 Quick Start](./docs/en/t3_s3_sx1262/t3_s3_sx1262_hw.md)**
+- 🔧 **[T3-S3-LR1121 Quick Start](./docs/en/t3_s3_lr1121/t3_s3_lr1121_hw.md)**
 - 🔧 **[T3-S3-SX1280 Quick Start](./docs/en/t3_s3_sx1280/t3_s3_sx1280_hw.md)**
 - 🔧 **[T3-S3-SX1280PA Quick Start](./docs/en/t3_s3_sx1280pa/t3_s3_sx1280pa.md)**
 
