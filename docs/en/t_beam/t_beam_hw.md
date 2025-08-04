@@ -169,6 +169,12 @@
 | Transfer rate(FSK)  | 0.6 K ～ 300 Kbps              |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK |
 
+## WiFi-IPEX
+
+* The following figure shows how to switch the onboard WIFI antenna to IPEX
+
+![WIFI-IPEX](./images/WIFI-IPEX.png)
+
 ### Resource
 
 * [Schematic](../../../schematic/LilyGo_TBeam_V1.2.pdf)
