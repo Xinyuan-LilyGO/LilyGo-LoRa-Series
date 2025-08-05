@@ -100,14 +100,14 @@
 | PMU (**AXP2101**) SCL   | Share with I2C bus             | ❌    |
 
 > \[!IMPORTANT]
-> 
+>
 > LDO EN pin is control pin inside the module:
-> 
+>
 > 1. High level turns on the Radio
 > 2. Low level turns off the Radio
-> 
+>
 > LoRa Ctrl pin is internal LNA power control of the module:
-> 
+>
 > 1. When receiving data, set it to high level and turn on the LNA power;
 > 2. When transmitting data and sleeping, set it to low level and turn off the LNA power.
 >
@@ -126,6 +126,11 @@
 | 🔗USB-C Input Voltage | 3.9V-6V                     |
 | ⚡Charge Current      | 0-1024mA (\(Programmable\)) |
 | 🔋Battery Voltage     | 3.7V                        |
+
+> \[!IMPORTANT]
+> This board has an integrated BMS. It won't work the first time connect a battery;  must connect it to a USB-C port for activation.
+> If disconnect and then reconnect the battery, Need to repeat the above steps for proper activation.
+>
 
 ### ⚡ PowerManage Channel
 
@@ -193,3 +198,7 @@
 ### RF Block Diagram
 
 ![RF Block Diagram](./images/BPF.jpg)
+
+### Resource
+
+* [Schematic](../../../schematic/LilyGo_TBeam_BPF.pdf)
