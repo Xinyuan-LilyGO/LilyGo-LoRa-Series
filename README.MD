@@ -23,6 +23,8 @@
 - 🔧 **[T3-S3-LR1121 Quick Start](./docs/en/t3_s3_lr1121/t3_s3_lr1121_hw.md)**
 - 🔧 **[T3-S3-SX1280 Quick Start](./docs/en/t3_s3_sx1280/t3_s3_sx1280_hw.md)**
 - 🔧 **[T3-S3-SX1280PA Quick Start](./docs/en/t3_s3_sx1280pa/t3_s3_sx1280pa.md)**
+- 🔧 **[T3-S3-SX1276 Quick Start](./docs/en/t3_s3_sx1276/t3_s3_sx1276_hw.md)**
+- 🔧 **[T3-S3-SX1278 Quick Start](./docs/en/t3_s3_sx1278/t3_s3_sx1278_hw.md)**
 
 ## `2` Example description
 
