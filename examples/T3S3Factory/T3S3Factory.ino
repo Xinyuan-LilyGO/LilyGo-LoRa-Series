@@ -227,8 +227,9 @@ void setup()
     digitalWrite(RADIO_TCXO_ENABLE, HIGH);
 #endif
 
+    const uint8_t btn_num = BUTTON_PIN;
     pinMode(BUTTON_PIN, INPUT_PULLUP);
-    button.init(BUTTON_PIN);
+    button.init(btn_num);
     ButtonConfig *buttonConfig = button.getButtonConfig();
     buttonConfig->setEventHandler(handleEvent);
     buttonConfig->setFeature(ButtonConfig::kFeatureClick);
