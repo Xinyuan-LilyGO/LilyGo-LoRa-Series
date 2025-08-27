@@ -213,6 +213,8 @@
 | Transfer rate(FSK)  | 0.476 K~101.5 Kbps@LoRa@ 2.4G |
 | Modulation          | LoRa,(G)FSK ，LR-FHSS         |
 
+* LR1121 Sub-1G When the power setting is lower than 14, the power is abnormal. Please [see here](https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/issues/254#issuecomment-3219719499)
+
 ### LR1121 RF Block Diagram
 
 ![RF Block Diagram](./images/HPD16E.jpg)
