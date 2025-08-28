@@ -59,18 +59,23 @@ SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 #elif   defined(USING_LR1121)
 
 // The maximum power of LR1121 2.4G band can only be set to 13 dBm
-#define CONFIG_RADIO_FREQ           2450.0
-#define CONFIG_RADIO_OUTPUT_POWER   13
-#define CONFIG_RADIO_BW             125.0
+// #define CONFIG_RADIO_FREQ           2450.0
+// #define CONFIG_RADIO_OUTPUT_POWER   13
+// #define CONFIG_RADIO_BW             125.0
 
 // The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
-// #define CONFIG_RADIO_FREQ           868.0
-// #define CONFIG_RADIO_OUTPUT_POWER   22
-// #define CONFIG_RADIO_BW             125.0
+#define CONFIG_RADIO_FREQ           868.0
+#define CONFIG_RADIO_OUTPUT_POWER   22
+#define CONFIG_RADIO_BW             125.0
 
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
 
+enum TransmissionDirection {
+    LORA_NONE = 0,
+    TRANSMISSION = 1,
+    RECEIVE = 2,
+};
 
 // save transmission state between loops
 int             transmissionState = RADIOLIB_ERR_NONE;
@@ -89,6 +94,15 @@ SSD1306Wire     display(0x3c, I2C_SDA, I2C_SCL);
 OLEDDisplayUi   ui( &display );
 FrameCallback   frames[] = { hwInfo,  radioTx, radioRx};
 AceButton       button;
+TransmissionDirection  transmissionDirection = LORA_NONE;
+static uint8_t freq_index = 0;
+const float factory_freq[] = {433.0, 470.0, 850.0, 868.0, 915.0, 920.0, 923.0
+#if   defined(USING_LR1121)
+                              , 2400, 2450
+#endif
+
+                             };
+float current_freq = CONFIG_RADIO_FREQ;
 
 
 void setFlag(void)
@@ -97,8 +111,152 @@ void setFlag(void)
     transmittedFlag = true;
 }
 
+void deviceSleep()
+{
+    display.clear();
 
-void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
+    digitalWrite(RADIO_RST_PIN, HIGH);
+    gpio_hold_en((gpio_num_t) RADIO_RST_PIN);
+    gpio_deep_sleep_hold_en();
+
+    radio.sleep();
+
+    display.drawString(60, 28, "Sleep");
+    display.display();
+    delay(2000);
+    display.displayOff();
+
+#ifdef BOARD_LED
+    digitalWrite(BOARD_LED, LOW);
+#endif
+
+#ifdef  RADIO_TCXO_ENABLE
+    digitalWrite(RADIO_TCXO_ENABLE, LOW);
+#endif
+
+    while (digitalRead(0) == LOW)
+        delay(1);
+
+    SPI.end();
+
+    Wire.end();
+
+    Serial.flush();
+
+    Serial.end();
+
+    pinMode(RADIO_CS_PIN, INPUT);
+    pinMode(RADIO_RST_PIN, INPUT);
+
+#ifdef RADIO_DIO0_PIN
+    pinMode(RADIO_DIO0_PIN, INPUT);
+#endif
+#ifdef RADIO_DIO1_PIN
+    pinMode(RADIO_DIO1_PIN, INPUT);
+#endif
+#ifdef RADIO_DIO9_PIN
+    pinMode(RADIO_DIO9_PIN, INPUT);
+#endif
+#ifdef RADIO_BUSY_PIN
+    pinMode(RADIO_BUSY_PIN, INPUT);
+#endif
+    pinMode(RADIO_CS_PIN, INPUT);
+    pinMode(I2C_SDA, INPUT);
+    pinMode(I2C_SCL, INPUT);
+    pinMode(OLED_RST, INPUT);
+    pinMode(RADIO_SCLK_PIN, INPUT);
+    pinMode(RADIO_MISO_PIN, INPUT);
+    pinMode(RADIO_MOSI_PIN, INPUT);
+    pinMode(SDCARD_MOSI, INPUT);
+    pinMode(SDCARD_MISO, INPUT);
+    pinMode(SDCARD_SCLK, INPUT);
+    pinMode(SDCARD_CS, INPUT);
+    pinMode(BOARD_LED, INPUT);
+    pinMode(ADC_PIN, INPUT);
+
+
+#if CONFIG_IDF_TARGET_ESP32
+    esp_sleep_ext1_wakeup_mode_t wakeup_mode = ESP_EXT1_WAKEUP_ALL_LOW;
+#else
+#if ESP_ARDUINO_VERSION_VAL(2,0,17) >=  ESP_ARDUINO_VERSION
+    esp_sleep_ext1_wakeup_mode_t wakeup_mode = ESP_EXT1_WAKEUP_ANY_LOW;
+#else
+    esp_sleep_ext1_wakeup_mode_t wakeup_mode = ESP_EXT1_WAKEUP_ALL_LOW;
+#endif
+#endif
+
+    // esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0);
+
+    // T3 V3.0 ext1 sleep  ~160uA
+    // T3 S3 V1.3 ext1 sleep  ~ 40uA
+    esp_sleep_enable_ext1_wakeup(_BV(0), wakeup_mode);
+
+    // T3 V3.0  Timer sleep ~ 160uA
+    // esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
+
+    esp_deep_sleep_start();
+
+    Serial.println("Never print()");
+}
+
+void changeFreq()
+{
+#if defined(JAPAN_MIC)
+#else
+    // Set freq function
+    radio.standby();
+#if  defined(USING_LR1121)
+    // check if we need to recalibrate image
+    bool skipCalibration = true;
+    int16_t state =  radio.setFrequency(factory_freq[freq_index], skipCalibration);
+#else /*defined(USING_LR1121)*/
+    int16_t state =  radio.setFrequency(factory_freq[freq_index]);
+#endif /*defined(USING_LR1121)*/
+
+    if (state != RADIOLIB_ERR_NONE) {
+        Serial.printf("Selected frequency %.2f is invalid for this module!\n", factory_freq[freq_index]);
+        return;
+    }
+    current_freq = factory_freq[freq_index];
+    freq_index++;
+    Serial.printf("setFrequency:%.2f\n", current_freq);
+    freq_index %= sizeof(factory_freq) / sizeof(factory_freq[0]);
+
+#if   defined(USING_LR1121)
+    bool forceHighPower = false;
+    int8_t max_tx_power = 13;
+    if (current_freq < 2400) {
+        max_tx_power = 22;
+        forceHighPower = true;
+    }
+    if (radio.setOutputPower(max_tx_power, forceHighPower) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.printf("Selected output power %d is invalid for this module!\n", max_tx_power);
+    }
+#endif /*defined(USING_LR1121)*/
+
+    switch (transmissionDirection) {
+    case TRANSMISSION:
+#ifdef RADIO_TX_CW
+        radio.transmitDirect();
+#else /*RADIO_TX_CW*/
+        transmissionState = radio.transmit((uint8_t *)&transmissionCounter, 4);
+        if (transmissionState != RADIOLIB_ERR_NONE) {
+            Serial.println(F("[Radio] transmit packet failed!"));
+        }
+#endif /*RADIO_TX_CW*/
+        break;
+    default:
+        transmissionState = radio.startReceive();
+        if (transmissionState != RADIOLIB_ERR_NONE) {
+            Serial.println(F("[Radio] Received packet failed!"));
+        }
+        break;
+    }
+#endif /*defined(JAPAN_MIC)*/
+
+}
+
+void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
 {
     int state ;
     static uint8_t frameCounter = 1;
@@ -127,84 +285,15 @@ void handleEvent(AceButton   *button, uint8_t eventType, uint8_t buttonState)
         }
         frameCounter++;
         ui.nextFrame();
-        frameCounter %= 3;
+        frameCounter %= sizeof(frames) / sizeof(frames[0]);
+        transmissionDirection = static_cast<TransmissionDirection>(frameCounter);
         break;
     case AceButton::kEventLongPressed:
         Serial.println("Long pressed!");
-
-        display.clear();
-
-        digitalWrite(RADIO_RST_PIN, HIGH);
-        gpio_hold_en((gpio_num_t) RADIO_RST_PIN);
-        gpio_deep_sleep_hold_en();
-
-        radio.sleep();
-
-        display.drawString(60, 28, "Sleep");
-        display.display();
-        delay(2000);
-        display.displayOff();
-
-#ifdef BOARD_LED
-        digitalWrite(BOARD_LED, LOW);
-#endif
-
-#ifdef  RADIO_TCXO_ENABLE
-        digitalWrite(RADIO_TCXO_ENABLE, LOW);
-#endif
-
-        while (digitalRead(0) == LOW)
-            delay(1);
-
-        SPI.end();
-
-        Wire.end();
-
-        Serial.flush();
-
-        Serial.end();
-
-        pinMode(RADIO_CS_PIN, INPUT);
-        pinMode(RADIO_RST_PIN, INPUT);
-
-#ifdef RADIO_DIO0_PIN
-        pinMode(RADIO_DIO0_PIN, INPUT);
-#endif
-#ifdef RADIO_DIO1_PIN
-        pinMode(RADIO_DIO1_PIN, INPUT);
-#endif
-#ifdef RADIO_DIO9_PIN
-        pinMode(RADIO_DIO9_PIN, INPUT);
-#endif
-#ifdef RADIO_BUSY_PIN
-        pinMode(RADIO_BUSY_PIN, INPUT);
-#endif
-        pinMode(RADIO_CS_PIN, INPUT);
-        pinMode(I2C_SDA, INPUT);
-        pinMode(I2C_SCL, INPUT);
-        pinMode(OLED_RST, INPUT);
-        pinMode(RADIO_SCLK_PIN, INPUT);
-        pinMode(RADIO_MISO_PIN, INPUT);
-        pinMode(RADIO_MOSI_PIN, INPUT);
-        pinMode(SDCARD_MOSI, INPUT);
-        pinMode(SDCARD_MISO, INPUT);
-        pinMode(SDCARD_SCLK, INPUT);
-        pinMode(SDCARD_CS, INPUT);
-        pinMode(BOARD_LED, INPUT);
-        pinMode(ADC_PIN, INPUT);
-
-        // esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0);
-
-        // T3 V3.0 ext1 sleep  ~160uA
-        // T3 S3 V1.3 ext1 sleep  ~ 40uA
-        esp_sleep_enable_ext1_wakeup(_BV(0), ESP_EXT1_WAKEUP_ALL_LOW);
-
-        // T3 V3.0  Timer sleep ~ 160uA
-        // esp_sleep_enable_timer_wakeup(30 * 1000 * 1000);
-
-        esp_deep_sleep_start();
-
-        Serial.println("Never print()");
+        deviceSleep();
+        break;
+    case AceButton::kEventDoubleClicked:
+        changeFreq();
         break;
     }
 }
@@ -222,6 +311,16 @@ void setup()
 
     delay(1000);
 
+    for (int i = 0; i < sizeof(factory_freq) / sizeof(factory_freq[0]); ++i) {
+        const float _EPS_ = 1e-6f;
+        int aa = static_cast<int>(factory_freq[i] + _EPS_);
+        int bb = static_cast<int>(CONFIG_RADIO_FREQ + _EPS_);
+        if (aa == bb) {
+            freq_index = i + 1;
+            freq_index %= sizeof(factory_freq) / sizeof(factory_freq[0]);
+        }
+    }
+
 #ifdef  RADIO_TCXO_ENABLE
     pinMode(RADIO_TCXO_ENABLE, OUTPUT);
     digitalWrite(RADIO_TCXO_ENABLE, HIGH);
@@ -232,7 +331,8 @@ void setup()
     button.init(btn_num);
     ButtonConfig *buttonConfig = button.getButtonConfig();
     buttonConfig->setEventHandler(handleEvent);
-    buttonConfig->setFeature(ButtonConfig::kFeatureClick);
+    buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
+    buttonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
     buttonConfig->setFeature(ButtonConfig::kFeatureLongPress);
 
     // Initialising the UI will init the display too.
@@ -282,7 +382,7 @@ void setup()
      *   LR1121        : Allowed values are in range from 150.0 to 960.0 MHz, 1900 - 2200 MHz and 2400 - 2500 MHz. Will also perform calibrations.
      * * * */
 
-    if (radio.setFrequency(CONFIG_RADIO_FREQ) == RADIOLIB_ERR_INVALID_FREQUENCY) {
+    if (radio.setFrequency(current_freq) == RADIOLIB_ERR_INVALID_FREQUENCY) {
         Serial.println(F("Selected frequency is invalid for this module!"));
         while (true);
     }
@@ -413,7 +513,10 @@ void setup()
     state = radio.startReceive();
     if (state != RADIOLIB_ERR_NONE) {
         Serial.println(F("[Radio] Received packet failed!"));
-    }
+    }   
+
+    extern void setupRecord();
+    setupRecord();
 }
 
 void loop()
@@ -477,7 +580,9 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     }
 
     display->drawString(0 + x, 0 + y, "Radio Tx");
-    display->drawString(0 + x, 12 + y, "TX :" + String(transmissionCounter));
+    display->drawString(0 + x, 12 + y, "FREQ :" + String(current_freq));
+    display->drawString(0 + x, 24 + y, "TX :" + String(transmissionCounter));
+    display->drawString(0 + x, 36 + y, "BW :" + String(CONFIG_RADIO_BW));
 }
 
 
@@ -529,8 +634,9 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     }
 
     display->drawString(0 + x, 0 + y, "Radio Rx");
-    display->drawString(0 + x, 22 + y, "RX :" + String(recvCounter));
-    display->drawString(0 + x, 10 + y, "RSSI:" + String(radioRSSI));
+    display->drawString(0 + x, 10 + y, "FREQ :" + String(current_freq));
+    display->drawString(0 + x, 22 + y, "RSSI:" + String(radioRSSI));
+    display->drawString(0 + x, 36 + y, "RX :" + String(recvCounter));
 
 
 }
