@@ -655,7 +655,7 @@ void hwInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t 
     display->setFont(ArialMT_Plain_10);
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->drawString(0 + x, 10 + y, "Radio  ");
-    display->drawString(50 + x, 10 + y, isRadioOnline & 1 ? "+" : "NA");
+    display->drawString(50 + x, 10 + y, isRadioOnline & 1 ? RADIO_TYPE_STR : "NA");
     display->drawString(0 + x, 20 + y, "SD   ");
     display->drawString(50 + x, 20 + y, SD.cardSize() != 0 ? "+" : "NA");
     display->drawString(0 + x, 30 + y, "BAT   ");
