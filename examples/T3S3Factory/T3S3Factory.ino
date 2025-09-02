@@ -96,12 +96,15 @@ FrameCallback   frames[] = { hwInfo,  radioTx, radioRx};
 AceButton       button;
 TransmissionDirection  transmissionDirection = LORA_NONE;
 static uint8_t freq_index = 0;
-const float factory_freq[] = {433.0, 470.0, 850.0, 868.0, 915.0, 920.0, 923.0
-#if   defined(USING_LR1121)
-                              , 2400, 2450
+const float factory_freq[] = {
+#if !defined(USING_SX1280PA) &&  !defined(USING_SX1280)
+    433.0, 470.0, 850.0, 868.0, 915.0, 920.0, 923.0,
+#endif
+#if   defined(USING_LR1121) || defined(USING_SX1280)|| defined(USING_SX1280PA)
+    2400, 2450
 #endif
 
-                             };
+};
 float current_freq = CONFIG_RADIO_FREQ;
 
 
@@ -513,10 +516,8 @@ void setup()
     state = radio.startReceive();
     if (state != RADIOLIB_ERR_NONE) {
         Serial.println(F("[Radio] Received packet failed!"));
-    }   
+    }
 
-    extern void setupRecord();
-    setupRecord();
 }
 
 void loop()
