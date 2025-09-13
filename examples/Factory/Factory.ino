@@ -28,6 +28,8 @@
 #include "Roboto_Mono_Medium_12.h"
 #include "LoRaBoards.h"
 
+// #define JAPAN_MIC_CERTIFICATION
+
 #ifndef WIFI_SSID
 #define WIFI_SSID             "Your WiFi SSID"
 #endif
@@ -131,6 +133,13 @@ SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif  /*Radio option*/
+
+
+#ifdef JAPAN_MIC_CERTIFICATION
+#undef  CONFIG_RADIO_FREQ
+#define CONFIG_RADIO_FREQ           920.0
+#endif
+
 
 enum TransmissionDirection {
     TRANSMISSION,
@@ -828,13 +837,13 @@ float current_freq = CONFIG_RADIO_FREQ;
 
 void power_key_pressed()
 {
-#if defined(JAPAN_MIC) || defined(T_BEAM_S3_BPF)
+#if defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)
     // Turn on/off display
     static bool isOn = true;
     isOn ? display.displayOff()  : display.displayOn();
     isOn ^= 1;
     return;
-#else /*defined(JAPAN_MIC) || defined(T_BEAM_S3_BPF)*/
+#else /*defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)*/
 
     // Set freq function
     radio.standby();
@@ -885,7 +894,7 @@ void power_key_pressed()
         }
         break;
     }
-#endif /*defined(JAPAN_MIC) || defined(T_BEAM_S3_BPF)*/
+#endif /*defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)*/
 }
 
 void loop()
