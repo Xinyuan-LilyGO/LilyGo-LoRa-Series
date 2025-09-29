@@ -4,10 +4,10 @@
  * @license   MIT
  * @copyright Copyright (c) 2024  Shenzhen Xin Yuan Electronic Technology Co., Ltd
  * @date      2024-12-18
- * @note      This example is for T-beam V1.2 and T-Beam SUPREME factory examples
- * @note      This example is for T-beam V1.2 and T-Beam SUPREME factory examples
- * @note      This example is for T-beam V1.2 and T-Beam SUPREME factory examples
- * @note      This example is for T-beam V1.2 and T-Beam SUPREME factory examples
+ * @note      This example is for T-beam V1.2, T-Beam-BPF, T-Beam SUPREME factory examples
+ * @note      This example is for T-beam V1.2, T-Beam-BPF, T-Beam SUPREME factory examples
+ * @note      This example is for T-beam V1.2, T-Beam-BPF, T-Beam SUPREME factory examples
+ * @note      This example is for T-beam V1.2, T-Beam-BPF, T-Beam SUPREME factory examples
  */
 
 #include <Arduino.h>
