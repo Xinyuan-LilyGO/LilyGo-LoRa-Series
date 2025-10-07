@@ -19,6 +19,9 @@
 
 - Download [Flash_download_tool](https://www.espressif.com.cn/sites/default/files/tools/flash_download_tool_3.9.6_0.zip)
 
+> \[!IMPORTANT]
+> The following GIF shows the writing of ESP32S3. If you are using ESP32, please select ESP32 instead of ESP32S3.
+
 ![web_flasher](./images/esp_downloader.gif)
 
 * **Note that after writing is completed, you need to press RST to reset**.
