@@ -152,4 +152,4 @@
 
 * [T3-TCXO schematic](../../../schematic/T3_V3.0.pdf)
 * [SX1276 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1276)
-
+* [T3-TCXO DXF](../../../dimensions/T3_V3.0_TCXO.dxf)
