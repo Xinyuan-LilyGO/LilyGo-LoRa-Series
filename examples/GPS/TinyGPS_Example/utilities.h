@@ -12,25 +12,41 @@
 // Support board list , Macro definition below, select the board definition to be used
 // 将要使用的板子型号注释打开,只能打开一个型号,如果不明白自己买的型号是什么,请找客服核对型号
 
-
 /***********************************  Model definition start 型号定义起始 ***********************************/
 
+// 1. --------------T3 V1.3 -------------------------------
+// https://lilygo.cc/products/lora-v1-3
 // #define T3_V1_3_SX1276
 // #define T3_V1_3_SX1278
+
+// 2. --------------T3 V1.6.1 -------------------------------
+// https://lilygo.cc/products/lora3
 
 // #define T3_V1_6_SX1276
 // #define T3_V1_6_SX1278
 
-// #define T3_V1_6_SX1276_TCXO
-// #define T3_V3_0_SX1276_TCXO
+// 3. --------------T3 V3.0 TCXO-------------------------------
+// Product: https://lilygo.cc/products/t3-tcxo
+
+// #define T3_V3_0_SX1276_TCXO  
+
+// 4. --------------T-BEAM ESP32-------------------------------
+// Product: https://lilygo.cc/products/t-beam
 
 // #define T_BEAM_SX1262
 // #define T_BEAM_SX1276
 // #define T_BEAM_SX1278
 // #define T_BEAM_LR1121
 
+// 5. --------------T-BEAM S3------------------------------
+// Product: https://lilygo.cc/products/t-beam-supreme
+
 // #define T_BEAM_S3_SUPREME_SX1262
 // #define T_BEAM_S3_SUPREME_LR1121
+
+// 6. --------------T3 S3 V1.0 or T3 S3 V1.3 -------------------
+// Product: https://lilygo.cc/products/t3s3-v1-0 , same v1.3
+// Product: https://lilygo.cc/products/t3-s3-v1-3 
 
 // #define T3_S3_V1_2_SX1262
 // #define T3_S3_V1_2_SX1276
@@ -39,13 +55,28 @@
 // #define T3_S3_V1_2_SX1280_PA
 // #define T3_S3_V1_2_LR1121
 
+// 7. --------------T-Motion -------------------------------------
+// Product: https://lilygo.cc/products/t-motion-s76g-stm32-lora
+
 // #define T_MOTION
+
+// --------------T3 C6 -------------------------------------
+// Product: https://lilygo.cc/products/t-lora-c6
 
 // #define T3_C6
 
+
+// --------------T-Beam BPF -------------------------------------
+// Product: https://lilygo.cc/products/t-beam-bpf
 // #define T_BEAM_S3_BPF
 
+// --------------LoRa 2W -------------------------------------
+// Product: ...
 // #define T_BEAM_2W
+
+
+
+// #define T3_V1_6_SX1276_TCXO  // Production has stopped
 
 /***********************************  Model definition end 型号定义结尾 ***********************************/
 
@@ -252,7 +283,13 @@
 #define BAT_MAX_VOLTAGE             (4.2)
 #define BAT_VOL_COMPENSATION        (0.0)
 
-#elif defined(T3_V3_0)
+#elif defined(T3_V3_0) || defined(T3_V3_0_SX1276_TCXO)
+
+#ifdef T3_V3_0_SX1276_TCXO
+#ifndef USING_SX1276
+#define USING_SX1276
+#endif
+#endif
 
 
 #define I2C_SDA                     21
