@@ -33,8 +33,11 @@ HardwareSerial  SerialGPS(GPS_RX_PIN, GPS_TX_PIN);
 #include "driver/gpio.h"
 #endif //ARDUINO_ARCH_ESP32
 
-
+#ifdef DISPLAY_MODEL
 DISPLAY_MODEL *u8g2 = NULL;
+#endif
+
+
 static DevInfo_t  devInfo;
 
 #ifdef HAS_GPS
@@ -45,6 +48,7 @@ String gps_model = "None";
 
 uint32_t deviceOnline = 0x00;
 
+static void enable_slow_clock();
 
 #ifdef HAS_PMU
 XPowersLibInterface *PMU = NULL;
@@ -54,14 +58,8 @@ static void setPmuFlag()
 {
     pmuInterrupt = true;
 }
-#endif
-
-static void enable_slow_clock();
-
-
 bool beginPower()
 {
-#ifdef HAS_PMU
     if (!PMU) {
         PMU = new XPowersAXP2101(PMU_WIRE_PORT);
         if (!PMU->init()) {
@@ -340,14 +338,12 @@ bool beginPower()
     default:
         break;
     }
-#endif
     return true;
 }
 
 void disablePeripherals()
 {
 
-#ifdef HAS_PMU
     if (!PMU)return;
 
     PMU->setChargingLedMode(XPOWERS_CHG_LED_OFF);
@@ -403,12 +399,10 @@ void disablePeripherals()
 
     }
 #endif
-#endif
 }
 
 void loopPMU(void (*pressed_cb)(void))
 {
-#ifdef HAS_PMU
     if (!PMU) {
         return;
     }
@@ -453,9 +447,10 @@ void loopPMU(void (*pressed_cb)(void))
     }
     // Clear PMU Interrupt Status Register
     PMU->clearIrqStatus();
-#endif
 }
+#endif
 
+#ifdef DISPLAY_ADDR
 bool beginDisplay()
 {
     Wire.beginTransmission(DISPLAY_ADDR);
@@ -481,6 +476,7 @@ bool beginDisplay()
     Serial.printf("Warning: Failed to find Display at 0x%0X address\n", DISPLAY_ADDR);
     return false;
 }
+#endif
 
 #ifdef HAS_SDCARD
 bool writeFile(const char *path, const char *buffer)
@@ -538,9 +534,9 @@ bool testSDWriteAndRead()
 }
 #endif /*HAS_SDCARD*/
 
+#ifdef HAS_SDCARD
 bool beginSDCard()
 {
-#ifdef HAS_SDCARD
 #if defined(HAS_SDCARD) && defined(SD_SHARE_SPI_BUS)
     bool rlst = SD.begin(SDCARD_CS);
 #else
@@ -557,9 +553,9 @@ bool beginSDCard()
     } else {
         Serial.println("Warning: Failed to init Sd Card");
     }
-#endif /*HAS_SDCARD*/
     return false;
 }
+#endif /*HAS_SDCARD*/
 
 void beginWiFi()
 {
@@ -814,9 +810,11 @@ void setupBoards(bool disable_u8g2 )
 
     beginSDCard();
 
+#ifdef DISPLAY_ADDR
     if (!disable_u8g2) {
         beginDisplay();
     }
+#endif
 
     // scanWiFi();
 
@@ -872,8 +870,10 @@ void printResult(bool radio_online)
     Serial.print("PSRAM        : ");
     Serial.println((psramFound()) ? "+" : "-");
 
+#ifdef DISPLAY_MODEL
     Serial.print("Display      : ");
     Serial.println(( u8g2) ? "+" : "-");
+#endif
 
 #ifdef HAS_SDCARD
     Serial.print("Sd Card      : ");
@@ -890,6 +890,7 @@ void printResult(bool radio_online)
     Serial.println(( find_gps ) ? "+" : "-");
 #endif
 
+#ifdef DISPLAY_MODEL
     if (u8g2) {
 
         u8g2->clearBuffer();
@@ -915,6 +916,7 @@ void printResult(bool radio_online)
         delay(2000);
     }
 #endif
+#endif /*DISPLAY_MODEL*/
 }
 
 
@@ -925,9 +927,9 @@ static uint32_t lastDebounceTime = 0;
 #endif
 
 
+#ifdef BOARD_LED
 void flashLed()
 {
-#ifdef BOARD_LED
     if ((millis() - lastDebounceTime) > debounceDelay) {
         ledState = !ledState;
         if (ledState) {
@@ -937,8 +939,8 @@ void flashLed()
         }
         lastDebounceTime = millis();
     }
-#endif
 }
+#endif
 
 
 void scanDevices(TwoWire *w)
@@ -1201,13 +1203,13 @@ float getTempForNTC()
     return temperature;
 }
 
+#ifdef ENABLE_BLE
 
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
 void setupBLE()
 {
-#ifdef ENABLE_BLE
 
     uint8_t mac[6];
     char macStr[18] = { 0 };
@@ -1239,8 +1241,8 @@ void setupBLE()
     pAdvertising->setMinPreferred(0x12);
     BLEDevice::startAdvertising();
     Serial.println("Characteristic defined! Now you can read it in your phone!");
-#endif
 }
+#endif
 
 #define CALIBRATE_ONE(cali_clk) calibrate_one(cali_clk, #cali_clk)
 
