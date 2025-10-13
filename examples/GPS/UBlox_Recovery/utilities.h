@@ -72,7 +72,7 @@
 
 // --------------LoRa 2W -------------------------------------
 // Product: ...
-// #define T_BEAM_2W
+// #define T_BEAM_1W
 
 
 
@@ -662,7 +662,7 @@
 #define BOARD_VARIANT_NAME          "T-Beam BPF"
 
 
-#elif defined(T_BEAM_2W)
+#elif defined(T_BEAM_1W)
 
 #ifndef USING_SX1262
 #define USING_SX1262
