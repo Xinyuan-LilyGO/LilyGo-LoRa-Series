@@ -2,11 +2,11 @@
   <img src="../../../.github/LilyGo_logo.png" alt="LilyGo logo" width="100"/>
 </div>
 
-<h1 align = "center">🌟LilyGo T-Beam-2W🌟</h1>
+<h1 align = "center">🌟LilyGo T-Beam-1W🌟</h1>
 
 ## Overview
 
-* This page introduces the hardware parameters related to `LilyGo T-Beam-2W`
+* This page introduces the hardware parameters related to `LilyGo T-Beam-1W`
 
 ### Notes on use
 
@@ -63,7 +63,7 @@
     | Upload Speed                         | 921600                              |
     | Programmer                           | **Esptool**                         |
 
-6. Please uncomment the `utilities.h` file of each sketch according to your board model e.g `T_BEAM_2W`, otherwise the compilation will report an error.
+6. Please uncomment the `utilities.h` file of each sketch according to your board model e.g `T_BEAM_1W`, otherwise the compilation will report an error.
 7. Upload sketch
 
 ### 📍 Pins Map
@@ -190,5 +190,5 @@
 
 ### Resource
 
-* [Schematic](../../../schematic/T-Beam_2W_V1.0.pdf)
+* [Schematic](../../../schematic/T-Beam_1W_V1.0.pdf)
 

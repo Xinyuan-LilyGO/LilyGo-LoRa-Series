@@ -14,7 +14,7 @@
 - 🔧 **[T-Beam Quick Start](./docs/en/t_beam/t_beam_hw.md)**
 - 🔧 **[T-Beam Supreme Quick Start](./docs/en/t_beam_supreme/t_beam_supreme_hw.md)**
 - 🔧 **[T-Beam BPF Quick Start](./docs/en/t_beam_bpf/t_beam_bpf_hw.md)**
-- 🔧 **[T-Beam 2W Quick Start](./docs/en/t_beam_2w/t_beam_2w_hw.md)**
+- 🔧 **[T-Beam 1W Quick Start](./docs/en/t_beam_1w/t_beam_1w_hw.md)**
 - 🔧 **[LoRa32 V1.3 Quick Start](./docs/en/t3_v13_sx1276/t3_v13_sx1276.md)**
 - 🔧 **[LoRa32 V1.6.1 Quick Start](./docs/en/t3_v161_sx1276/t3_v161_sx1276_hw.md)**
 - 🔧 **[LoRa32 TCXO Quick Start](./docs/en/t3_tcxo_sx1276/t3_tcxo_sx1276_hw.md)**
