@@ -153,20 +153,22 @@
 
 ### RF parameters
 
-| Features            | Details                        |
-| ------------------- | ------------------------------ |
-| RF  Module          | SX1262 TCXO (XY16P35)          |
-| Frequency range     | 144~148MHZ                     |
-| Transfer rate(LoRa) | 0.018K～37.5Kbps               |
-| Transfer rate(FSK)  | 1.2K～300Kbps                  |
-| Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK |
+| Features            | 868MHz                         | 433MHz                         |
+| ------------------- | ------------------------------ | ------------------------------ |
+| RF  Module          | SX1262 TCXO (XY16P35)          | SX1262 TCXO  XY16P354          |
+| Frequency range     | 830~950MHz                     | 400~520MHz                     |
+| Transfer rate(LoRa) | 0.018K～37.5Kbps               | 0.018K～37.5Kbps               |
+| Transfer rate(FSK)  | 1.2K～300Kbps                  | 1.2K～300Kbps                  |
+| Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK | FSK, GFSK, MSK, GMSK, LoRa,OOK |
 
 ### Frequently asked questions
 
 1. When testing or using, connect the antenna first, then power on to transmit the signal.
 2. The module uses a high-gain, high-efficiency power amplifier. When the output power of SX1262 is +22dBm (max), the module output power is maximum.
 3. Suggestion: Please give the internal PA stabilization time before transmitting data: For SX1262 chip, the recommended configuration value is >800us
-![RampTime](./images/RampTime.jpg)
+
+  ![RampTime](./images/RampTime.jpg)
+
 4. When the module is ready to transmit/receive data, you need to switch the RF Switch on the module to the transmit/receive channel in advance. This switch is a single-pole double-throw switch. See the figure below for the truth table
 
 | DIO2 PIN | CTRL PIN | RF Switch Status                                               |
