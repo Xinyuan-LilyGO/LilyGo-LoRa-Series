@@ -148,6 +148,11 @@
 | Transfer rate(FSK)  | 1.2K～300Kbps                   |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa，OOK |
 
+> [!IMPORTANT]
+> When the bandwidth is lower than 62.5kHz, LoRa modules using non-TCXOs will not be able to fully communicate, resulting in poor communication quality.
+> Modules equipped with TCXOs do not experience this issue.
+>
+
 #### Resource
 
 * [T3-TCXO schematic](../../../schematic/T3_V3.0.pdf)
