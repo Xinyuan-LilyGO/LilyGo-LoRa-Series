@@ -35,6 +35,12 @@
 
 #include <esp_mac.h>
 
+
+#ifndef DISPLAY_ADDR
+#define DISPLAY_ADDR               0x3C
+#endif
+
+
 // #define ENABLE_BLE      //Enable ble function
 
 enum {
@@ -74,7 +80,7 @@ bool beginSDCard();
 #define beginSDCard()
 #endif
 
-#ifdef DISPLAY_ADDR
+#ifdef DISPLAY_MODEL
 bool beginDisplay();
 #endif
 

@@ -450,7 +450,7 @@ void loopPMU(void (*pressed_cb)(void))
 }
 #endif
 
-#ifdef DISPLAY_ADDR
+#ifdef DISPLAY_MODEL
 bool beginDisplay()
 {
     Wire.beginTransmission(DISPLAY_ADDR);
@@ -810,7 +810,7 @@ void setupBoards(bool disable_u8g2 )
 
     beginSDCard();
 
-#ifdef DISPLAY_ADDR
+#ifdef HAS_DISPLAY
     if (!disable_u8g2) {
         beginDisplay();
     }
