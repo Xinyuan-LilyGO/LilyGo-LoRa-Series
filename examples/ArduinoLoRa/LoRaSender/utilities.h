@@ -140,8 +140,10 @@
 #define HAS_DISPLAY                 //Optional, bring your own board, no OLED !!
 #define HAS_PMU
 
+#define PMU_WIRE_PORT               Wire
 #define BOARD_VARIANT_NAME          "T-Beam"
 #define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
+#define DISPLAY_MODEL               U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 
 #elif defined(T3_V1_3_SX1276) || defined(T3_V1_3_SX1278)
 
@@ -183,6 +185,9 @@
 #define ADC_PIN                     35
 #define HAS_DISPLAY
 #define BOARD_VARIANT_NAME          "T3 V1.3"
+
+#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
+#define DISPLAY_MODEL               U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 
 #define BAT_ADC_PULLUP_RES          (100000.0)
 #define BAT_ADC_PULLDOWN_RES        (100000.0)
@@ -232,7 +237,8 @@
 #define HAS_DISPLAY
 
 #define BOARD_VARIANT_NAME          "T3 V1.6"
-
+#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
+#define DISPLAY_MODEL               U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 #define BAT_ADC_PULLUP_RES          (100000.0)
 #define BAT_ADC_PULLDOWN_RES        (100000.0)
 #define BAT_MAX_VOLTAGE             (4.2)
@@ -277,7 +283,8 @@
 #define HAS_DISPLAY
 
 #define BOARD_VARIANT_NAME          "T3 V1.6 TCXO"
-
+#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
+#define DISPLAY_MODEL               U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 #define BAT_ADC_PULLUP_RES          (100000.0)
 #define BAT_ADC_PULLDOWN_RES        (100000.0)
 #define BAT_MAX_VOLTAGE             (4.2)
@@ -337,7 +344,8 @@
 #define HAS_DISPLAY
 
 #define BOARD_VARIANT_NAME          "T3 V3.0"
-
+#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
+#define DISPLAY_MODEL               U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 #define BUTTON_PIN                  0
 #define ADC_PIN                     35
 
@@ -451,7 +459,8 @@
 #define HAS_DISPLAY
 
 #define BOARD_VARIANT_NAME          "T3-S3-V1.X"
-
+#define DISPLAY_MODEL_SSD_LIB       SSD1306Wire
+#define DISPLAY_MODEL               U8G2_SSD1306_128X64_NONAME_F_HW_I2C
 
 #elif defined(T_BEAM_S3_SUPREME_SX1262) || defined(T_BEAM_S3_SUPREME_LR1121)
 
