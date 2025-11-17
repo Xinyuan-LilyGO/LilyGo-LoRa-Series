@@ -109,6 +109,7 @@ bool beginPower();
 void disablePeripherals();
 #else
 #define beginPower()
+#define disablePeripherals()
 #endif
 
 #ifdef DISPLAY_MODEL
@@ -129,12 +130,14 @@ extern SPIClass SDCardSPI;
 extern HardwareSerial  SerialGPS;
 #endif
 
-#ifdef HAS_NTC
+#ifdef NTC_PIN
 float getTempForNTC();
 #endif
 
 #ifdef ENABLE_BLE
 void setupBLE();
+#else
+#define setupBLE()
 #endif
 
 extern uint32_t deviceOnline;
