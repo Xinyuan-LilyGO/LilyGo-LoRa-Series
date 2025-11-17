@@ -826,7 +826,7 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef HAS_GPS
 
-#if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_2W) || defined(T_BEAM_S3_BPF)
+#if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_1W) || defined(T_BEAM_S3_BPF)
     // T-Beam v1.2 skips L76K
     find_gps = beginGPS();
 #endif
