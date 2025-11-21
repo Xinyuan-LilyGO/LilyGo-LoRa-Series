@@ -128,6 +128,11 @@
 | ⚡Charge Function     | ❌       |
 | 🔋Battery Voltage     | 7.4V    |
 
+> \[!IMPORTANT]
+>
+> The battery used must have a discharge capacity of 2A or greater; otherwise, it may trigger battery protection during high-power transmission.
+>
+
 ### Button Description
 
 | Channel | Peripherals                    |
