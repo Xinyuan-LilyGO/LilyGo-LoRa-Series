@@ -128,13 +128,13 @@
 
 ### 🧑🏼‍🔧 I2C Devices Address
 
-| Devices                                 | 7-Bit Address | Share Bus |
-| --------------------------------------- | ------------- | --------- |
-| OLED Display (**SH1106**)               | 0x3C          | ✅️         |
-| RTC (**PCF8563**)                       | 0x51          | ✅️         |
-| MAG Sensor(**QMC6310**)                 | 0x1C          | ✅️         |
-| Temperature/humidity Sensor(**BME280**) | 0x77          | ✅️         |
-| Power Manager (**AXP2101**)             | 0x34          | ❌         |
+| Devices                                 | 7-Bit Address | Share Bus      |
+| --------------------------------------- | ------------- | -------------- |
+| OLED Display (**SH1106**)               | 0x3C          | ✅️  (I2C Bus 0) |
+| MAG Sensor(**QMC6310**)                 | 0x1C          | ✅️  (I2C Bus 0) |
+| Temperature/humidity Sensor(**BME280**) | 0x77          | ✅️  (I2C Bus 0) |
+| RTC (**PCF8563**)                       | 0x51          | ❌ (I2C Bus 1)  |
+| Power Manager (**AXP2101**)             | 0x34          | ❌ (I2C Bus 1)  |
 
 ### ⚡ Electrical parameters
 
