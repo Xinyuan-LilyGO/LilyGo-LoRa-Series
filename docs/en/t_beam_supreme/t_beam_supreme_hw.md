@@ -136,6 +136,20 @@
 | RTC (**PCF8563**)                       | 0x51          | ❌ (I2C Bus 1)  |
 | Power Manager (**AXP2101**)             | 0x34          | ❌ (I2C Bus 1)  |
 
+> \[!IMPORTANT]
+> If the I2C device is connected to pins 17 (SDA) or 18 (SCL)
+> the sensor power supply must be connected to DC1. If connected to other LDOs
+> the power must be turned on before accessing the sensor I2C bus
+> otherwise, the I2C access will fail or freeze.
+>
+
+### BME280 Address
+
+* If you need to change the BME280 device address, you can remove the resistor and then connect it to the fixed pad via a wire. This will change the device address to 0x76.
+
+<a href="./images/BME.png" style="text-decoration: none; display: block;">
+<img src="./images/BME.png" alt="T-A7670X-ESP32" width="200" style="border: 0;"/>
+
 ### ⚡ Electrical parameters
 
 | Features             | Details                     |
