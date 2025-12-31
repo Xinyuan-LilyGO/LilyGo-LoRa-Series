@@ -2,11 +2,11 @@
   <img src="../../../.github/LilyGo_logo.png" alt="LilyGo logo" width="100"/>
 </div>
 
-<h1 align = "center">🌟LilyGo T3 S3 SX1280🌟</h1>
+<h1 align = "center">🌟LilyGo T3 S3 LR1121 PA Version🌟</h1>
 
 ## Overview
 
-* This page introduces the hardware parameters related to `LilyGo T3 S3 SX1280`
+* This page introduces the hardware parameters related to `LilyGo T3 S3 LR1121 PA Version`
 
 ### Notes on use
 
@@ -51,38 +51,35 @@
     * Select the sample file and open the file ending with `ino`
 5. On Arduino ISelect the corresponding board in the DE tool project and click on the corresponding option in the list below to select
 
-    | Name                                 | Value                                                |
-    | ------------------------------------ | ---------------------------------------------------- |
-    | Board                                | **LilyGo T3-S3**                                     |
-    | Port                                 | Your port                                            |
-    | USB CDC On Boot                      | Enable                                               |
-    | CPU Frequency                        | 240MHZ(WiFi)                                         |
-    | Core Debug Level                     | None                                                 |
-    | USB DFU On Boot                      | Disable                                              |
-    | Erase All Flash Before Sketch Upload | Disable                                              |
-    | Events Run On                        | Core1                                                |
-    | Arduino Runs On                      | Core1                                                |
-    | USB Firmware MSC On Boot             | Disable                                              |
-    | Partition Scheme                     | **Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)** |
-    | PSRAM                                | **QSPI PSRAM**                                       |
-    | **Board Revision***                  | **Radio-SX1280**                                     |
-    | Upload Mode                          | **UART0/Hardware CDC**                               |
-    | Upload Speed                         | 921600                                               |
-    | USB Mode                             | **CDC and JTAG**                                     |
-    | Programmer                           | **Esptool**                                          |
+    | Name                                 | Value                               |
+    | ------------------------------------ | ----------------------------------- |
+    | Board                                | **ESP32S3 Dev Module**              |
+    | Port                                 | Your port                           |
+    | USB CDC On Boot                      | Enable                              |
+    | CPU Frequency                        | 240MHZ(WiFi)                        |
+    | Core Debug Level                     | None                                |
+    | USB DFU On Boot                      | Disable                             |
+    | Erase All Flash Before Sketch Upload | Disable                             |
+    | Flash Mode                           | QIO 80Mhz                           |
+    | Flash Size                           | **4MB(32Mb)**                       |
+    | Arduino Runs On                      | Core1                               |
+    | USB Firmware MSC On Boot             | Disable                             |
+    | Partition Scheme                     | **16M Flash (3MB APP/9.9MB FATFS)** |
+    | PSRAM                                | **OPI PSRAM**                       |
+    | Upload Speed                         | 921600                              |
+    | Programmer                           | **Esptool**                         |
 
-     * **Board revision Select according to actual model**
-
-6. Upload sketch
+6. Please uncomment the `utilities.h` file of each sketch according to your board model e.g `T3_S3_V1_2_LR1121_PA`, otherwise the compilation will report an error.
+7. Upload sketch
 
 ### 📍 Pins Map
 
 | Name                   | GPIO NUM                  | Free |
 | ---------------------- | ------------------------- | ---- |
-| Uart1 TX               | 43(External QWIIC Socket) | ✅️    |
-| Uart1 RX               | 44(External QWIIC Socket) | ✅️    |
-| QWIIC Socket IO10      | 10(External QWIIC Socket) | ❌    |
-| QWIIC Socket IO21      | 21(External QWIIC Socket) | ❌    |
+| (QWIIC) Uart1 TX       | 43(External QWIIC Socket) | ✅️    |
+| (QWIIC) Uart1 RX       | 44(External QWIIC Socket) | ✅️    |
+| QWIIC Socket IO10*     | 10(External QWIIC Socket) | ✅️    |
+| QWIIC Socket IO21*     | 21(External QWIIC Socket) | ✅️    |
 | SDA                    | 18                        | ❌    |
 | SCL                    | 17                        | ❌    |
 | OLED(**SSD1306**) SDA  | Share with I2C bus        | ❌    |
@@ -91,16 +88,22 @@
 | SD MOSI                | 11                        | ❌    |
 | SD MISO                | 2                         | ❌    |
 | SD SCK                 | 14                        | ❌    |
-| LoRa(**SX1280**) SCK   | 5                         | ❌    |
-| LoRa(**SX1280**) MISO  | 3                         | ❌    |
-| LoRa(**SX1280**) MOSI  | 6                         | ❌    |
-| LoRa(**SX1280**) RESET | 8                         | ❌    |
-| LoRa(**SX1280**) DIO1  | 9                         | ❌    |
-| LoRa(**SX1280**) BUSY  | 36                        | ❌    |
-| LoRa(**SX1280**) CS    | 7                         | ❌    |
+| LoRa(**LR1121**) SCK   | 5                         | ❌    |
+| LoRa(**LR1121**) MISO  | 3                         | ❌    |
+| LoRa(**LR1121**) MOSI  | 6                         | ❌    |
+| LoRa(**LR1121**) RESET | 8                         | ❌    |
+| LoRa(**LR1121**) DIO9  | 36                        | ❌    |
+| LoRa(**LR1121**) BUSY  | 34                        | ❌    |
+| LoRa(**LR1121**) CS    | 7                         | ❌    |
 | Button1 (BOOT)         | 0                         | ❌    |
 | Battery ADC            | 1                         | ❌    |
 | On Board LED           | 37                        | ❌    |
+
+* You can use GPIO10,21 by removing the two resistors in the figure below. Otherwise, the GPIO is connected to DIO8,DIO7 of Radio by default.
+
+| T3 V1.2                                          | T3 V1.3                                          |
+| ------------------------------------------------ | ------------------------------------------------ |
+| ![T3-S3-QWIIC](../../static/T3S3-QWIIC-V1.2.png) | ![T3-S3-QWIIC](../../static/T3S3-QWIIC-V1.3.png) |
 
 ### 🧑🏼‍🔧 I2C Devices Address
 
@@ -146,14 +149,32 @@
 
 ### RF parameters
 
-| Features            | Details                |
-| ------------------- | ---------------------- |
-| RF  Module          | SX1280                 |
-| Frequency range     | 2400 ~ 2500MHz         |
-| Transfer rate(LoRa) | 0.476 ～ 202 Kbps      |
-| Transfer rate(FSK)  | 0.125 ～ 20000 Kbps    |
-| Transfer rate(FLRC) | 260 ～ 1300 Kbps       |
-| Modulation          | LoRa 、 FLRC 、 (G)FSK |
+| Features                  | Details                            |
+| ------------------------- | ---------------------------------- |
+| RF  Module                | LR1121                             |
+| Frequency range           | 400-520MHz/830-945MHz/2400-2500MHz |
+| Transfer rate(LoRa Sub1G) | 0.018 K ～ 62.5 Kbps               |
+| Transfer rate(FSK Sub1G)  | 0.6 K ～ 300 Kbps                  |
+| Transfer rate(LoRa 2.4G)  | 0.476 K~101.5 Kbps                 |
+| Modulation                | LoRa,FSK,LR-HFSS                   |
+
+> \[!IMPORTANT]
+>
+> ⚠️⚠️⚠️
+> LR1121 version with a built-in PA, do not set the maximum power above 0dBm.
+> This is because a power amplifier is added to the RF front end; setting it to 0dBm will achieve an output power of 22dBm.
+> Setting it above 1dBm may damage the PA.
+>
+
+### LoRa Antenna Switch Truth Table
+
+| Freq    | Mode  | DIO5_SW0 | DIO6_SW1 | DIO7_SW2 | DIO8_SW3 |
+| ------- | ----- | -------- | -------- | -------- | -------- |
+| 868/915 | TX    | 0        | 1        | 0        | 0        |
+| 868/915 | RX    | 1        | 0        | 0        | 0        |
+| 2.4G    | TX    | 0        | 0        | 1        | 0        |
+| 2.4G    | RX    | 0        | 0        | 0        | 1        |
+| SLEEP   | SLEEP | 0        | 0        | 0        | 0        |
 
 ## WiFi-IPEX
 
@@ -167,14 +188,14 @@
 
 * The following figure shows how to switch the onboard LoRa SMA antenna to IPEX
 
-![LORA-IPEX](../t3_s3_lr1121/images/LORA-IPEX.png)
+![LORA-IPEX](./images/LORA-IPEX.png)
+
+### LR1121 RF Block Diagram
+
+![RF Block Diagram](./images/LR1121.png)
 
 #### Resource
 
 * [T3_S3_V1.2 schematic](../../../schematic/T3_S3_V1.2.pdf)
 * [T3_S3_V1.3 schematic](../../../schematic/T3_S3_V1.3.pdf)
-* [SX1280 datasheet](https://www.semtech.cn/products/wireless-rf/lora-connect/sx1280)
-
-### Application
-
-* [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
+* [LR1121 datasheet](https://www.semtech.com/products/wireless-rf/lora-connect/lr1121)
