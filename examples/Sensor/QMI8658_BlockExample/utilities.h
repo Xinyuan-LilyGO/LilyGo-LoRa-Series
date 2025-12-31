@@ -54,6 +54,7 @@
 // #define T3_S3_V1_2_SX1280
 // #define T3_S3_V1_2_SX1280_PA
 // #define T3_S3_V1_2_LR1121
+// #define T3_S3_V1_2_LR1121_PA
 
 // 7. --------------T-Motion -------------------------------------
 // Product: https://lilygo.cc/products/t-motion-s76g-stm32-lora
@@ -359,7 +360,8 @@
         defined(T3_S3_V1_2_SX1278)    ||   defined(ARDUINO_LILYGO_T3S3_SX1278)   ||    \
         defined(T3_S3_V1_2_SX1280)    ||   defined(ARDUINO_LILYGO_T3S3_SX1280)   ||    \
         defined(T3_S3_V1_2_SX1280_PA) ||   defined(ARDUINO_LILYGO_T3S3_SX1280PA) ||      \
-        defined(T3_S3_V1_2_LR1121)    ||   defined(ARDUINO_LILYGO_T3S3_LR1121)
+        defined(T3_S3_V1_2_LR1121)    ||   defined(ARDUINO_LILYGO_T3S3_LR1121)  ||      \
+        defined(T3_S3_V1_2_LR1121_PA) ||   defined(ARDUINO_LILYGO_T3S3_LR1121PA)
 
 
 #if   defined(T3_S3_V1_2_SX1262) ||   defined(ARDUINO_LILYGO_T3S3_SX1262)
@@ -386,7 +388,10 @@
 #ifndef USING_LR1121
 #define USING_LR1121
 #endif
-
+#elif defined(T3_S3_V1_2_LR1121_PA) || defined(ARDUINO_LILYGO_T3S3_LR1121PA)
+#ifndef USING_LR1121PA
+#define USING_LR1121PA
+#endif
 #endif // T3_S3_V1_2_SX1262
 
 
@@ -450,6 +455,16 @@
 
 #define RADIO_DIO9_PIN              36      //LR1121 DIO9  = IO36
 #define RADIO_BUSY_PIN              34      //LR1121 BUSY  = IO34
+
+#define LILYGO_RADIO_2G4_TX_POWER_LIMIT   13   //LR1121 2.4G TX Power Limit
+
+#elif defined(USING_LR1121PA)
+
+#define RADIO_DIO9_PIN              36      //LR1121 DIO9  = IO36
+#define RADIO_BUSY_PIN              34      //LR1121 BUSY  = IO34
+
+#define LILYGO_RADIO_2G4_TX_POWER_LIMIT   0   //LR1121 2.4G TX Power Limit
+#define USING_LR1121
 
 #endif
 
