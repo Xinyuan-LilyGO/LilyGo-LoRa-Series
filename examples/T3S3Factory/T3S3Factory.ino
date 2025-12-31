@@ -51,6 +51,16 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 
 #elif  defined(USING_SX1280PA)
+
+/*
+* Important: SX1280 PA Version
+
+* The 2.4G version does not have a power amplifier (PA). The permissible power setting is 13dBm.
+* If it is a version with a built-in PA, do not set the maximum power beyond 3dBm.
+* This is because a power amplifier is added to the RF front end; setting it to 3dBm will achieve an output power of 22dBm.
+* Setting it beyond 3dBm may damage the PA.
+*/
+
 #define CONFIG_RADIO_FREQ           2400.0
 #define CONFIG_RADIO_OUTPUT_POWER   3           // PA Version power range : -18 ~ 3dBm
 #define CONFIG_RADIO_BW             203.125
@@ -58,18 +68,61 @@ SX1280 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 #elif   defined(USING_LR1121)
 
-// The maximum power of LR1121 2.4G band can only be set to 13 dBm
-// #define CONFIG_RADIO_FREQ           2450.0
-// #define CONFIG_RADIO_OUTPUT_POWER   13
-// #define CONFIG_RADIO_BW             125.0
+/*
+* Important: LR1121 PA Version
+*
+* The 2.4G version does not have a power amplifier (PA). The permissible power setting is 13dBm.
+*
+* If it is a version with a built-in PA, please do not exceed 0dBm in the maximum power setting.
+* This is because a power amplifier has been added to the RF front-end; setting it to 0dBm will achieve an output power of 22dBm.
+* Setting it to more than 1dBm may damage the PA.
+*
+* */
 
-// The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
-#define CONFIG_RADIO_FREQ           868.0
-#define CONFIG_RADIO_OUTPUT_POWER   22
+#define CONFIG_RADIO_FREQ           2450.0
+#define CONFIG_RADIO_OUTPUT_POWER   LILYGO_RADIO_2G4_TX_POWER_LIMIT
 #define CONFIG_RADIO_BW             125.0
 
+// The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
+// #define CONFIG_RADIO_FREQ           868.0
+// #define CONFIG_RADIO_OUTPUT_POWER   22
+// #define CONFIG_RADIO_BW             125.0
+
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
-#endif
+
+
+#ifdef USING_LR1121PA
+// LR1121 Version PA RF switch table
+static const uint32_t pa_version_rf_switch_dio_pins[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6, RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t high_freq_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX,     { LOW,  LOW, LOW, HIGH} },
+    { LR11x0::MODE_RX,     { LOW,  LOW, HIGH, LOW} },
+    { LR11x0::MODE_TX_HP,  { LOW,  LOW, HIGH, LOW} },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW, LOW, HIGH} },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW, LOW, HIGH} },
+    END_OF_MODE_TABLE,
+};
+
+static const Module::RfSwitchMode_t low_freq_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX,     { LOW,  HIGH, LOW, LOW} },
+    { LR11x0::MODE_RX,     { HIGH, LOW, LOW, LOW} },
+    { LR11x0::MODE_TX_HP,  { LOW,  HIGH, LOW, LOW} },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW, LOW, LOW} },
+    END_OF_MODE_TABLE,
+};
+
+#endif /*USING_LR1121PA*/
+#endif /*Radio define end*/
 
 enum TransmissionDirection {
     LORA_NONE = 0,
@@ -227,10 +280,19 @@ void changeFreq()
 
 #if   defined(USING_LR1121)
     bool forceHighPower = false;
-    int8_t max_tx_power = 13;
+    int8_t max_tx_power = LILYGO_RADIO_2G4_TX_POWER_LIMIT;
     if (current_freq < 2400) {
         max_tx_power = 22;
         forceHighPower = true;
+#if defined(USING_LR1121PA)
+        Serial.printf("Using low frequency switch table for PA version\n");
+        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, low_freq_switch_table);
+#endif /*USING_LR1121PA*/
+    } else {
+#if defined(USING_LR1121PA)
+        Serial.printf("Using high frequency switch table for PA version\n");
+        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, high_freq_switch_table);
+#endif /*USING_LR1121PA*/
     }
     if (radio.setOutputPower(max_tx_power, forceHighPower) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.printf("Selected output power %d is invalid for this module!\n", max_tx_power);
@@ -270,11 +332,18 @@ void handleEvent(AceButton *button, uint8_t eventType, uint8_t buttonState)
         case 0:
             break;
         case 1:
+#ifdef RADIO_TX_CW
+            Serial.println("Start transmit (CW)");
+            radio.standby();
+            delay(100);
+            radio.transmitDirect();
+#else
             Serial.println("Start transmit");
             state = radio.transmit((uint8_t *)&transmissionCounter, 4);
             if (state != RADIOLIB_ERR_NONE) {
                 Serial.println(F("[Radio] transmit packet failed!"));
             }
+#endif
             break;
         case 2:
             Serial.println("Start receive");
@@ -441,7 +510,7 @@ void setup()
     * SX1262        :  Allowed values are in range from -9 to 22 dBm. This method is virtual to allow override from the SX1261 class.
     * SX1268        :  Allowed values are in range from -9 to 22 dBm.
     * SX1280        :  Allowed values are in range from -18 to 13 dBm. PA Version range : -18 ~ 3dBm
-    * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA)
+    * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA), PA Version range : -9 ~ 0dBm
     * * * */
     if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
@@ -481,14 +550,20 @@ void setup()
 
 
 #if  defined(USING_LR1121)
-    // LR1121
-    // set RF switch configuration for Wio WM1110
-    // Wio WM1110 uses DIO5 and DIO6 for RF switching
+#if defined(USING_LR1121PA)
+    if (current_freq < 2400) {
+        Serial.printf("LR1121 PA Version Using low frequency switch table for PA version\n");
+        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, low_freq_switch_table);
+    } else {
+        Serial.printf("LR1121 PA Version Using high frequency switch table for PA version\n");
+        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, high_freq_switch_table);
+    }
+#else   //  Version without PA rf switch table
+    Serial.println("LR1121 without PA Version");
     static const uint32_t rfswitch_dio_pins[] = {
         RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
         RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
     };
-
     static const Module::RfSwitchMode_t rfswitch_table[] = {
         // mode                  DIO5  DIO6
         { LR11x0::MODE_STBY,   { LOW,  LOW  } },
@@ -501,11 +576,12 @@ void setup()
         END_OF_MODE_TABLE,
     };
     radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
+#endif /*USING_LR1121PA*/
 
     // LR1121 TCXO Voltage 2.85~3.15V
     radio.setTCXO(3.0);
 
-#endif
+#endif /*USING_LR1121*/
 
     // set the function that will be called
     // when new packet is received
@@ -533,6 +609,11 @@ void loop()
 void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
 {
     display->setTextAlignment(TEXT_ALIGN_LEFT);
+
+#ifdef RADIO_TX_CW
+    display->drawString(0 + x, 0 + y, "Radio CW");
+    display->drawString(0 + x, 12 + y, "FREQ :" + String(current_freq));
+#else
     if (millis() - radioRunInterval > 1000) {
 
         if (transmittedFlag) {
@@ -579,11 +660,12 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
         radioRunInterval = millis();
 
     }
-
     display->drawString(0 + x, 0 + y, "Radio Tx");
     display->drawString(0 + x, 12 + y, "FREQ :" + String(current_freq));
     display->drawString(0 + x, 24 + y, "TX :" + String(transmissionCounter));
     display->drawString(0 + x, 36 + y, "BW :" + String(CONFIG_RADIO_BW));
+#endif
+
 }
 
 

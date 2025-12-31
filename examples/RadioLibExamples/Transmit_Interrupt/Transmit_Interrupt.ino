@@ -89,30 +89,60 @@ SX1268 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 #elif   defined(USING_LR1121)
 
-// The maximum power of LR1121 2.4G band can only be set to 13 dBm
-// #ifndef CONFIG_RADIO_FREQ
-// #define CONFIG_RADIO_FREQ           2450.0
-// #endif
-// #ifndef CONFIG_RADIO_OUTPUT_POWER
-// #define CONFIG_RADIO_OUTPUT_POWER   13
-// #endif
-// #ifndef CONFIG_RADIO_BW
-// #define CONFIG_RADIO_BW             125.0
-// #endif
+/*
+* Important: LR1121 PA Version
+*
+* The 2.4G version does not have a power amplifier (PA). The permissible power setting is 13dBm.
+*
+* If it is a version with a built-in PA, please do not exceed 0dBm in the maximum power setting.
+* This is because a power amplifier has been added to the RF front-end; setting it to 0dBm will achieve an output power of 22dBm.
+* Setting it to more than 1dBm may damage the PA.
+*
+* */
+
+#define CONFIG_RADIO_FREQ           2450.0
+#define CONFIG_RADIO_OUTPUT_POWER   LILYGO_RADIO_2G4_TX_POWER_LIMIT
+#define CONFIG_RADIO_BW             125.0
 
 // The maximum power of LR1121 Sub 1G band can only be set to 22 dBm
-#ifndef CONFIG_RADIO_FREQ
-#define CONFIG_RADIO_FREQ           868.0
-#endif
-#ifndef CONFIG_RADIO_OUTPUT_POWER
-#define CONFIG_RADIO_OUTPUT_POWER   22
-#endif
-#ifndef CONFIG_RADIO_BW
-#define CONFIG_RADIO_BW             125.0
-#endif
+// #define CONFIG_RADIO_FREQ           868.0
+// #define CONFIG_RADIO_OUTPUT_POWER   22
+// #define CONFIG_RADIO_BW             125.0
 
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
-#endif
+
+#ifdef USING_LR1121PA
+// LR1121 Version PA RF switch table
+static const uint32_t pa_version_rf_switch_dio_pins[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6, RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t high_freq_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX,     { LOW,  LOW, LOW, HIGH} },
+    { LR11x0::MODE_RX,     { LOW,  LOW, HIGH, LOW} },
+    { LR11x0::MODE_TX_HP,  { LOW,  LOW, HIGH, LOW} },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW, LOW, HIGH} },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW, LOW, HIGH} },
+    END_OF_MODE_TABLE,
+};
+
+static const Module::RfSwitchMode_t low_freq_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX,     { LOW,  HIGH, LOW, LOW} },
+    { LR11x0::MODE_RX,     { HIGH, LOW, LOW, LOW} },
+    { LR11x0::MODE_TX_HP,  { LOW,  HIGH, LOW, LOW} },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW, LOW, LOW} },
+    END_OF_MODE_TABLE,
+};
+
+#endif /*USING_LR1121PA*/
+#endif /*Radio define end*/
 
 void drawMain();
 
@@ -228,7 +258,7 @@ void setup()
     * SX1262        :  Allowed values are in range from -9 to 22 dBm. This method is virtual to allow override from the SX1261 class.
     * SX1268        :  Allowed values are in range from -9 to 22 dBm.
     * SX1280        :  Allowed values are in range from -18 to 13 dBm. PA Version range : -18 ~ 3dBm
-    * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA)
+    * LR1121        :  Allowed values are in range from -17 to 22 dBm (high-power PA) or -18 to 13 dBm (High-frequency PA), PA Version range : -9 ~ 0dBm
     * * * */
     if (radio.setOutputPower(CONFIG_RADIO_OUTPUT_POWER) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
         Serial.println(F("Selected output power is invalid for this module!"));
@@ -267,14 +297,20 @@ void setup()
     }
 
 #if  defined(USING_LR1121)
-    // LR1121
-    // set RF switch configuration for Wio WM1110
-    // Wio WM1110 uses DIO5 and DIO6 for RF switching
+#if defined(USING_LR1121PA)
+    if (CONFIG_RADIO_FREQ < 2400) {
+        Serial.printf("LR1121 PA Version Using low frequency switch table for PA version\n");
+        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, low_freq_switch_table);
+    } else {
+        Serial.printf("LR1121 PA Version Using high frequency switch table for PA version\n");
+        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, high_freq_switch_table);
+    }
+#else   //  Version without PA rf switch table
+    Serial.println("LR1121 without PA Version");
     static const uint32_t rfswitch_dio_pins[] = {
         RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
         RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
     };
-
     static const Module::RfSwitchMode_t rfswitch_table[] = {
         // mode                  DIO5  DIO6
         { LR11x0::MODE_STBY,   { LOW,  LOW  } },
@@ -287,10 +323,12 @@ void setup()
         END_OF_MODE_TABLE,
     };
     radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
+#endif /*USING_LR1121PA*/
 
     // LR1121 TCXO Voltage 2.85~3.15V
     radio.setTCXO(3.0);
-#endif
+
+#endif /*USING_LR1121*/
 
 #ifdef USING_DIO2_AS_RF_SWITCH
 #ifdef USING_SX1262
