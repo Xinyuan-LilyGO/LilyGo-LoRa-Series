@@ -8,6 +8,9 @@
 
 - Arduino IDE users need to configure the board to be used in the <utilities.h> file in the sketch directory before using the example. The <utilities.h> file contains the pin definitions of the board. If you do not select it, an error will occur during compilation.
 - Arduino IDE 用户需要在 Sketch 目录下的 <utilities.h> 文件的最上方配置要使用的开发板，然后才能使用该示例。<utilities.h> 文件包含开发板的引脚定义。如果您未选择该文件，编译时将出现错误。
+- ⚠️ If using the PA version, please carefully read the PA power setting limits on the corresponding page. Incorrect output power settings may damage the PA.
+- ⚠️ 如果使用PA版本，请仔细阅读对应页面的PA功率设置限制，错误的设置输出功率很有可能会损坏PA
+
 
 ### `1` Get Started
 
@@ -21,6 +24,7 @@
 - 🔧 **[T3-C6 Quick Start](./docs/en/t3_c6_sx1262/t3_c6_sx1262_hw.md)**
 - 🔧 **[T3-S3-SX1262 Quick Start](./docs/en/t3_s3_sx1262/t3_s3_sx1262_hw.md)**
 - 🔧 **[T3-S3-LR1121 Quick Start](./docs/en/t3_s3_lr1121/t3_s3_lr1121_hw.md)**
+- 🔧 **[T3-S3-LR1121 PA Version Quick Start](./docs/en/t3_s3_lr1121_pa/t3_s3_lr1121_pa_hw.md)**
 - 🔧 **[T3-S3-SX1280 Quick Start](./docs/en/t3_s3_sx1280/t3_s3_sx1280_hw.md)**
 - 🔧 **[T3-S3-SX1280PA Quick Start](./docs/en/t3_s3_sx1280pa/t3_s3_sx1280pa.md)**
 - 🔧 **[T3-S3-SX1276 Quick Start](./docs/en/t3_s3_sx1276/t3_s3_sx1276_hw.md)**
