@@ -57,6 +57,7 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 void wirelessInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 void wifiTask(void *task);
 void hwProbe(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
+void screenTest(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y);
 
 #ifdef HAS_GPS
 void gpsInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, int16_t y);
@@ -177,7 +178,8 @@ FrameCallback   frames[] = {
     sensorInfo,
     imuInfo,
 #endif
-    wirelessInfo
+    wirelessInfo,
+    screenTest
 };
 
 const uint8_t   max_frames = sizeof(frames) / sizeof(frames[0]);
@@ -574,6 +576,10 @@ void setup()
         Serial.println("[Error] : WiFi ssid and password are not configured correctly");
     } else {
         wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
+
+#ifdef WIFI_SSID2
+        wifiMulti.addAP(WIFI_SSID2, WIFI_PASSWORD2);
+#endif  
         wifi_is_config = true;
     }
 
@@ -1130,6 +1136,40 @@ void hwProbe(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
 #endif /*HAS_PMU*/
 
 #endif
+}
+
+#define MOVE_INTERVAL 50
+#define MOVE_STEP 1
+#define LEFT_BOUND -64
+#define RIGHT_BOUND 64
+
+void screenTest(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
+{
+    static uint32_t lastMoveTime = 0;
+    static int16_t moveOffset = 0;
+    static bool isMovingRight = true;
+
+    display->drawRect(0, 0, 128, 64);
+    display->setTextAlignment(TEXT_ALIGN_CENTER);
+    uint32_t currentTime = millis();
+    if (currentTime - lastMoveTime >= MOVE_INTERVAL) {
+        lastMoveTime = currentTime;
+        if (isMovingRight) {
+            moveOffset += MOVE_STEP;
+            if (moveOffset >= RIGHT_BOUND) {
+                isMovingRight = false;
+            }
+        } else {
+            moveOffset -= MOVE_STEP;
+            if (moveOffset <= LEFT_BOUND) {
+                isMovingRight = true;
+            }
+        }
+    }
+    display->drawString(64 + x + moveOffset, 0 + y, "SCREEN");
+    display->drawString(64 + x + moveOffset, 16 + y, "TEST");
+    display->drawString(64 + x + moveOffset, 32 + y, "INFO");
+    display->drawString(64 + x + moveOffset, 48 + y, "STATUS");
 }
 
 void wirelessInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
