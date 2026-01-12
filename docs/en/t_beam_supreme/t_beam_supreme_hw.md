@@ -168,11 +168,11 @@
 | DC4        | External M.2 Socket                      | 1.5A                                     |
 | DC5        | External M.2 Socket                      | 1A                                       |
 | LDO1(VRTC) | Unused                                   | X                                        |
-| ALDO1      | **BME280 Sensor & Display & MAG Sensor** | X                                        |
-| ALDO2      | **Sensor**                               | X                                        |
-| ALDO3      | **Radio**                                | X                                        |
-| ALDO4      | **GPS**                                  | X                                        |
-| BLDO1      | **SD Card**                              | X                                        |
+| ALDO1      | **BME280 Sensor & Display & MAG Sensor** | 300mA                                    |
+| ALDO2      | **Sensor**                               | 300mA                                    |
+| ALDO3      | **Radio**                                | 300mA                                    |
+| ALDO4      | **GPS**                                  | 300mA                                    |
+| BLDO1      | **SD Card**                              | 300mA                                    |
 | BLDO2      | External pin header                      | 300mA                                    |
 | DLDO1      | Unused                                   | X                                        |
 | CPUSLDO    | Unused                                   | X                                        |
