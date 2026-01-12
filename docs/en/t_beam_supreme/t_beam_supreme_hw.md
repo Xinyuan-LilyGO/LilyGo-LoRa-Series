@@ -131,7 +131,7 @@
 | Devices                                 | 7-Bit Address | Share Bus      |
 | --------------------------------------- | ------------- | -------------- |
 | OLED Display (**SH1106**)               | 0x3C          | ✅️  (I2C Bus 0) |
-| MAG Sensor(**QMC6310**)                 | 0x1C          | ✅️  (I2C Bus 0) |
+| MAG Sensor(**QMC6310U**)                | 0x1C          | ✅️  (I2C Bus 0) |
 | Temperature/humidity Sensor(**BME280**) | 0x77          | ✅️  (I2C Bus 0) |
 | RTC (**PCF8563**)                       | 0x51          | ❌ (I2C Bus 1)  |
 | Power Manager (**AXP2101**)             | 0x34          | ❌ (I2C Bus 1)  |
@@ -160,23 +160,23 @@
 
 ### ⚡ PowerManage Channel
 
-| Channel    | Peripherals                              |
-| ---------- | ---------------------------------------- |
-| DC1        | **ESP32-S3**                             |
-| DC2        | Unused                                   |
-| DC3        | External M.2 Socket                      |
-| DC4        | External M.2 Socket                      |
-| DC5        | External M.2 Socket                      |
-| LDO1(VRTC) | Unused                                   |
-| ALDO1      | **BME280 Sensor & Display & MAG Sensor** |
-| ALDO2      | **Sensor**                               |
-| ALDO3      | **Radio**                                |
-| ALDO4      | **GPS**                                  |
-| BLDO1      | **SD Card**                              |
-| BLDO2      | External pin header                      |
-| DLDO1      | Unused                                   |
-| CPUSLDO    | Unused                                   |
-| VBACKUP    | Unused                                   |
+| Channel    | Peripherals                              | Max Current                              |
+| ---------- | ---------------------------------------- | ---------------------------------------- |
+| DC1        | **ESP32-S3**                             | 2A(Includes ESP operating current 800mA) |
+| DC2        | Unused                                   | X                                        |
+| DC3        | External M.2 Socket                      | 2A                                       |
+| DC4        | External M.2 Socket                      | 1.5A                                     |
+| DC5        | External M.2 Socket                      | 1A                                       |
+| LDO1(VRTC) | Unused                                   | X                                        |
+| ALDO1      | **BME280 Sensor & Display & MAG Sensor** | X                                        |
+| ALDO2      | **Sensor**                               | X                                        |
+| ALDO3      | **Radio**                                | X                                        |
+| ALDO4      | **GPS**                                  | X                                        |
+| BLDO1      | **SD Card**                              | X                                        |
+| BLDO2      | External pin header                      | 300mA                                    |
+| DLDO1      | Unused                                   | X                                        |
+| CPUSLDO    | Unused                                   | X                                        |
+| VBACKUP    | Unused                                   | X                                        |
 
 * T-Beam Supreme GPS backup power comes from 18650 battery. If you remove the 18650 battery, you will not be able to get GPS hot start. If you need to use GPS hot start, please connect the 18650 battery.
 
