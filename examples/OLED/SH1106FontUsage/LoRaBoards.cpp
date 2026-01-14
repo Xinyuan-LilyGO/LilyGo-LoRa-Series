@@ -34,7 +34,7 @@ HardwareSerial  SerialGPS(GPS_RX_PIN, GPS_TX_PIN);
 #endif //ARDUINO_ARCH_ESP32
 
 #ifdef DISPLAY_MODEL
-DISPLAY_MODEL *u8g2 = NULL;
+U8G2 *disp = NULL;
 #endif
 
 
@@ -45,6 +45,10 @@ static bool find_gps = false;
 String gps_model = "None";
 #endif
 
+// I2S Devices default address
+uint8_t  bme280_address = 0x77;     // It might be 0x76
+uint8_t  mag_address = 0x1C;        // QMC6310U=0x1C QMC6310N=0x3C
+uint8_t  display_address = 0x3c;    // It might be 0x3D
 
 uint32_t deviceOnline = 0x00;
 
@@ -319,7 +323,6 @@ bool beginPower()
     if (PMU->isChannelAvailable(XPOWERS_BLDO2)) {
         Serial.printf("BLDO2: %s   Voltage: %04u mV \n",  PMU->isPowerChannelEnable(XPOWERS_BLDO2)  ? "+" : "-",  PMU->getPowerChannelVoltage(XPOWERS_BLDO2));
     }
-    Serial.printf("=========================================\n");
 
 
     // Set the time of pressing the button to turn off
@@ -338,6 +341,9 @@ bool beginPower()
     default:
         break;
     }
+
+    Serial.printf("=========================================\n");
+
     return true;
 }
 
@@ -453,27 +459,27 @@ void loopPMU(void (*pressed_cb)(void))
 #ifdef DISPLAY_MODEL
 bool beginDisplay()
 {
-    Wire.beginTransmission(DISPLAY_ADDR);
+    Wire.beginTransmission(display_address);
     if (Wire.endTransmission() == 0) {
-        Serial.printf("Find Display model at 0x%X address\n", DISPLAY_ADDR);
-        u8g2 = new DISPLAY_MODEL(U8G2_R0, U8X8_PIN_NONE);
-        u8g2->begin();
-        u8g2->clearBuffer();
-        u8g2->setFont(u8g2_font_inb19_mr);
-        u8g2->drawStr(0, 30, "LilyGo");
-        u8g2->drawHLine(2, 35, 47);
-        u8g2->drawHLine(3, 36, 47);
-        u8g2->drawVLine(45, 32, 12);
-        u8g2->drawVLine(46, 33, 12);
-        u8g2->setFont(u8g2_font_inb19_mf);
-        u8g2->drawStr(58, 60, "LoRa");
-        u8g2->sendBuffer();
-        u8g2->setFont(u8g2_font_fur11_tf);
+        disp = new DISPLAY_MODEL(U8G2_R0, U8X8_PIN_NONE);
+        Serial.printf("Find Display model at 0x%X address\n", display_address);
+        disp->begin();
+        disp->clearBuffer();
+        disp->setFont(u8g2_font_inb19_mr);
+        disp->drawStr(0, 30, "LilyGo");
+        disp->drawHLine(2, 35, 47);
+        disp->drawHLine(3, 36, 47);
+        disp->drawVLine(45, 32, 12);
+        disp->drawVLine(46, 33, 12);
+        disp->setFont(u8g2_font_inb19_mf);
+        disp->drawStr(58, 60, "LoRa");
+        disp->sendBuffer();
+        disp->setFont(u8g2_font_fur11_tf);
         delay(3000);
         return true;
     }
 
-    Serial.printf("Warning: Failed to find Display at 0x%0X address\n", DISPLAY_ADDR);
+    Serial.printf("Warning: Failed to find Display at 0x%0X address\n", display_address);
     return false;
 }
 #endif
@@ -677,7 +683,6 @@ void getChipInfo()
 }
 
 
-
 void setupBoards(bool disable_u8g2 )
 {
     Serial.begin(115200);
@@ -714,8 +719,6 @@ void setupBoards(bool disable_u8g2 )
 
 #ifdef I2C1_SDA
     Wire1.begin(I2C1_SDA, I2C1_SCL);
-    Serial.println("Scan Wire1...");
-    scanDevices(&Wire1);
 #endif
 
 #ifdef HAS_GPS
@@ -804,8 +807,13 @@ void setupBoards(bool disable_u8g2 )
     // Perform an I2C scan after power-on operation
 #ifdef I2C_SDA
     Wire.begin(I2C_SDA, I2C_SCL);
-    Serial.println("Scan Wire...");
+    Serial.println("==================Scan Wire ==================");
     scanDevices(&Wire);
+#endif
+
+#ifdef I2C1_SDA
+    Serial.println("==================Scan Wire1==================");
+    scanDevices(&Wire1);
 #endif
 
     beginSDCard();
@@ -856,7 +864,6 @@ void setupBoards(bool disable_u8g2 )
 #endif
 
 #endif
-    Serial.println("init done . ");
 }
 
 
@@ -872,7 +879,7 @@ void printResult(bool radio_online)
 
 #ifdef DISPLAY_MODEL
     Serial.print("Display      : ");
-    Serial.println(( u8g2) ? "+" : "-");
+    Serial.println(( disp) ? "+" : "-");
 #endif
 
 #ifdef HAS_SDCARD
@@ -891,27 +898,27 @@ void printResult(bool radio_online)
 #endif
 
 #ifdef DISPLAY_MODEL
-    if (u8g2) {
+    if (disp) {
 
-        u8g2->clearBuffer();
-        u8g2->setFont(u8g2_font_NokiaLargeBold_tf );
-        uint16_t str_w =  u8g2->getStrWidth(BOARD_VARIANT_NAME);
-        u8g2->drawStr((u8g2->getWidth() - str_w) / 2, 16, BOARD_VARIANT_NAME);
-        u8g2->drawHLine(5, 21, u8g2->getWidth() - 5);
+        disp->clearBuffer();
+        disp->setFont(u8g2_font_NokiaLargeBold_tf );
+        uint16_t str_w =  disp->getStrWidth(BOARD_VARIANT_NAME);
+        disp->drawStr((disp->getWidth() - str_w) / 2, 16, BOARD_VARIANT_NAME);
+        disp->drawHLine(5, 21, disp->getWidth() - 5);
 
-        u8g2->drawStr( 0, 38, "Disp:");     u8g2->drawStr( 45, 38, ( u8g2) ? "+" : "-");
+        disp->drawStr( 0, 38, "Disp:");     disp->drawStr( 45, 38, ( disp) ? "+" : "-");
 
 #ifdef HAS_SDCARD
-        u8g2->drawStr( 0, 54, "SD :");      u8g2->drawStr( 45, 54, (SD.cardSize() != 0) ? "+" : "-");
+        disp->drawStr( 0, 54, "SD :");      disp->drawStr( 45, 54, (SD.cardSize() != 0) ? "+" : "-");
 #endif
 
-        u8g2->drawStr( 62, 38, "Radio:");    u8g2->drawStr( 120, 38, ( radio_online ) ? "+" : "-");
+        disp->drawStr( 62, 38, "Radio:");    disp->drawStr( 120, 38, ( radio_online ) ? "+" : "-");
 
 #ifdef HAS_PMU
-        u8g2->drawStr( 62, 54, "Power:");    u8g2->drawStr( 120, 54, ( PMU ) ? "+" : "-");
+        disp->drawStr( 62, 54, "Power:");    disp->drawStr( 120, 54, ( PMU ) ? "+" : "-");
 #endif
 
-        u8g2->sendBuffer();
+        disp->sendBuffer();
 
         delay(2000);
     }
@@ -958,25 +965,45 @@ void scanDevices(TwoWire *w)
             nDevices++;
             switch (addr) {
             case 0x77:
+                bme280_address = addr;
+                Serial.printf("\tFound BME280 Sensor at address 0x%02X\n", addr);
+                deviceOnline |= BME280_ONLINE;
+                break;
             case 0x76:
-                Serial.println("\tFind BMX280 Sensor!");
+                bme280_address = addr;
+                Serial.printf("\tFound BME280 Sensor at address 0x%02X\n", addr);
                 deviceOnline |= BME280_ONLINE;
                 break;
             case 0x34:
-                Serial.println("\tFind AXP192/AXP2101 PMU!");
+                Serial.printf("\tFound AXP192/AXP2101 PMU at address 0x%02X\n", addr);
                 deviceOnline |= POWERMANAGE_ONLINE;
                 break;
             case 0x3C:
-                Serial.println("\tFind SSD1306/SH1106 dispaly!");
-                deviceOnline |= DISPLAY_ONLINE;
-                break;
+            case 0x3D: {
+                w->beginTransmission(addr);
+                w->write((uint8_t)0x00);
+                w->endTransmission();
+                w->requestFrom((int)addr, 1);
+                uint8_t r = w->read();
+                if (r == 0x80) {
+                    Serial.printf("\tFound QMC6310N MAG Sensor at address 0x%02X\n", addr);
+                    mag_address = addr;
+                    deviceOnline |= QMC6310N_ONLINE;
+                } else {
+                    Serial.printf("\tFound OLED display at address 0x%02X\n", addr);
+                    display_address = addr;
+                    deviceOnline |= DISPLAY_ONLINE;
+                }
+            }
+            break;
             case 0x51:
-                Serial.println("\tFind PCF8563 RTC!");
+                Serial.printf("\tFound PCF8563 RTC at address 0x%02X\n", addr);
                 deviceOnline |= PCF8563_ONLINE;
                 break;
             case 0x1C:
-                Serial.println("\tFind QMC6310 MAG Sensor!");
-                deviceOnline |= QMC6310_ONLINE;
+                Serial.printf("\tFound QMC6310U MAG Sensor at address 0x%02X\n", addr);
+                deviceOnline |= QMC6310U_ONLINE;
+                mag_address = addr;
                 break;
             default:
                 Serial.print("\tI2C device found at address 0x");
@@ -998,9 +1025,6 @@ void scanDevices(TwoWire *w)
     }
     if (nDevices == 0)
         Serial.println("No I2C devices found\n");
-
-    Serial.println("Scan devices done.");
-    Serial.println("\n");
 }
 
 
