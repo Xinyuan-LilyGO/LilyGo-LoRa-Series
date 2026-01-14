@@ -73,7 +73,11 @@ void setup()
 
     setupBoards();
 
-    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    // For QMC6310U, the device address is 0x1C.
+    // For QMC6310N, the device address is 0x3C.
+    // The sensor device address is provided by the setupBoards I2C scanner.
+    extern uint8_t  mag_address;
+    if (!qmc.begin(Wire, mag_address, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");
         while (1) {
             delay(1000);
@@ -133,7 +137,7 @@ void setup()
                 * * */
                 SensorQMC6310::DSR_1);
 
-    if (r != DEV_WIRE_NONE) {
+    if (r != 0) {
         Serial.println("Device config failed!");
         while (1)delay(1000);
     }

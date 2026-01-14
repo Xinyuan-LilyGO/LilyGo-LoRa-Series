@@ -156,12 +156,13 @@ uint32_t        transmissionCounter = 0;
 TransmissionDirection  transmissionDirection = TRANSMISSION;
 bool            wifi_is_config = false;
 bool            is_time_available = false;
-DISPLAY_MODEL_SSD_LIB     display(0x3c, I2C_SDA, I2C_SCL);
-OLEDDisplayUi   ui( &display );
+DISPLAY_MODEL_SSD_LIB   *display = nullptr;
+OLEDDisplayUi           *ui = nullptr;
 bool            led_blink = false;
 bool            update_use_second = false;
 uint32_t        gps_use_second = 0;
 uint32_t        gps_start_ms = 0;
+extern uint8_t display_address;
 
 FrameCallback   frames[] = {
     hwProbe,
@@ -215,11 +216,11 @@ void sleepDevice()
 #endif
     radio.sleep();
 
-    display.clear();
-    display.drawString(60, 28, "Sleep");
-    display.display();
+    display->clear();
+    display->drawString(60, 28, "Sleep");
+    display->display();
     delay(2000);
-    display.displayOff();
+    display->displayOff();
 
 
 #ifdef  RADIO_TCXO_ENABLE
@@ -479,7 +480,7 @@ void handleMenu()
 #endif /*RADIO_CTRL*/
         break;
     }
-    ui.transitionToFrame(currentFrames);
+    ui->transitionToFrame(currentFrames);
 }
 
 
@@ -554,8 +555,8 @@ void setup()
     }
 
     WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
-        Serial.println("WiFi connected");
-        Serial.println("IP address: ");
+        Serial.print("WiFi connected");
+        Serial.print(" IP address: ");
         Serial.println(IPAddress(info.got_ip.ip_info.ip.addr));
     }, WiFiEvent_t::ARDUINO_EVENT_WIFI_STA_GOT_IP);
 
@@ -579,7 +580,7 @@ void setup()
 
 #ifdef WIFI_SSID2
         wifiMulti.addAP(WIFI_SSID2, WIFI_PASSWORD2);
-#endif  
+#endif
         wifi_is_config = true;
     }
 
@@ -625,47 +626,51 @@ void setup()
     button2.setButtonConfig(&nextButtonConfigure);
 #endif /*BUTTON2_PIN*/
 
+    // The device address is obtained through I2C scanning.
+    display = new DISPLAY_MODEL_SSD_LIB(display_address, I2C_SDA, I2C_SCL);
+
+    ui = new OLEDDisplayUi(display);
 
     // Initialising the UI will init the display too.
-    ui.setTargetFPS(60);
+    ui->setTargetFPS(60);
 
     // You can change this to
     // TOP, LEFT, BOTTOM, RIGHT
-    // ui.setIndicatorPosition(BOTTOM);
-    ui.disableAllIndicators();
+    // ui->setIndicatorPosition(BOTTOM);
+    ui->disableAllIndicators();
 
     // Defines where the first frame is located in the bar.
-    ui.setIndicatorDirection(LEFT_RIGHT);
+    ui->setIndicatorDirection(LEFT_RIGHT);
 
     // You can change the transition that is used
     // SLIDE_LEFT, SLIDE_RIGHT, SLIDE_UP, SLIDE_DOWN
-    ui.setFrameAnimation(SLIDE_LEFT);
+    ui->setFrameAnimation(SLIDE_LEFT);
 
     // Add frames
-    ui.setFrames(frames, sizeof(frames) / sizeof(frames[0]));
+    ui->setFrames(frames, sizeof(frames) / sizeof(frames[0]));
 
-    ui.disableAutoTransition();
+    ui->disableAutoTransition();
 
     // Initialising the UI will init the display too.
-    ui.init();
+    ui->init();
 
-    display.flipScreenVertically();
+    display->flipScreenVertically();
 
     Serial.printf("[%s]:", RADIO_TYPE_STR);
-    Serial.print(F(" Initializing Radio ... "));
+    Serial.println(F(" Selected"));
 
 #if defined(RADIO_TX_CW) && !defined(USING_LR1121)
-    Serial.println("Begin Radio FSK.");
+    Serial.print("Begin Radio FSK ");
     int  state = radio.beginFSK();
 #else
-    Serial.println("Begin Radio LoRa.");
+    Serial.print("Begin Radio LoRa ");
     int  state = radio.begin();
 #endif
     if ( state == RADIOLIB_ERR_NONE) {
-        Serial.println(F("success!"));
+        Serial.println(F("Success!"));
         deviceOnline |= RADIO_ONLINE;
     } else {
-        Serial.println(F("failed!"));
+        Serial.println(F("Failed!"));
     }
 
     Serial.printf("Freq:%.2f TxPower:%d Bandwidth:%.2f\n", CONFIG_RADIO_FREQ, CONFIG_RADIO_OUTPUT_POWER, CONFIG_RADIO_BW);
@@ -817,7 +822,7 @@ void setup()
         radio.setPacketReceivedAction(setFlag);
 
         // start listening for LoRa packets
-        Serial.print(F("[Radio] Starting to listen ... "));
+        Serial.println(F("[Radio] Starting to listen ... "));
         state = radio.startReceive();
         if (state != RADIOLIB_ERR_NONE) {
             Serial.println(F("[Radio] Received packet failed!"));
@@ -848,7 +853,7 @@ void power_key_pressed()
 #if defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)
     // Turn on/off display
     static bool isOn = true;
-    isOn ? display.displayOff()  : display.displayOn();
+    isOn ? display->displayOff()  : display->displayOn();
     isOn ^= 1;
     return;
 #else /*defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)*/
@@ -927,7 +932,7 @@ void loop()
     button2.check();
 #endif
 
-    ui.update();
+    ui->update();
     delay(2);
 }
 
@@ -1099,7 +1104,7 @@ void hwProbe(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
     display->drawString(62 + x, 51 + y, "OSC");
 
     display->setTextAlignment(TEXT_ALIGN_RIGHT);
-    display->drawString(display->width()  + x,  3  + y, (deviceOnline & QMC6310_ONLINE ) ? "+" : "-");
+    display->drawString(display->width()  + x,  3  + y, ((deviceOnline & QMC6310U_ONLINE) || (deviceOnline & QMC6310N_ONLINE)) ? "+" : "-");
     display->drawString(display->width()  + x,  15 + y, (deviceOnline & BME280_ONLINE ) || (deviceOnline & BMP280_ONLINE ) ? "+" : "-");
     display->drawString(display->width()  + x,  27 + y, (deviceOnline & PSRAM_ONLINE )   ? "+" : "-");
     display->drawString(display->width()  + x,  39 + y, (deviceOnline & SDCARD_ONLINE )  ? "+" : "-");
@@ -1425,11 +1430,12 @@ void imuInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, in
 
 static void beginSensor()
 {
+    extern uint8_t mag_address;
     // PMU and RTC share I2C bus
-    if (!rtc.begin(PMU_WIRE_PORT, PCF8563_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    if (!rtc.begin(PMU_WIRE_PORT, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find PCF8563 - check your wiring!");
     }
-    if (!qmc.begin(Wire, QMC6310_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    if (!qmc.begin(Wire, mag_address, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find QMC6310 - check your wiring!");
     } else {
         qmc.configMagnetometer(
@@ -1439,7 +1445,8 @@ static void beginSensor()
             SensorQMC6310::OSR_1,
             SensorQMC6310::DSR_1);
     }
-    if (!bme.begin()) {
+    extern uint8_t bme280_address;
+    if (!bme.begin(bme280_address)) {
         Serial.println("Failed to find BME280 - check your wiring!");
     }
 
@@ -1451,24 +1458,24 @@ static void beginSensor()
     // SDCard shares SPI bus with QMI8658
     // SPI has been initialized in initBoard.
     // Only need to pass SPIhandler to the QMI class.
-    if (!qmi.begin(IMU_CS, -1, -1, -1, SDCardSPI)) {
+    if (!qmi.begin(SDCardSPI, IMU_CS)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
     } else {
         /* Get chip id*/
-        Serial.print("Device ID:");
+        Serial.print("QMI8658 Device ID:");
         Serial.println(qmi.getChipID(), HEX);
         deviceOnline |= QMI8658_ONLINE;
 
         qmi.configAccelerometer(
             SensorQMI8658::ACC_RANGE_4G,
             SensorQMI8658::ACC_ODR_1000Hz,
-            SensorQMI8658::LPF_MODE_0,
-            true);
+            SensorQMI8658::LPF_MODE_0
+        );
         qmi.configGyroscope(
             SensorQMI8658::GYR_RANGE_256DPS,
             SensorQMI8658::GYR_ODR_896_8Hz,
-            SensorQMI8658::LPF_MODE_3,
-            true);
+            SensorQMI8658::LPF_MODE_3
+        );
 
 
         // In 6DOF mode (accelerometer and gyroscope are both enabled),
@@ -1477,7 +1484,7 @@ static void beginSensor()
         qmi.enableAccelerometer();
 
         // Enable data ready to interrupt pin2
-        qmi.enableINT(SensorQMI8658::IntPin2);
+        qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_2);
         qmi.enableDataReadyINT();
     }
 
@@ -1491,7 +1498,7 @@ void wifiTask(void *task)
     while (1) {
         wifiMulti.run();
         if (is_time_available) {
-            Serial.println("---REMOVE TASK---");
+            Serial.println("---REMOVE WIFI TASK---");
             vTaskDelete(NULL);
         }
         delay(1000);

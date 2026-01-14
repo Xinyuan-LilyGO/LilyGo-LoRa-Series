@@ -61,7 +61,7 @@ void setup()
     // SDCard shares SPI bus with QMI8658
     // SPI has been initialized in initBoard.
     // Only need to pass SPIhandler to the QMI class.
-    if (!qmi.begin(IMU_CS, -1, -1, -1, SDCardSPI)) {
+    if (!qmi.begin(SDCardSPI, IMU_CS)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);

@@ -67,7 +67,7 @@ void setup()
 
     setupBoards();
 
-    if (!rtc.begin(Wire, PCF8563_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    if (!rtc.begin(Wire, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find PCF8563 - check your wiring!");
         while (1) {
             delay(1000);

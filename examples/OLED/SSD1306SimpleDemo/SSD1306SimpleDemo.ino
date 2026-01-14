@@ -37,7 +37,6 @@
 #include "images.h"
 #include "LoRaBoards.h"
 
-
 SSD1306Wire display(0x3c, I2C_SDA, I2C_SCL);
 
 

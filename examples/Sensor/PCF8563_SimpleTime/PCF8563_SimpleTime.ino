@@ -44,7 +44,7 @@ void setup()
     setupBoards();
 
     // PMU and RTC share I2C bus
-    if (!rtc.begin(PMU_WIRE_PORT, PCF8563_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    if (!rtc.begin(PMU_WIRE_PORT, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find PCF8563 - check your wiring!");
         while (1) {
             delay(1000);
@@ -68,12 +68,12 @@ void loop()
     if (millis() - lastMillis > 1000) {
         lastMillis = millis();
         RTC_DateTime datetime = rtc.getDateTime();
-        Serial.printf(" Year :"); Serial.print(datetime.year);
-        Serial.printf(" Month:"); Serial.print(datetime.month);
-        Serial.printf(" Day :"); Serial.print(datetime.day);
-        Serial.printf(" Hour:"); Serial.print(datetime.hour);
-        Serial.printf(" Minute:"); Serial.print(datetime.minute);
-        Serial.printf(" Sec :"); Serial.println(datetime.second);
+        Serial.printf(" Year :"); Serial.print(datetime.getYear());
+        Serial.printf(" Month:"); Serial.print(datetime.getMonth());
+        Serial.printf(" Day :"); Serial.print(datetime.getDay());
+        Serial.printf(" Hour:"); Serial.print(datetime.getHour());
+        Serial.printf(" Minute:"); Serial.print(datetime.getMinute());
+        Serial.printf(" Sec :"); Serial.println(datetime.getSecond());
 
     }
 }

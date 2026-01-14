@@ -36,7 +36,7 @@
 #include "LoRaBoards.h"
 
 
-
+// The T-Beam-S3-Supreme has two device addresses. If 0x3C is invalid, please try changing it to 0x3D.
 SH1106Wire display(0x3c, I2C1_SDA, I2C1_SCL);
 SensorQMI8658 qmi;
 
@@ -68,7 +68,7 @@ void setup()
     // SDCard shares SPI bus with QMI8658
     // SPI has been initialized in initBoard.
     // Only need to pass SPIhandler to the QMI class.
-    if (!qmi.begin(IMU_CS, -1, -1, -1, SDCardSPI)) {
+    if (!qmi.begin(SDCardSPI, IMU_CS)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
@@ -107,9 +107,7 @@ void setup()
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
         * */
-        SensorQMI8658::LPF_MODE_0,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_0);
 
 
     qmi.configGyroscope(
@@ -141,9 +139,7 @@ void setup()
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
         * */
-        SensorQMI8658::LPF_MODE_3,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_3);
 
 
     // In 6DOF mode (accelerometer and gyroscope are both enabled),
@@ -153,9 +149,9 @@ void setup()
 
     pinMode(IMU_INT, INPUT);
 
-    // qmi.enableINT(SensorQMI8658::IntPin1); //no use
+    // qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_1); //no use
     // Enable data ready to interrupt pin2
-    qmi.enableINT(SensorQMI8658::IntPin2);
+    qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_2);
     qmi.enableDataReadyINT();
 
     // Print register configuration information

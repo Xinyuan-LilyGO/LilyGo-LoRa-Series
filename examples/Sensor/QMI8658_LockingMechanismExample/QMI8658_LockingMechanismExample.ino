@@ -83,7 +83,7 @@ void setup()
     // SDCard shares SPI bus with QMI8658
     // SPI has been initialized in initBoard.
     // Only need to pass SPIhandler to the QMI class.
-    if (!qmi.begin(IMU_CS, -1, -1, -1, SDCardSPI)) {
+    if (!qmi.begin(SDCardSPI, IMU_CS)) {
         Serial.println("Failed to find QMI8658 - check your wiring!");
         while (1) {
             delay(1000);
@@ -121,9 +121,7 @@ void setup()
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
         * */
-        SensorQMI8658::LPF_MODE_0,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_0);
 
 
     qmi.configGyroscope(
@@ -155,9 +153,7 @@ void setup()
         *  LPF_MODE_2     //5.39% of ODR
         *  LPF_MODE_3     //13.37% of ODR
         * */
-        SensorQMI8658::LPF_MODE_3,
-        // selfTest enable
-        true);
+        SensorQMI8658::LPF_MODE_3);
 
     // In 6DOF mode (accelerometer and gyroscope are both enabled),
     // the output data rate is derived from the nature frequency of gyroscope
@@ -168,7 +164,7 @@ void setup()
     qmi.enableLockingMechanism();
 
     // Set locking data event callback
-    qmi.setDataLockingEvevntCallBack(lockingMechanismHandler);
+    qmi.setDataLockingEventCallBack(lockingMechanismHandler);
 
 
     // Use interrupt .
@@ -177,9 +173,9 @@ void setup()
     pinMode(IMU_INT, INPUT_PULLUP);
     attachInterrupt(IMU_INT, setFlag, RISING);
 
-    // qmi.enableINT(SensorQMI8658::IntPin1); //no use
+    // qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_1); //no use
     // Enable data ready to interrupt pin2
-    qmi.enableINT(SensorQMI8658::IntPin2);
+    qmi.enableINT(SensorQMI8658::INTERRUPT_PIN_2);
 
 
     // Print register configuration information
@@ -194,7 +190,7 @@ void loop()
 {
     if (interruptFlag) {
         interruptFlag = false;
-        qmi.readSensorStatus();
+        qmi.update();
     }
     delay(100);
 }

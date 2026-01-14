@@ -56,7 +56,7 @@ void setup()
     setupBoards();
 
     // PMU and RTC share I2C bus
-    if (!rtc.begin(PMU_WIRE_PORT, PCF8563_SLAVE_ADDRESS, I2C_SDA, I2C_SCL)) {
+    if (!rtc.begin(PMU_WIRE_PORT, I2C_SDA, I2C_SCL)) {
         Serial.println("Failed to find PCF8563 - check your wiring!");
         while (1) {
             delay(1000);
