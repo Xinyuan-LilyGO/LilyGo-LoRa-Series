@@ -1,0 +1,115 @@
+menu "SensorLib Example Configuration"
+
+    choice SENSOR_TYPE
+        prompt "Select Sensor Type"
+        default PCF8563
+        help
+            Choose the type of sensor you are using.
+
+        config PCF8563
+            bool "PCF8563 Sensor"
+        config BMA423
+            bool "BMA423 Sensor"
+        config BHI260
+            bool "BHI260 Sensor"
+        config FT636X
+            bool "FT636X Capacitive touch"
+        config XL9555
+            bool "XL9555 GPIO expansion"
+    endchoice
+
+    choice BHI260_COMMUNICATION_TYPE
+        prompt "Select BHI260 Communication Type"
+        default USE_I2C_INTERFACE
+        depends on BHI260
+        help
+            Choose the communication type for BHI260 sensor.
+
+        config USE_I2C_INTERFACE
+            bool "I2C Communication"
+        config USE_SPI_INTERFACE
+            bool "SPI Communication"
+    endchoice
+
+    choice I2C_COMMUNICATION_METHOD
+        prompt "SensorLib read and write methods"
+        default I2C_COMMUNICATION_METHOD_BUILTIN_RW
+        depends on (PCF8563 || BMA423 || FT636X || XL9555 || (BHI260 && USE_I2C_INTERFACE))
+        help
+            Define SensorLib read and write methods
+
+        config I2C_COMMUNICATION_METHOD_BUILTIN_RW
+            bool "Implemented using built-in read and write methods"
+        config I2C_COMMUNICATION_METHOD_CALLBACK_RW
+            bool "Implemented using read and write callback methods"
+    endchoice
+
+    config I2C_MASTER_PORT_NUM
+        int "Sensor I2C Port Number"
+        default 1
+        depends on (PCF8563 || BMA423 || FT636X || XL9555 ||  (BHI260 && USE_I2C_INTERFACE))
+        help
+            Port number for I2C Master device.
+
+    config I2C_MASTER_FREQUENCY
+        int "Master Frequency"
+        default 100000
+        depends on (PCF8563 || BMA423 || FT636X || XL9555 ||  (BHI260 && USE_I2C_INTERFACE))
+        help
+            I2C Speed of Master device.
+
+    config SENSOR_SCL
+        int "Sensor SCL GPIO Num"
+        default 22
+        depends on (PCF8563 || BMA423 || FT636X || XL9555 ||  (BHI260 && USE_I2C_INTERFACE))
+        help
+            GPIO number for I2C clock line.
+
+    config SENSOR_SDA
+        int "Sensor SDA GPIO Num"
+        default 21
+        depends on (PCF8563 || BMA423 || FT636X || XL9555 ||   (BHI260 && USE_I2C_INTERFACE))
+        help
+            GPIO number for I2C data line.
+
+    config SPI_MISO
+        int "SPI MISO GPIO Num"
+        default 34
+        depends on (BHI260 && USE_SPI_INTERFACE)
+        help
+            GPIO number for Sensor SPI MISO line.
+
+    config SPI_MOSI
+        int "SPI MOSI GPIO Num"
+        default 33
+        depends on (BHI260 && USE_SPI_INTERFACE)
+        help
+            GPIO number for Sensor SPI MOSI line.
+
+    config SPI_SCK
+        int "SPI SCK GPIO Num"
+        default 35
+        depends on (BHI260 && USE_SPI_INTERFACE)
+        help
+            GPIO number for Sensor SPI SCK line.
+
+    config SPI_CS
+        int "SPI CS GPIO Num"
+        default 36
+        depends on (BHI260 && USE_SPI_INTERFACE)
+        help
+            GPIO number for Sensor SPI CS line.
+
+    config SENSOR_IRQ
+        int "Sensor Interrupt Pin"
+        default 37
+        help
+            GPIO number for Sensor Interrupt line.
+
+    config SENSOR_RST
+        int "Sensor reset Pin"
+        default 47
+        help
+            GPIO number for Sensor Reset line.
+
+endmenu
