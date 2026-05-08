@@ -230,6 +230,14 @@ void deviceSleep()
     pinMode(BOARD_LED, INPUT);
     pinMode(ADC_PIN, INPUT);
 
+#if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
+    //The SX1280 pa version sleep needs to set RX, TX to pull down
+    pinMode(RADIO_RX_PIN, INPUT_PULLDOWN);
+    pinMode(RADIO_TX_PIN, INPUT_PULLDOWN);
+    gpio_hold_en((gpio_num_t) RADIO_RX_PIN);
+    gpio_hold_en((gpio_num_t) RADIO_TX_PIN);
+#endif
+
 
 #if CONFIG_IDF_TARGET_ESP32
     esp_sleep_ext1_wakeup_mode_t wakeup_mode = ESP_EXT1_WAKEUP_ALL_LOW;
