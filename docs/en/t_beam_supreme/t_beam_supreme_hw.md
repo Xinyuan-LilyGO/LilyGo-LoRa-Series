@@ -208,6 +208,7 @@
 
 * PPS LED
   1. This LED cannot be turned off and is connected to the GPS PPS Pin. This LED flashes to indicate that the PPS pulse has arrived.
+  2. V3.0 Version PPS LED is Blue color, V3.1 Version PPS LED is Red color
 
 ### SX1262 RF parameters
 
@@ -249,7 +250,9 @@
 
 ### Resource
 
-* [Schematic](../../../schematic/LilyGo_T-BeamS3Supreme.pdf)
+* [T-Beam-S3-Core](../../../schematic/T-Beam-S3-Supreme/T-Beam-S3-Core.pdf)
+* [T-Beam-S3-Supreme-V3.0](../../../schematic/T-Beam-S3-Supreme/T-Beam-S3-Supreme-V3.0.pdf)
+* [T-Beam-S3-Supreme-V3.1](../../../schematic/T-Beam-S3-Supreme/T-Beam-S3-Supreme-V3.1.pdf)
 * [AXP2101 datasheet](http://www.x-powers.com/en.php/Info/product_detail/article_id/95)
 * [SX1262 datasheet](https://www.semtech.com/products/wireless-rf/lora-transceivers/sx1262)
 * [LR1121 datasheet](https://www.semtech.com/products/wireless-rf/lora-connect/lr1121)
@@ -266,3 +269,17 @@
 * [T-Beam SoftRF](https://github.com/lyusupov/SoftRF)
 * [T-Beam Paxcounter](https://github.com/cyberman54/ESP32-Paxcounter)
 * [T-Beam Meshtastic](https://github.com/meshtastic/Meshtastic-device)
+
+### Version Note
+
+#### V3.1
+
+1. Replace the magnetic sensor with a QMC6309.
+2. Add an onboard BMS.
+3. Add a BME280 address selection resistor; the address can be changed to 0x76 or 0x77 by switching the resistor.
+4. Add an OLED address selection resistor; the address can be changed to 0x3D or 0x3C by switching the resistor.
+5. Add silkscreen printing to the back of the PCB
+
+#### V3.0
+
+1. Initial version
