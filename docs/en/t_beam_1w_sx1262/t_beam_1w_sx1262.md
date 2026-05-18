@@ -59,7 +59,7 @@
     | Arduino Runs On                      | Core1                                                |
     | USB Firmware MSC On Boot             | Disable                                              |
     | Partition Scheme                     | **Default 4MB with spiffs (1.2MB APP/1.5MB SPIFFS)** |
-    | PSRAM                                | **QSPI PSRAM**                                        |
+    | PSRAM                                | **QSPI PSRAM**                                       |
     | Upload Speed                         | 921600                                               |
     | Programmer                           | **Esptool**                                          |
 
@@ -103,7 +103,7 @@
 
 > \[!IMPORTANT]
 > 
-> LDO EN pin is control pin inside the module:
+> LDO EN pin is control pin inside the module and power supply:
 > 
 > 1. High level turns on the Radio
 > 2. Low level turns off the Radio
@@ -161,6 +161,7 @@
 | Transfer rate(LoRa) | 0.018K～37.5Kbps               | 0.018K～37.5Kbps               |
 | Transfer rate(FSK)  | 1.2K～300Kbps                  | 1.2K～300Kbps                  |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK | FSK, GFSK, MSK, GMSK, LoRa,OOK |
+| Sub1G PA Gain       | ~ +12dBm                       | ~ +12dBm                       |
 
 ### Frequently asked questions
 
@@ -195,3 +196,15 @@
 
 * [Schematic](../../../schematic/T-Beam_1W_V1.0.pdf)
 
+
+ # Max Transmit power  
+
+| Freq   | Max Transmit power                  |
+| ------ | ----------------------------------- |
+| 868MHz | ![sub1g](./images/sx1262_sub1g.jpg) |
+
+# Sleep Current
+
+![sleep](./images/sleep.jpg)
+
+* All the above tests were conducted using a battery-powered system with a voltage of 7V

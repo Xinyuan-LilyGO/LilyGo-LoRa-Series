@@ -103,7 +103,7 @@
 
 > \[!IMPORTANT]
 > 
-> LDO EN pin is control pin inside the module:
+> The LDO EN pin controls the power supply of LoRa.
 > 
 > 1. High level turns on the Radio
 > 2. Low level turns off the Radio
@@ -158,11 +158,15 @@
 | Transfer rate(FSK 2.4G)   | 0.476 ~ 101.5 Kbps            |
 | Transfer rate(FLRC)       | 0.13 ~ 2.6 Mbps               |
 | Modulation                | FSK, MSK, LoRa ,FLRC          |
-
+| Sub1G PA Gain             | ~ +12dBm                      |
+| Sub1G LNA Gain            | N.A                           |
+| 2.4G PA Gain              | ~ +34dBm                      |
+| 2.4G LNA Gain             | ~ +15dBm                      |
 
 ### RadioLib RF Setting
 
 ```c
+// LR2021 Version PA RF switch table
 static const uint32_t pa_version_rf_switch_dio_pins[] = {
     RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7, RADIOLIB_LR2021_DIO8, RADIOLIB_NC
 };
@@ -182,14 +186,18 @@ static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
     { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_TX,     { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },
-    { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW, LOW} }, //2.4G RX DIO6 SET HIGH
-    { LR2021::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, //2.4G TX DIO7 SET HIGH
+    { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW, LOW} }, // 2.4G RX DIO6 SET HIGH
+    { LR2021::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, // 2.4G TX DIO7 SET HIGH
     END_OF_MODE_TABLE,
 };
 
 ```
 
-
+> \[!IMPORTANT]
+> 2.4G power setting must not exceed 8dBm, otherwise it may damage the PA. When using 2.4G, please limit the power to 8dBm or below.
+>
+> The maximum settable power for Sub1G is 22dBm.
+>
 
 ### RF Block Diagram
 
@@ -206,3 +214,16 @@ static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
 ### Resource
 
 * [Schematic](../../../schematic/T-Beam_1W_V1.1.pdf)
+
+ # Max Transmit power  
+
+| Freq   | Max Transmit power                  |
+| ------ | ----------------------------------- |
+| 868MHz | ![sub1g](./images/lr2021_sub1g.jpg) |
+| 2.4G   | ![2.4g](./images/lr2021_2g4.jpg)    |
+
+# Sleep Current
+
+![sleep](./images/sleep.jpg)
+
+* All the above tests were conducted using a battery-powered system with a voltage of 7V
