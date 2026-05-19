@@ -161,7 +161,10 @@
 | Transfer rate(LoRa) | 0.018K～37.5Kbps               | 0.018K～37.5Kbps               |
 | Transfer rate(FSK)  | 1.2K～300Kbps                  | 1.2K～300Kbps                  |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK | FSK, GFSK, MSK, GMSK, LoRa,OOK |
-| Sub1G PA Gain       | ~ +12dBm                       | ~ +12dBm                       |
+| Sub1G PA Gain       | ~ +12dBm  [HM06S006P][1]       | ~ +12dBm [HE0008][2]           |
+
+[1]: ../../datasheet/HM06S006P_V2.0.pdf
+[2]: ../../datasheet/HE0008_V02.pdf
 
 ### Frequently asked questions
 

@@ -149,19 +149,22 @@
 
 ### RF parameters
 
-| Features                  | LR2021          (XY16E3AXP33) |
-| ------------------------- | ----------------------------- |
-| RF  Module                | LR2021 TCXO                   |
-| Frequency range           | 840 ~ 930MHz                  |
-| Transfer rate(FSK)        | 0.5 ~ 2000 kbps               |
-| Transfer rate(LoRa Sub1G) | 0.091 ~ 62.5kbps              |
-| Transfer rate(FSK 2.4G)   | 0.476 ~ 101.5 Kbps            |
-| Transfer rate(FLRC)       | 0.13 ~ 2.6 Mbps               |
-| Modulation                | FSK, MSK, LoRa ,FLRC          |
-| Sub1G PA Gain             | ~ +12dBm                      |
-| Sub1G LNA Gain            | N.A                           |
-| 2.4G PA Gain              | ~ +34dBm                      |
-| 2.4G LNA Gain             | ~ +15dBm                      |
+| Features                     | LR2021          (XY16E3AXP33) |
+| ---------------------------- | ----------------------------- |
+| RF  Module                   | LR2021 TCXO                   |
+| Frequency range              | 840 ~ 930MHz                  |
+| Transfer rate(FSK)           | 0.5 ~ 2000 kbps               |
+| Transfer rate(LoRa Sub1G)    | 0.091 ~ 62.5kbps              |
+| Transfer rate(FSK 2.4G)      | 0.476 ~ 101.5 Kbps            |
+| Transfer rate(FLRC)          | 0.13 ~ 2.6 Mbps               |
+| Modulation                   | FSK, MSK, LoRa ,FLRC          |
+| Sub1G PA Gain [HM06S006P][1] | ~ +12dBm                      |
+| Sub1G LNA Gain               | N.A                           |
+| 2.4G PA Gain   [CB5337CX][2] | ~ +34dBm                      |
+| 2.4G LNA Gain  [CB5337CX][2] | ~ +15dBm                      |
+
+[1]: ../../datasheet/HM06S006P_V2.0.pdf
+[2]: ../../datasheet/CB5337CX_Datasheet_A2.1_EN.pdf
 
 ### RadioLib RF Setting
 
