@@ -134,6 +134,7 @@ LR2021 radio = new Module(RADIO_CS_PIN, RADIO_IRQ_PIN, RADIO_RST_PIN, RADIO_BUSY
 
 
 #if defined(T_BEAM_1W_LR1121)
+
 // LR1121 Version PA RF switch table
 static const uint32_t pa_version_rf_switch_dio_pins[] = {
     RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6, RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8, RADIOLIB_NC
@@ -163,7 +164,8 @@ static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
     END_OF_MODE_TABLE,
 };
 #elif defined(T_BEAM_1W_LR2021)
-// LR1121 Version PA RF switch table
+
+// LR2021 Version PA RF switch table
 static const uint32_t pa_version_rf_switch_dio_pins[] = {
     RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7, RADIOLIB_LR2021_DIO8, RADIOLIB_NC
 };
@@ -172,20 +174,19 @@ static const Module::RfSwitchMode_t low_sub1g_switch_table[] = {
     // mode                  DIO5  DIO6 DIO7 DIO8
     { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_TX,     { LOW,  LOW, LOW, HIGH} }, // Sub1G DIO8 SET HIGH
-    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },
+    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },  // Sub1G ALL DIO SET LOW
     { LR2021::MODE_RX_HF,  { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_TX_HF,  { LOW,  LOW, LOW, LOW} },
     END_OF_MODE_TABLE,
 };
 
 static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
-    //2.4G RX DIO6 SET HIGH
     // mode                  DIO5  DIO6 DIO7 DIO8
     { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_TX,     { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },
-    { LR2021::MODE_RX_HF,  { HIGH,  LOW, LOW, LOW} },
-    { LR2021::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, //2.4G TX DIO7 SET HIGH
+    { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW, LOW} }, // 2.4G RX DIO6 SET HIGH
+    { LR2021::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, // 2.4G TX DIO7 SET HIGH
     END_OF_MODE_TABLE,
 };
 #endif /*T_BEAM_1W_LR1121 | T_BEAM_1W_LR2021*/
@@ -585,6 +586,10 @@ void prevButtonHandleEvent(AceButton   *button, uint8_t eventType, uint8_t butto
             handleMenu();
         }
         break;
+    case AceButton::kEventDoubleClicked:
+        Serial.println("Double clicked!");
+        powerOff();
+        break;
     case AceButton::kEventLongPressed:
         if (!freqSelectMode) {
             sleepDevice();
@@ -712,6 +717,7 @@ void setup()
     prevButtonConfigure.setEventHandler(prevButtonHandleEvent);
     prevButtonConfigure.setFeature(ButtonConfig::kFeatureClick);
     prevButtonConfigure.setFeature(ButtonConfig::kFeatureLongPress);
+    prevButtonConfigure.setFeature(ButtonConfig::kFeatureDoubleClick);
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     button.init(BUTTON_PIN);
     button.setButtonConfig(&prevButtonConfigure);
@@ -761,6 +767,22 @@ void setup()
     Serial.println(F(" Selected"));
 
 
+    setLed(true);
+
+
+#ifdef FIXED_RADIO_FREQ
+    freq_index = 0;
+    for (int i = 0; i < sizeof(factory_freq) / sizeof(factory_freq[0]); i++) {
+        uint16_t freq = factory_freq[i];
+        uint16_t config_freq = (uint16_t)(FIXED_RADIO_FREQ);
+        if (freq == config_freq) {
+            freq_index = i;
+            break;
+        }
+    }
+    current_freq = factory_freq[freq_index];
+    freqSelectDone = true;
+#else
     /***********************
      * Frequency Selection
      ***********************/
@@ -789,7 +811,7 @@ void setup()
     freqSelectMode = false;
     current_freq = factory_freq[freq_index];
     Serial.printf("Selected frequency: %s\n", freq_table[freq_index]);
-
+#endif
 
 
 #if defined(USING_LR2021)
@@ -1003,8 +1025,6 @@ void setup()
 }
 
 // PMU Power key callback
-
-
 void changeFreq()
 {
     // Set freq function
@@ -1133,14 +1153,14 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
             transmittedFlag = false;
             if (transmissionState == RADIOLIB_ERR_NONE) {
                 // packet was successfully sent
-                Serial.println(F("transmission finished!"));
+                Serial.println(F("[RadioTx] transmission finished!"));
 
                 // NOTE: when using interrupt-driven transmit method,
                 //       it is not possible to automatically measure
                 //       transmission data rate using getDataRate()
 
             } else {
-                Serial.print(F("failed, code "));
+                Serial.print(F("[RadioTx] failed, code "));
                 Serial.println(transmissionState);
 
             }
@@ -1151,7 +1171,7 @@ void radioTx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
             radio.finishTransmit();
 
             // send another one
-            Serial.print(F("[Radio] Sending another packet ... "));
+            Serial.print(F("[RadioTx]  Sending another packet ... "));
 
             // you can transmit C-string or Arduino string up to
             // 256 characters long
@@ -1232,16 +1252,17 @@ void radioRx(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t
         */
         if (transmissionState == RADIOLIB_ERR_NONE) {
             // packet was successfully received
-            Serial.println(F("[Radio] Received packet!"));
+            Serial.print("[RadioRx] Received packet!");
             radioRSSI = radio.getRSSI();
+            Serial.printf(" COUNT:%u RSSI:%.2f SNR:%.2f\n", recvCounter, radioRSSI, radio.getSNR());
 
         } else if (transmissionState == RADIOLIB_ERR_CRC_MISMATCH) {
             // packet was received, but is malformed
-            Serial.println(F("[Radio] CRC error!"));
+            Serial.println(F("[RadioRx] CRC error!"));
 
         } else {
             // some other error occurred
-            Serial.print(F("[Radio] Failed, code "));
+            Serial.print(F("[RadioRx] Failed, code "));
             Serial.println(transmissionState);
         }
         // put module back to listen mode

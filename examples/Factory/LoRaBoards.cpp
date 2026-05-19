@@ -326,7 +326,7 @@ bool beginPower()
 
 
     // Set the time of pressing the button to turn off
-    PMU->setPowerKeyPressOffTime(XPOWERS_POWEROFF_8S);
+    PMU->setPowerKeyPressOffTime(XPOWERS_POWEROFF_4S);
     uint8_t opt = PMU->getPowerKeyPressOffTime();
     Serial.print("PowerKeyPressOffTime:");
     switch (opt) {
@@ -407,6 +407,13 @@ void disablePeripherals()
 #endif
 }
 
+void powerOff()
+{
+    if (!PMU) return;
+    PMU->setChargingLedMode(XPOWERS_CHG_LED_OFF);
+    PMU->shutdown();
+}
+
 void loopPMU(void (*pressed_cb)(void), void (*long_press_cb)(void))
 {
     if (!PMU) {
@@ -458,6 +465,28 @@ void loopPMU(void (*pressed_cb)(void), void (*long_press_cb)(void))
     PMU->clearIrqStatus();
 }
 #endif
+
+void setLed(bool on)
+{
+#ifdef HAS_PMU
+    if (!PMU) {
+        Serial.println("No PMU, can't control LED");
+        return;
+    }
+    if (on) {
+        Serial.println("LED ON");
+        PMU->setChargingLedMode(XPOWERS_CHG_LED_ON);
+    } else {
+        Serial.println("LED OFF");
+        PMU->setChargingLedMode(XPOWERS_CHG_LED_OFF);
+    }
+#endif
+
+#ifdef BOARD_LED
+    digitalWrite(BOARD_LED, on ? LED_ON : !LED_ON);
+#endif
+}
+
 
 #ifdef DISPLAY_MODEL
 bool beginDisplay()
@@ -835,8 +864,8 @@ void setupBoards(bool disable_u8g2 )
     pinMode(FAN_CTRL, OUTPUT);
 #endif
 
+#ifndef EXCLUDE_GPS
 #ifdef HAS_GPS
-
 #if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_1W_SX1262) || defined(T_BEAM_1W_LR1121) || defined(T_BEAM_1W_LR2021) || defined(T_BEAM_S3_BPF)
     // T-Beam v1.2 skips L76K
     find_gps = beginGPS();
@@ -862,11 +891,13 @@ void setupBoards(bool disable_u8g2 )
         deviceOnline |= GPS_ONLINE;
     }
 
+#endif // HAS_GPS
+#endif // EXCLUDE_GPS
+
 #ifdef T_BEAM_S3_SUPREME
     enable_slow_clock();
 #endif
 
-#endif
 }
 
 
@@ -1049,11 +1080,7 @@ bool l76kProbe()
     Serial.print("Try to init L76K . Wait stop .");
     // SerialGPS.flush();
     while (SerialGPS.available()) {
-        int c = SerialGPS.read();
-        // Serial.write(c);
-        // Serial.print(".");
-        // Serial.flush();
-        // SerialGPS.flush();
+        SerialGPS.read();
         if (millis() > startTimeout) {
             Serial.println("Wait L76K stop NMEA timeout!");
             return false;
@@ -1085,6 +1112,7 @@ bool l76kProbe()
     delay(250);
     // only ask for RMC and GGA
     SerialGPS.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n");
+    // SerialGPS.write("$PCAS03,1,1,1,1,1,1,1,1,0,0,,,0,0*02\r\n");
     delay(250);
     // Switch to Vehicle Mode, since SoftRF enables Aviation < 2g
     SerialGPS.write("$PCAS11,3*1E\r\n");

@@ -109,10 +109,14 @@ extern bool pmuInterrupt;
 void loopPMU(void (*pressed_cb)(void), void (*long_press_cb)(void) = NULL);
 bool beginPower();
 void disablePeripherals();
+void powerOff();
 #else
 #define beginPower()
 #define disablePeripherals()
+#define powerOff()
 #endif
+
+void setLed(bool on);
 
 #ifdef DISPLAY_MODEL
 extern U8G2 *disp;
