@@ -92,8 +92,8 @@
 | LoRa(**SX1276**) MISO    | 19       | ❌    |
 | LoRa(**SX1276**) MOSI    | 27       | ❌    |
 | LoRa(**SX1276**) RESET   | 23       | ❌    |
-| LoRa(**SX1276**) DIO0    | 26       | ❌    |
-| LoRa(**SX1276**) DIO1    | 32       | ❌    |
+| LoRa(**SX1276**) DIO1    | 26       | ❌    |
+| LoRa(**SX1276**) DIO2    | 32       | ❌    |
 | LoRa(**SX1276**) CS      | 7        | ❌    |
 | LoRa(**SX1276**) TCXO EN | 12       | ❌    |
 | Battery ADC              | 35       | ❌    |
