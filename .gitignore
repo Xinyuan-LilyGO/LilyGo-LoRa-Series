@@ -11,3 +11,5 @@ script
 build
 LilyGoLoRaBoard
 record.*
+data
+# *.zip
