@@ -15,6 +15,7 @@
 
 - 🔧 **[T-Beam Quick Start](./docs/en/t_beam/t_beam_hw.md)**
 - 🔧 **[T-Beam Supreme Quick Start](./docs/en/t_beam_supreme/t_beam_supreme_hw.md)**
+- 🔧 **[T-Beam Supreme 144~148MHZ Quick Start](./docs/en/t_beam_supreme/t_beam_supreme_144_hw.md)**
 - 🔧 **[T-Beam BPF Quick Start](./docs/en/t_beam_bpf/t_beam_bpf_hw.md)**
 - 🔧 **[T-Beam 1W SX1262 Quick Start](./docs/en/t_beam_1w_sx1262/t_beam_1w_sx1262.md)**
 - 🔧 **[T-Beam 1W LR1121 Quick Start](./docs/en/t_beam_1w_lr1121/t_beam_1w_lr1121.md)**
