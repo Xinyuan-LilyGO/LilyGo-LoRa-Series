@@ -215,7 +215,7 @@ extern uint8_t display_address;
 
 static uint8_t freq_index = 0;
 static const float factory_freq[] = {
-#ifdef T_BEAM_S3_BPF
+#if defined(T_BEAM_S3_BPF) || defined(T_BEAM_S3_SUPREME_SX1278)
     144.0, 148.0
 #else
     433.0, 470.0,
@@ -228,7 +228,7 @@ static const float factory_freq[] = {
 
 };
 static const char *freq_table[] = {
-#ifdef T_BEAM_S3_BPF
+#if defined(T_BEAM_S3_BPF) || defined(T_BEAM_S3_SUPREME_SX1278)
     "144.0MHz", "148.0MHz"
 #endif
     "433MHz", "470MHz",
@@ -1096,13 +1096,13 @@ void power_key_long_pressed()
 
 void power_key_pressed()
 {
-#if defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)
+#if defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF) || defined(T_BEAM_S3_SUPREME_SX1278)
     // Turn on/off display
     static bool isOn = true;
     isOn ? display->displayOff()  : display->displayOn();
     isOn ^= 1;
     return;
-#else /*defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)*/
+#else
     // changeFreq();
     if (freqSelectMode) {
         int tableSize = sizeof(freq_table) / sizeof(freq_table[0]);
@@ -1112,7 +1112,7 @@ void power_key_pressed()
         currentFrames =  ((currentFrames - 1) < 0) ? currentFrames : currentFrames - 1;
         handleMenu();
     }
-#endif /*defined(JAPAN_MIC_CERTIFICATION) || defined(T_BEAM_S3_BPF)*/
+#endif
 }
 
 void loop()
