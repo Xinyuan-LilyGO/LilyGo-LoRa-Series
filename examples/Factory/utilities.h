@@ -651,6 +651,9 @@
 #define USING_SX1278
 #endif
 
+#define CONFIG_RADIO_FREQ  144.0
+
+
 #define I2C_SDA                     (8)
 #define I2C_SCL                     (9)
 
@@ -760,11 +763,13 @@
 #define RADIO_LDO_EN                (40)
 
 #if defined(T_BEAM_1W_SX1262)
+#define RADIO_TYPE_STR               "SX1262PA"
 #define RADIO_CTRL                  (21)
 #define RADIO_DIO1_PIN              (1)
 #endif
 
 #if defined(T_BEAM_1W_LR1121)
+#define RADIO_TYPE_STR               "LR1121PA"
 #define RADIO_DIO10_PIN              (1)      // Connect to DIO10
 #define RADIO_DIO11_PIN             (21)      // Connect to DIO11
 #define RADIO_DIO_IRQ_PIN           (RADIO_DIO11_PIN)
@@ -774,6 +779,7 @@
 #endif
 
 #if defined(T_BEAM_1W_LR2021)
+#define RADIO_TYPE_STR               "LR2021PA"
 #define RADIO_IRQ_PIN               (1)      // Connect to DIO10
 #define RADIO_DIO11_PIN             (21)      // Connect to DIO11
 #define RADIO_DIO_NUM               (10)      // LR2021 DIO NUM NOT ESP32S3 GPIO NUM
@@ -819,7 +825,9 @@
 
 #if  defined(USING_SX1262)
 
+#ifndef RADIO_TYPE_STR
 #define RADIO_TYPE_STR  "SX1262"
+#endif
 
 #ifndef CONFIG_RADIO_SUB1G_OUTPUT_POWER
 #define CONFIG_RADIO_SUB1G_OUTPUT_POWER  22
@@ -847,7 +855,10 @@
 
 #elif defined(USING_LR1121)
 
+#ifndef RADIO_TYPE_STR
 #define RADIO_TYPE_STR  "LR1121"
+#endif
+
 
 #ifndef CONFIG_RADIO_SUB1G_OUTPUT_POWER
 #define CONFIG_RADIO_SUB1G_OUTPUT_POWER  22
@@ -892,7 +903,9 @@
 
 #elif defined(USING_LR2021)
 
+#ifndef RADIO_TYPE_STR
 #define RADIO_TYPE_STR  "LR2021"
+#endif
 
 #ifndef CONFIG_RADIO_2G4_OUTPUT_POWER
 #define CONFIG_RADIO_2G4_OUTPUT_POWER    12
@@ -917,4 +930,51 @@
 
 #ifndef CONFIG_RADIO_BW
 #define CONFIG_RADIO_BW 125.0
+#endif
+
+// ── CLI help strings per radio module ──
+#if defined(USING_SX1276) || defined(USING_SX1278)
+#define SF_HELP    "Valid: 6 ~ 12"
+#define BW_HELP    "Valid: 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125, 250, 500 kHz"
+#define CR_HELP    "Valid: 5 ~ 8"
+#define TP_HELP    "Valid: depends on PA_BOOST/RFO config, typically -3 ~ 17 dBm"
+#define FREQ_HELP  "Valid: 137 ~ 1020 MHz"
+#define PL_HELP    "Valid: 6 ~ 65535"
+#define SW_HELP    "Valid: 0x00 ~ 0xFF (1 byte)"
+#elif defined(USING_SX1262)
+#define SF_HELP    "Valid: 5 ~ 12"
+#define BW_HELP    "Valid: 7.8, 10.4, 15.6, 20.8, 31.25, 41.7, 62.5, 125.0, 250.0, 500.0 kHz"
+#define CR_HELP    "Valid: 5 ~ 8"
+#define TP_HELP    "Valid: -9 ~ 22 dBm"
+#define FREQ_HELP  "Valid: 150 ~ 960 MHz"
+#define PL_HELP    "Valid: 1 ~ 65535"
+#define SW_HELP    "Valid: 0x0000 ~ 0xFFFF (2 bytes)"
+#elif defined(USING_SX1280) || defined(USING_SX1280PA)
+#define SF_HELP    "Valid: 5 ~ 12"
+#define BW_HELP    "Valid: 203.125, 406.25, 812.5, 1625.0 kHz"
+#define CR_HELP    "Valid: 5 ~ 8"
+#if defined(USING_SX1280PA)
+#define TP_HELP    "Valid: -18 ~ 3 dBm"
+#else
+#define TP_HELP    "Valid: -18 ~ 13 dBm"
+#endif
+#define FREQ_HELP  "Valid: 2400 ~ 2500 MHz"
+#define PL_HELP    "Valid: 1 ~ 65535"
+#define SW_HELP    "Valid: depends on modem"
+#elif defined(USING_LR1121)
+#define SF_HELP    "Valid: 5 ~ 12"
+#define BW_HELP    "Valid: 62.5, 125.0, 250.0, 500.0 kHz"
+#define CR_HELP    "Valid: 5 ~ 8"
+#define TP_HELP    "Sub-GHz: -17 ~ 22 dBm  |  2.4GHz: -18 ~ 13 dBm"
+#define FREQ_HELP  "Sub-GHz or 2.4GHz band"
+#define PL_HELP    "Valid: 1 ~ 65535"
+#define SW_HELP    "Valid: depends on configuration"
+#elif defined(USING_LR2021)
+#define SF_HELP    "Valid: 5 ~ 12"
+#define BW_HELP    "Valid: 31.25, 41.67, 62.5, 83.34, 125.0, 101.56, 203.13, 250.0, 406.25, 500.0, 812.5, 1000.0 kHz"
+#define CR_HELP    "Valid: 4 ~ 8"
+#define TP_HELP    "Sub-GHz: -9 ~ 22 dBm  |  2.4GHz: -19 ~ 12 dBm"
+#define FREQ_HELP  "Sub-GHz or 2.4GHz band"
+#define PL_HELP    "Valid: 1 ~ 65535"
+#define SW_HELP    "Valid: depends on configuration"
 #endif
