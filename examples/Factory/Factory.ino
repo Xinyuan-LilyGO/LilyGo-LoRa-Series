@@ -487,9 +487,25 @@ void prevButtonHandleEvent(AceButton   *button, uint8_t eventType, uint8_t butto
         Serial.println("Double clicked!");
         powerOff();
         break;
-    case AceButton::kEventLongPressed:
+    case AceButton::kEventLongPressed: {
+        // When using LR2021 or LR1121, press and hold the first button to switch between low and high frequencies.
+#if defined(USING_LR1121) || defined(USING_LR2021)
+        // Sub1G or 2.4G frequency toggle
+        float tmp = lora_settings.lora_freq;
+        if (tmp < 2400) {
+            tmp = 2450;
+        } else {
+            tmp = CONFIG_RADIO_FREQ;
+        }
+        Serial.printf("Frequency toggle to %.2f\n", tmp);
+        radio.standby();
+        applyFreq(String(tmp));
+        reloadLoRa();
+#else
         sleepDevice();
-        break;
+#endif
+    }
+    break;
     default:
         break;
     }
@@ -503,6 +519,9 @@ void nextButtonHandleEvent(AceButton   *button, uint8_t eventType, uint8_t butto
         Serial.printf("nextButtonHandleEvent currentFrames:%d frames_count:%d\n", currentFrames, max_frames);
         currentFrames =  ((currentFrames - 1) < 0) ? currentFrames : currentFrames - 1;
         handleMenu();
+        break;
+    case AceButton::kEventDoubleClicked:
+        Serial.println("Double clicked!");
         break;
     case AceButton::kEventLongPressed:
         Serial.println("Long pressed!");
@@ -1250,6 +1269,7 @@ static void setupButton()
     nextButtonConfigure.setEventHandler(nextButtonHandleEvent);
     nextButtonConfigure.setFeature(ButtonConfig::kFeatureClick);
     nextButtonConfigure.setFeature(ButtonConfig::kFeatureLongPress);
+    nextButtonConfigure.setFeature(ButtonConfig::kFeatureDoubleClick);
     pinMode(BUTTON2_PIN, INPUT_PULLUP);
     button2.init(BUTTON2_PIN);
     button2.setButtonConfig(&nextButtonConfigure);

@@ -719,8 +719,6 @@
 #ifndef USING_LR1121
 #define USING_LR1121
 #endif
-#pragma message "Using LR1121 PA Version,The transmit power must not exceed 0dBm, otherwise it will cause permanent damage to LoRa."
-#define  CONFIG_RADIO_2G4_OUTPUT_POWER  0
 #endif
 
 #ifdef T_BEAM_1W_LR2021
