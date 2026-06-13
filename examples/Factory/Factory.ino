@@ -1213,18 +1213,18 @@ void listeningMode(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, i
     display->setTextAlignment(TEXT_ALIGN_CENTER);
     display->drawString(64 + x, 0 + y, "Signal");
 
-    static uint32_t last_rssi = 0;
+    static uint32_t lastUpdate = 0;
     static float rssi;
     static float snr;
-    if (millis() - last_rssi > 500) {
-        rssi = radio.getRSSI(false);
+    if (millis() - lastUpdate > 500) {
+        rssi = radio.getRSSI();
         snr = radio.getSNR();
-        last_rssi = millis();
+        lastUpdate = millis();
         Serial.printf("RSSI: %.2f dBm, SNR: %.2f dB\n", rssi, snr);
     }
     display->drawString(64 + x, 16 + y, "RSSI:" +  String(rssi) + "dBm");
     display->drawString(64 + x, 32 + y, "SNR:" + String(snr) + "dB");
-    display->drawString(64 + x, 48 + y, "Update:" + String(last_rssi / 1000));
+    display->drawString(64 + x, 48 + y, "Update:" + String(lastUpdate / 1000));
 }
 
 
