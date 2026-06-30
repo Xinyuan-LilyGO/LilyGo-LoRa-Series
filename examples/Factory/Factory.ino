@@ -1509,7 +1509,7 @@ static void printLoRaParams(loraParams params)
     Serial.println("--------------LORA PARAMS------------------");
     Serial.printf("- Type:%s\n", RADIO_TYPE_STR);
     Serial.printf("- Freq:%.2f MHZ\n", params.lora_freq);
-    Serial.printf("- TxPower:%u dBm\n", params.lora_tx_power);
+    Serial.printf("- TxPower:%d dBm\n", params.lora_tx_power);
     Serial.printf("- Spreading Factor:%u \n", params.lora_sf);
     Serial.printf("- Bandwidth:%.2f kHz\n", params.lora_bw);
     Serial.printf("- Coding Rate:%u \n", params.lora_cr);
@@ -1517,6 +1517,7 @@ static void printLoRaParams(loraParams params)
     Serial.printf("- Preamble Length:%u \n", params.lora_preamble_length);
     Serial.printf("- LoRa CRC:%s \n", params.lora_crc ? "true" : "false");
     Serial.printf("- Invert IQ:%s \n", params.iq_inverted ? "true" : "false");
+    Serial.printf("- Continuous Wave:%s \n", isContinuousWave ? "true" : "false");
     Serial.println("------------------------------------------");
 }
 
