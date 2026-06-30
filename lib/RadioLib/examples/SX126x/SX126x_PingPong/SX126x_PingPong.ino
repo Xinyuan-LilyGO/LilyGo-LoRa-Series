@@ -1,12 +1,4 @@
 /*
-  RadioLib SX126x Ping-Pong Example
-
-  This example is intended to run on two SX126x radios,
-  and send packets between the two.
-
-  For default module settings, see the wiki page
-  https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx126x---lora-modem
-
   For full API reference, see the GitHub Pages
   https://jgromes.github.io/RadioLib/
 */
