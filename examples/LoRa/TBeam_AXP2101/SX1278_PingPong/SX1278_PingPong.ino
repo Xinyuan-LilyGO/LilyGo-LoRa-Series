@@ -4,6 +4,8 @@
 */
 
 #include <RadioLib.h>
+#define XPOWERS_CHIP_AXP2101
+#include <XPowersLib.h>
 
 // uncomment the following only on one
 // of the nodes to initiate the pings
@@ -11,32 +13,30 @@
 // #define INITIATING_NODE
 
 // Board pin definitions
-#define I2C_SDA                     18
-#define I2C_SCL                     17
-#define RADIO_SCLK_PIN              5
-#define RADIO_MISO_PIN              3
-#define RADIO_MOSI_PIN              6
-#define RADIO_CS_PIN                7
-#define SDCARD_MOSI                 11
-#define SDCARD_MISO                 2
-#define SDCARD_SCLK                 14
-#define SDCARD_CS                   13
-#define BOARD_LED                   37
-#define LED_ON                      HIGH
-#define BUTTON_PIN                  0
-#define ADC_PIN                     1
-#define RADIO_RST_PIN               8
-#define RADIO_DIO0_PIN              9
+#define GPS_RX_PIN                  34
+#define GPS_TX_PIN                  12
+#define BUTTON_PIN                  38
+#define I2C_SDA                     21
+#define I2C_SCL                     22
+#define PMU_IRQ                     35
+#define RADIO_SCLK_PIN               5
+#define RADIO_MISO_PIN              19
+#define RADIO_MOSI_PIN              27
+#define RADIO_CS_PIN                18
+#define RADIO_DIO0_PIN              26
+#define RADIO_RST_PIN               23
 #define RADIO_DIO1_PIN              33
-#define RADIO_DIO2_PIN              34
-#define RADIO_DIO3_PIN              21
-#define RADIO_DIO4_PIN              10
-#define RADIO_DIO5_PIN              36
-#define BOARD_VARIANT_NAME          "T3-S3-SX1278"
+#define RADIO_DIO2_PIN              32
+#define BOARD_LED                   4
+#define LED_ON                      LOW
+#define BUTTON_PIN                  38
+#define GPS_BAUD_RATE               9600
+#define BOARD_VARIANT_NAME          "T-Beam-AXP2101-SX1278"
 
-#define CONFIG_RADIO_FREQ           868.0
+#define CONFIG_RADIO_FREQ           433.0
 #define CONFIG_RADIO_OUTPUT_POWER   17
 
+XPowersPMU pmu; // Power management unit
 SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 // save transmission states between loops
@@ -54,13 +54,46 @@ void setFlag(void)
     operationDone = true;
 }
 
+void setupPeripheralPowerSupplies()
+{
+    // Initialize AXP2101
+    bool success =  pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, I2C_SDA, I2C_SCL);
+    if (!success) {
+        Serial.println(F("[AXP2101] Initialization failed!"));
+        while (true) {
+            delay(10);
+        }
+    }
+    // WARNING: DC1 is the core power supply for the ESP32; do not configure it.
+
+    // GNSS RTC PowerVDD 3300mV
+    pmu.setButtonBatteryChargeVoltage(3300);
+    pmu.enableButtonBatteryCharge();
+
+    // LoRa VDD 3300mV
+    pmu.setALDO2Voltage(3300);
+    pmu.enableALDO2();
+
+    //GNSS VDD 3300mV
+    pmu.setALDO3Voltage(3300);
+    pmu.enableALDO3();
+
+    // Set charger constant current
+    pmu.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+}
+
 void setup()
 {
     Serial.begin(115200);
 
+    // Initialize LED
     pinMode(BOARD_LED, OUTPUT);
 
+    // Initialize SPI
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
+
+    // Initialize power supplies
+    setupPeripheralPowerSupplies();
 
     // initialize SX1278 with default settings
     Serial.print(F("[SX1278] Initializing ... "));
@@ -87,6 +120,7 @@ void setup()
     Serial.print(F("[SX1278] Sending first packet ... "));
     transmissionState = radio.startTransmit("Hello World!");
     transmitFlag = true;
+
 #else
     // start listening for LoRa packets on this node
     Serial.print(F("[SX1278] Starting to listen ... "));
