@@ -4,6 +4,8 @@
 */
 
 #include <RadioLib.h>
+#define XPOWERS_CHIP_AXP2101
+#include <XPowersLib.h>
 
 // uncomment the following only on one
 // of the nodes to initiate the pings
@@ -41,6 +43,7 @@
 #define CONFIG_RADIO_FREQ           144.0
 #define CONFIG_RADIO_OUTPUT_POWER   17
 
+XPowersPMU pmu; // Power management unit
 SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
 
 // save transmission states between loops
@@ -58,6 +61,39 @@ void setFlag(void)
     operationDone = true;
 }
 
+
+void setupPeripheralPowerSupplies()
+{
+    // Initialize AXP2101
+    bool success =  pmu.begin(Wire, AXP2101_SLAVE_ADDRESS, I2C_SDA, I2C_SCL);
+    if (!success) {
+        Serial.println(F("[AXP2101] Initialization failed!"));
+        while (true) {
+            delay(10);
+        }
+    }
+    // WARNING: DC1 is the core power supply for the ESP32; do not configure it.
+
+    // GNSS
+    pmu.setALDO4Voltage(3300);
+    pmu.enableALDO4();
+
+    // TF Card
+    pmu.setALDO2Voltage(3300);
+    pmu.enableALDO2();
+
+    // Extern Power source
+    pmu.setDC3Voltage(3300);
+    pmu.enableDC3();
+    pmu.setDC5Voltage(3300);
+    pmu.enableDC5();
+    pmu.setALDO1Voltage(3300);
+    pmu.enableALDO1();
+
+    // Set charger constant current
+    pmu.setChargerConstantCurr(XPOWERS_AXP2101_CHG_CUR_500MA);
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -68,6 +104,10 @@ void setup()
 
     // Initialize SPI
     SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
+
+
+    // Initialize power supplies
+    setupPeripheralPowerSupplies();
 
     // initialize SX1278 with default settings
     Serial.print(F("[SX1278] Initializing ... "));
