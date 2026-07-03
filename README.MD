@@ -57,6 +57,8 @@
 ├── LoRa                                     # LoRa Minimum Example
 │   ├── Receive_Interrupt                    # Common receive example for all boards
 │   ├── Transmit_Interrupt                   # Common transmit example for all boards
+│   ├── T3_TCXO                              # T3 TCXO
+│   │   ├── SX1276_PingPong
 │   ├── T3_LoRa32                            # LoRa32 V1.6
 │   │   ├── SX1276_PingPong
 │   │   └── SX1278_PingPong
