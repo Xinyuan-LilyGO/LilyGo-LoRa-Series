@@ -154,14 +154,15 @@
 
 ### RF parameters
 
-| Features            | 868MHz                         | 433MHz                         |
-| ------------------- | ------------------------------ | ------------------------------ |
-| RF  Module          | SX1262 TCXO (XY16P35)          | SX1262 TCXO  XY16P354          |
-| Frequency range     | 830~950MHz                     | 400~520MHz                     |
-| Transfer rate(LoRa) | 0.018K～37.5Kbps               | 0.018K～37.5Kbps               |
-| Transfer rate(FSK)  | 1.2K～300Kbps                  | 1.2K～300Kbps                  |
-| Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK | FSK, GFSK, MSK, GMSK, LoRa,OOK |
-| Sub1G PA Gain       | ~ +12dBm  [HM06S006P][1]       | ~ +12dBm [HE0008][2]           |
+| Features                       | 868MHz                         | 433MHz                         |
+| ------------------------------ | ------------------------------ | ------------------------------ |
+| RF  Module                     | SX1262 TCXO (XY16P35)          | SX1262 TCXO  XY16P354          |
+| Frequency range                | 830~950MHz                     | 400~520MHz                     |
+| Transfer rate(LoRa)            | 0.018K～37.5Kbps               | 0.018K～37.5Kbps               |
+| Transfer rate(FSK)             | 1.2K～300Kbps                  | 1.2K～300Kbps                  |
+| Modulation                     | FSK, GFSK, MSK, GMSK, LoRa,OOK | FSK, GFSK, MSK, GMSK, LoRa,OOK |
+| Sub1G PA Gain                  | ~ +12dBm  [HM06S006P][1]       | ~ +12dBm [HE0008][2]           |
+| LNA allows maximum input power | +15dBm                         | +15dBm                         |
 
 [1]: ../../datasheet/HM06S006P_V2.0.pdf
 [2]: ../../datasheet/HE0008_V02.pdf
