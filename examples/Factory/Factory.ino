@@ -883,6 +883,19 @@ void gpsInfo(OLEDDisplay *display, OLEDDisplayUiState *disp_state, int16_t x, in
     } else {
         display->drawString(64 + x, 0 + y, "GPS");
     }
+
+
+#ifdef BOARD_LED
+    static uint32_t lastBlinkTime = 0;
+    static bool ledState = false;
+    uint32_t blinkMs = updateUseSecond ? 200 : 3000;
+    if (millis() - lastBlinkTime > blinkMs) {
+        lastBlinkTime = millis();
+        setLed(ledState);
+        ledState = !ledState;
+    }
+#endif
+
     if (gps.location.isValid() && gps.date.isValid() && gps.time.isValid()) {
 
         if (!updateUseSecond) {
