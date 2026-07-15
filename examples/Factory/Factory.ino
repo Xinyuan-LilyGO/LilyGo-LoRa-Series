@@ -853,18 +853,26 @@ void wirelessInfo(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, in
     display->drawString(64 + x, 0 + y, "WIFI");
 
     display->setTextAlignment(TEXT_ALIGN_LEFT);
-    display->drawString(0 + x, 16 + y, "SSID:");
-    if (String(WIFI_SSID) == "Your WiFi SSID" ) {
-        display->drawString(38 + x, 16 + y, "NO SET");
-    } else {
-        display->drawString(38 + x, 16 + y, WIFI_SSID);
-    }
 
-    display->drawString(0 + x, 32 + y, "RSSI:");
-    if (WiFi.isConnected()) {
-        display->drawString(38 + x, 32 + y, String(WiFi.RSSI()));
+    if (WiFi.getMode() == WIFI_AP) {
+        display->drawString(0 + x, 16 + y, "Mode:");
+        display->drawString(38 + x, 16 + y, "AP MODE");
+        display->drawString(0 + x, 32 + y, "IP:");
+        display->drawString(38 + x, 32 + y, WiFi.softAPIP().toString());
     } else {
-        display->drawString(38 + x, 32 + y, "N.A");
+        display->drawString(0 + x, 16 + y, "SSID:");
+        if (String(WIFI_SSID) == "Your WiFi SSID" ) {
+            display->drawString(38 + x, 16 + y, "NO SET");
+        } else {
+            display->drawString(38 + x, 16 + y, WIFI_SSID);
+        }
+
+        display->drawString(0 + x, 32 + y, "RSSI:");
+        if (WiFi.isConnected()) {
+            display->drawString(38 + x, 32 + y, String(WiFi.RSSI()));
+        } else {
+            display->drawString(38 + x, 32 + y, "N.A");
+        }
     }
     display->drawString(0 + x, 48 + y, "MAC:");
     display->drawString(30 + x, 48 + y, macStr);
@@ -1349,7 +1357,16 @@ static void setupNetwork()
         Serial.println("[Error] : WiFi ssid and password are not configured correctly");
         Serial.println("[Error] : WiFi ssid and password are not configured correctly");
         Serial.println("[Error] : WiFi ssid and password are not configured correctly");
+
+        WiFi.mode(WIFI_AP);
+        WiFi.softAP(BOARD_VARIANT_NAME "-Factory");
+        Serial.println("[WiFi]: SoftAP started");
+        Serial.println("[WiFi]: Connect to " BOARD_VARIANT_NAME "-Factory");
+        Serial.println("[WiFi]: IP address: " + WiFi.softAPIP().toString());
+
     } else {
+        WiFi.mode(WIFI_STA);
+
         wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
 
 #ifdef WIFI_SSID2
