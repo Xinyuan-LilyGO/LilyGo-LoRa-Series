@@ -3,15 +3,15 @@
   <img src="../.github/LilyGo_logo.png" alt="LilyGo logo" width="100"/>
 </div>
 
-<h1 align="center">LilyGo LoRa Factory Firmware</h1>
+<h1 align="center">LilyGo LoRa 工厂固件</h1>
 
-[中文版](README_CN.md)
+[English](README.md)
 
-## Directory Structure
+## 目录结构
 
 ```
 firmware/
-├── BLE Server
+├── 蓝牙服务器
 │   ├── esp32-ble-server-20241209_0x0.bin
 │   └── esp32s3-ble-server-20241209_0x0.bin
 │
@@ -71,119 +71,118 @@ firmware/
     └── tbeam-s3-supreme-v3.x-all-band-sx1262-factory-20260715_0x0.bin
 ```
 
-## Firmware Naming Convention
+## 固件命名规范
 
-Firmware filenames follow this naming convention:
+固件文件名遵循以下命名规范：
 
 ```
-[Product Model]-[Version]-[Frequency/Band]-[Chip Model]-[Function Type]-[Date]_[Flash Address].bin
+[产品型号]-[版本号]-[频率/频段]-[芯片型号]-[功能类型]-[日期]_[烧录地址].bin
 ```
 
-### Naming Fields
+### 命名字段说明
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| **Product Model** | Device model identifier | `t3s3`, `tbeam`, `t3c6`, `t3txco` |
-| **Version** | Hardware version number | `v1.x`, `v1.0`, `v3.0` |
-| **Frequency/Band** | Working frequency or band | `868mhz`, `915mhz`, `all-band`, `144mhz` |
-| **Chip Model** | LoRa chip model | `sx1262`, `sx1276`, `lr1121`, `lr2021` |
-| **Function Type** | Firmware function | `factory`, `sender`, `reciver`, `meshtastic`, `paxcounter` |
-| **Date** | Compilation date | `20260715` (YYYYMMDD format) |
-| **Flash Address** | Flash memory start address | `0x0` |
+| 字段 | 说明 | 示例 |
+|------|------|------|
+| **产品型号** | 设备型号标识 | `t3s3`, `tbeam`, `t3c6`, `t3txco` |
+| **版本号** | 硬件版本号 | `v1.x`, `v1.0`, `v3.0` |
+| **频率/频段** | 工作频率或频段 | `868mhz`, `915mhz`, `all-band`, `144mhz` |
+| **芯片型号** | LoRa芯片型号 | `sx1262`, `sx1276`, `lr1121`, `lr2021` |
+| **功能类型** | 固件功能 | `factory`, `sender`, `reciver`, `meshtastic`, `paxcounter` |
+| **日期** | 编译日期 | `20260715` (YYYYMMDD格式) |
+| **烧录地址** | 烧录到Flash的起始地址 | `0x0` |
 
-### Common Function Types
+### 常见功能类型
 
-- **factory**: Factory test firmware for hardware validation
-- **sender**: LoRa transmitter firmware
-- **reciver**: LoRa receiver firmware
-- **meshtastic**: Meshtastic firmware
-- **paxcounter**: People counter firmware
+- **factory**: 工厂测试固件，用于验证硬件功能
+- **sender**: LoRa发送端固件
+- **reciver**: LoRa接收端固件
+- **meshtastic**: Meshtastic固件
+- **paxcounter**: 人流量计数器固件
 
-### Common Frequencies
+### 常见频段
 
-- **868mhz**: European frequency band
-- **915mhz**: American frequency band
-- **433mhz**: Asian frequency band
-- **all-band**: Multi-band support
-- **2400mhz**: 2.4GHz frequency band
+- **868mhz**: 欧洲频段
+- **915mhz**: 美洲频段
+- **433mhz**: 亚洲频段
+- **all-band**: 多频段支持
+- **2400mhz**: 2.4GHz频段
 
-## BLE Firmware
+## 蓝牙固件
 
-### Bluetooth Function Test Firmware
+### 蓝牙功能测试固件
 
-- **esp32-ble-server-20241209_0x0.bin**: For ESP32, flash address 0x0
-- **esp32s3-ble-server-20241209_0x0.bin**: For ESP32-S3, flash address 0x0
+- **esp32-ble-server-20241209_0x0.bin**: 适用于ESP32，烧录地址0x0
+- **esp32s3-ble-server-20241209_0x0.bin**: 适用于ESP32-S3，烧录地址0x0
 
-### Testing Method
+### 测试方法
 
-1. Download and install [nRF Connect](https://www.nordicsemi.com/Products/Development-tools/nrf-connect-for-mobile) (Google Play)
-2. Use nRF Connect to scan for Bluetooth devices
-3. If you find a device named **LilyGo-BLE**, the Bluetooth function is working properly
+1. 下载并安装 [nRF Connect](https://www.nordicsemi.com/Products/Development-tools/nrf-connect-for-mobile) (Google Play)
+2. 使用nRF Connect扫描蓝牙设备
+3. 如果发现名为 **LilyGo-BLE** 的设备，说明蓝牙功能正常
 
-## How to Flash Firmware?
+## 如何烧录固件？
 
-### Preparation - Enter Download Mode
+### 烧录前准备 - 进入下载模式
 
-1. Connect the board via USB cable
-2. Press and hold the **BOOT** button (If there is no BOOT button, connect **GND** and **IO0** with wires)
-3. Press the **RST** button
-4. Release the **RST** button
-5. Release the **BOOT** button (If there is no BOOT button, disconnect IO0 from GND)
-6. Upload firmware
-7. Press the **RST** button to exit download mode
+1. 使用USB线连接开发板
+2. 按住 **BOOT** 按钮（如果没有BOOT按钮，需要使用导线连接 **GND** 和 **IO0**）
+3. 按下 **RST** 按钮
+4. 松开 **RST** 按钮
+5. 松开 **BOOT** 按钮（如果没有BOOT按钮，断开IO0与GND的连接）
+6. 上传固件
+7. 按下 **RST** 按钮退出下载模式
 
+### 方法 1: LILYGO Spark
 
-### Method 1: LILYGO Spark
-
-1. Download [LILYGO Spark](https://lilygo.cc/pages/lilygo-spark)
+1. 下载 [LILYGO Spark](https://lilygo.cc/pages/lilygo-spark)
 
 ![](./images/LILYGO-Spark.png)
 
-### Method 2: Using ESP Download Tool
+### 方法二：使用ESP Download Tool
 
-1. Download [Flash_download_tool](https://docs.espressif.com/projects/esp-test-tools/en/latest/esp32/production_stage/tools/flash_download_tool.html)
+1. 下载 [Flash_download_tool](https://www.espressif.com.cn/sites/default/files/tools/flash_download_tool_3.9.6_0.zip)
 
-> **Note**: The following GIF demonstrates the flashing process for ESP32-S3. If you are using ESP32, select ESP32 instead of ESP32-S3.
+> **注意**: 以下GIF演示的是ESP32S3的烧录过程。如果您使用的是ESP32，请选择ESP32而不是ESP32S3。
 
-![esp download Tool](./images/esp_downloader.gif)
+![ESP Download Tool](./images/esp_downloader.gif)
 
-**After flashing is complete, press the RST button to reset**
+**烧录完成后需要按RST按钮进行复位**
 
-### Method 3: Using Web Flasher
+### 方法三：使用Web Flasher
 
-- [ESP Web Flasher Online Tool](https://espressif.github.io/esptool-js/)
+- [ESP Web Flasher在线工具](https://espressif.github.io/esptool-js/)
 
 ![Web Flasher](./images/web_flasher.gif)
 
-**After flashing is complete, press the RST button to reset**
+**烧录完成后需要按RST按钮进行复位**
 
-### Method 4: Using Command Line
+### 方法四：使用命令行
 
-If the system prompts to install development tools, please install them first:
+如果系统提示安装开发工具，请先完成安装：
 
 ```bash
 python3 -m pip install --upgrade pip
 python3 -m pip install esptool
 ```
 
-Start esptool.py:
+启动esptool.py：
 
 ```bash
 python3 -m esptool
 ```
 
-#### ESP32 Flashing Command
+#### ESP32 烧录命令
 
 ```bash
 esptool --chip esp32 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m 0x0 firmware.bin
 ```
 
-#### ESP32-S3 Flashing Command
+#### ESP32-S3 烧录命令
 
 ```bash
 esptool --chip esp32s3 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m 0x0 firmware.bin
 ```
 
-## Related Resources
+## 相关资源
 
-- [Espressif Official Documentation](https://docs.espressif.com/projects/esptool/)
+- [乐鑫官方文档](https://docs.espressif.com/projects/esptool/)
