@@ -263,6 +263,8 @@
 * [BME280 datasheet](https://www.bosch-sensortec.com/products/environmental-sensors/humidity-sensors-bme280/)
 * [Quectel_L76K_GNSS_Protocol_Specification_V1.2](../../../docs/datasheet/Quectel_L76KL26K_GNSS_协议规范_V1.2.pdf)
 * [CASIC_ProtocolSpecification](../../../docs/datasheet/CASIC_ProtocolSpecification.pdf)
+* [M.2-B Key Model:APCI0161-P001A](https://www.lcsc.com/product-detail/C841663.html)
+* [T-Beam-S3-Supreme M2 footprint](../../../dimensions/T-Beam-S3-Supreme-M2-footprint.zip)
 
 ### Application
 
