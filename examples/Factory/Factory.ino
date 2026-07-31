@@ -365,7 +365,7 @@ void sleepDevice()
 #endif
 
     /*
-     * |     GPIO WAKE UP EXT 1      |
+     * |     GPIO WAKE UP EXT 1       |
      * | Board             | Current  |
      * | ----------------  | -------- |
      * | T-BeamV 1.2 OLED  | ~ 450 uA |
@@ -375,7 +375,7 @@ void sleepDevice()
      * | T-Beam  1W LR1121 | ~ 450 uA |
      * | T-Beam  1W LR2021 | ~ 450 uA |
      * | T-BeamS3 Supreme  | ~ 1.45mA |
-     *
+     * | T-BeamS3 V1.3 USBC| ~ 320uA  |
      */
     // GPIO WAKE UP EXT 1 NO  OLED  Display ~ 440 uA ,
     // GPIO WAKE UP EXT 1 +  OLED  Display  ~ 450 uA ,

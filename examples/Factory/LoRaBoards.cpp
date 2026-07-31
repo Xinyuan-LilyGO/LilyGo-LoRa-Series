@@ -474,10 +474,8 @@ void setLed(bool on)
         return;
     }
     if (on) {
-        Serial.println("LED ON");
         PMU->setChargingLedMode(XPOWERS_CHG_LED_ON);
     } else {
-        Serial.println("LED OFF");
         PMU->setChargingLedMode(XPOWERS_CHG_LED_OFF);
     }
 #endif
@@ -866,10 +864,10 @@ void setupBoards(bool disable_u8g2 )
 
 #ifndef EXCLUDE_GPS
 #ifdef HAS_GPS
-#if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_1W_SX1262) || defined(T_BEAM_1W_LR1121) || defined(T_BEAM_1W_LR2021) || defined(T_BEAM_S3_BPF)
-    // T-Beam v1.2 skips L76K
+// #if defined(T_BEAM_S3_SUPREME) || defined(T_BEAM_1W_SX1262) || defined(T_BEAM_1W_LR1121) || defined(T_BEAM_1W_LR2021) || defined(T_BEAM_S3_BPF)
+    // T-Beam v1.2 only Ublox , T-Beam-C only l76k
     find_gps = beginGPS();
-#endif
+// #endif
     uint32_t baudrate[] = {9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 4800};
     if (!find_gps) {
         // Restore factory settings
@@ -1111,8 +1109,9 @@ bool l76kProbe()
     SerialGPS.write("$PCAS04,5*1C\r\n");
     delay(250);
     // only ask for RMC and GGA
-    SerialGPS.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n");
-    // SerialGPS.write("$PCAS03,1,1,1,1,1,1,1,1,0,0,,,0,0*02\r\n");
+    // SerialGPS.write("$PCAS03,1,0,0,0,1,0,0,0,0,0,,,0,0*02\r\n");
+    // All nmea message
+    SerialGPS.write("$PCAS03,1,1,1,1,1,1,1,1,0,0,,,0,0*02\r\n");
     delay(250);
     // Switch to Vehicle Mode, since SoftRF enables Aviation < 2g
     SerialGPS.write("$PCAS11,3*1E\r\n");
