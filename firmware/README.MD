@@ -9,7 +9,7 @@
 
 ## Directory Structure
 
-```
+```bash
 firmware/
 ├── BLE Server
 │   ├── esp32-ble-server-20241209_0x0.bin
@@ -58,8 +58,8 @@ firmware/
 │   └── tbeam-v1.x-all-band-sx1278-factory-20260715_0x0.bin
 │
 ├── T-Beam-1W (ESP32-S3)
-│   ├── tbeam1w-v1.x-all-band-lr1121-factory-20260715_0x0.bin
-│   ├── tbeam1w-v1.x-all-band-lr2021-factory-20260715_0x0.bin
+│   ├── tbeam1w-v1.x-all-band-lr1121-factory-20260806_0x0.bin
+│   ├── tbeam1w-v1.x-all-band-lr2021-factory-20260806_0x0.bin
 │   └── tbeam1w-v1.x-all-band-sx1262-factory-20260715_0x0.bin
 │
 ├── T-Beam-BPF (ESP32-S3)
@@ -120,6 +120,28 @@ Firmware filenames follow this naming convention:
 2. Use nRF Connect to scan for Bluetooth devices
 3. If you find a device named **LilyGo-BLE**, the Bluetooth function is working properly
 
+## T-Beam Series Firmware function
+
+- Perform functional tests by switching pages using buttons.
+  * T-Beam ESP32 Version IO38 switching test function
+  * T-Beam 1W ESP32S3 IO17(Previous page) BOOT Button(Next page)
+  * T-Beam-Supreme BOOT switching test function
+
+## T-Beam GNSS Diagnostics
+
+1. Flash the T-Beam factory firmware.
+2. Download and install [u-blox u-center 2](https://u-center2-updates.u-blox.com/u-center2-installer.exe).
+3. Use the onboard button to switch the T-Beam board to the GNSS display mode.
+4. Open u-center 2 and connect the device as shown in the demonstration image below:
+![u-center](./images/u-center2.gif)
+5. The RX counter on the T-Beam screen should continuously increment (if it does not, there is a hardware issue).
+6. Place the GPS antenna outdoors to monitor the number of satellites acquired and other detailed information.
+7. Switch to the "Consoles" view to observe continuous NMEA message output; continuous output indicates that the GNSS chip is operational.
+8. If a position fix cannot be obtained after a prolonged period, try replacing the GNSS antenna; the T-Beam requires an active GNSS antenna and cannot use a passive one.
+9. If it still fails to work after replacing the antenna, measure the voltage between the GNSS antenna's center pin and GND; an operating voltage of approximately 3.0V indicates normal operation.
+10. If all the above tests pass but a position fix still cannot be obtained, it can be concluded that the GNSS module has a fault.
+
+
 ## How to Flash Firmware?
 
 ### Preparation - Enter Download Mode
@@ -131,7 +153,6 @@ Firmware filenames follow this naming convention:
 5. Release the **BOOT** button (If there is no BOOT button, disconnect IO0 from GND)
 6. Upload firmware
 7. Press the **RST** button to exit download mode
-
 
 ### Method 1: LILYGO Spark
 

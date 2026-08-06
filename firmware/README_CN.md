@@ -114,6 +114,27 @@ firmware/
 - **esp32-ble-server-20241209_0x0.bin**: 适用于ESP32，烧录地址0x0
 - **esp32s3-ble-server-20241209_0x0.bin**: 适用于ESP32-S3，烧录地址0x0
 
+## T-Beam Series 固件功能
+
+- 出厂固件通过按键来切换不同的页面和功能.
+  * T-Beam ESP32 版本通过 IO38 选择测试功能和页面
+  * T-Beam 1W ESP32S3 IO17(上一页) BOOT (下一页)
+  * T-Beam-Supreme BOOT 选择测试功能和页面
+
+## T-Beam GNSS 诊断
+
+1. 写入T-Beam Factory固件
+2. 下载并安装[Ublox U-Center 2](https://u-center2-updates.u-blox.com/u-center2-installer.exe)
+3. 通过按键切换T-Beam系列板子到GNSS界面
+4. 打开U-Center2按照下方演示图连接设备
+   ![u-center](./images/u-center2.gif)
+5. T-Beam 屏幕RX计数器应该一直叠加，(如果不叠加则硬件存在问题)
+6. 将GPS天线放在户外,可以监控GPS搜星数量和其他详细信息
+7. 将页面切换到Consoles页面可以看到NMEA消息持续输出,如果NMEA消息持续输出,则表明GNSS芯片处于工作状态
+8. 如果长时间无法定位,尝试更换GNSS天线,T-Beam使用有源GNSS天线,不可以使用无源GNSS替代
+9. 如果更换天线之后仍然无法工作,请测量GNSS天线中心点与GND之间是否存在3.0V左右的工作电压,如果电压存在也表示工作正常
+10. 如果以上步骤测试都正常,仍然无法锁定位置,那么可以判断GNSS模组存在某种故障
+
 ### 测试方法
 
 1. 下载并安装 [nRF Connect](https://www.nordicsemi.com/Products/Development-tools/nrf-connect-for-mobile) (Google Play)

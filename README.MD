@@ -135,3 +135,7 @@
 ## `4` TTN
 
 To access TTN (The Things Network), please refer to [LilyGo_LoRa_Series_Quick_Start](./docs/zh/LilyGo_LoRa_Series_Quick_Start_On_TTN_zh.md)
+
+## `5` Factory Firmware
+
+See [firmware directory](./firmware/)
