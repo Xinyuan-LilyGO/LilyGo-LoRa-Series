@@ -499,8 +499,9 @@ void prevButtonHandleEvent(AceButton   *button, uint8_t eventType, uint8_t butto
         }
         Serial.printf("Frequency toggle to %.2f\n", tmp);
         radio.standby();
-        applyFreq(String(tmp));
-        reloadLoRa();
+        if (applyFreq(String(tmp))) {
+            reloadLoRa();
+        }
 #else
         sleepDevice();
 #endif
@@ -1827,11 +1828,17 @@ static bool applyFreq(const String &v)
     }
 
     // After changing the frequency, set it to the maximum power supported by that frequency.
+    lora_settings.lora_freq = freq;
     confirmTxPower(lora_settings.lora_tx_power, true);
 
+    if (radio.setOutputPower(lora_settings.lora_tx_power) == RADIOLIB_ERR_INVALID_OUTPUT_POWER) {
+        Serial.printf("Invalid TX power: %d dBm is not supported for this module.\n", lora_settings.lora_tx_power);
+        Serial.printf("  %s\n", TP_HELP);
+        return false;
+    }
 
-    lora_settings.lora_freq = freq;
     Serial.printf("Frequency set to %.2f MHz\n", freq);
+    Serial.printf("Tx Power set to %d dBm\n", lora_settings.lora_tx_power);
     return true;
 }
 
