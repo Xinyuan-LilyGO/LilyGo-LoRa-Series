@@ -167,6 +167,19 @@
 [1]: ../../datasheet/HM06S006P_V2.0.pdf
 [2]: ../../datasheet/HE0008_V02.pdf
 
+### RF output power reference
+
+| Software RF setting | Output Power |
+| ------------------- | ------------ |
+| 5dBm                | 18dBm        |
+| 0dBm                | 14dBm        |
+| -5dBm               | 10dBm        |
+| -6dBm               | 8.6dBm       |
+| -9dBm               | 3dBm         |
+
+* All of the above are actual measurements. 
+* The above are all actual measurements; different instruments may have slight deviations, and this information is for reference only.
+
 ### Frequently asked questions
 
 1. When testing or using, connect the antenna first, then power on to transmit the signal.
