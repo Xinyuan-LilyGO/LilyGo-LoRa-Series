@@ -216,8 +216,8 @@
 | ------------------- | ------------------------------ |
 | RF  Module          | SX1262                         |
 | Frequency range     | 868/915MHz                     |
-| Transfer rate(LoRa) | 0.018 K ～ 62.5 Kbps           |
-| Transfer rate(FSK)  | 0.6 K ～ 300 Kbps              |
+| Transfer rate(LoRa) | 0.018 K - 62.5 Kbps           |
+| Transfer rate(FSK)  | 0.6 K - 300 Kbps              |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK |
 
 ### SX1262 RF Block Diagram

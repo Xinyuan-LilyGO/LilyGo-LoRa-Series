@@ -143,9 +143,9 @@
 | Features            | Details                         |
 | ------------------- | ------------------------------- |
 | RF  Module          | SX1276                          |
-| Frequency range     | 830~945MHz                      |
-| Transfer rate(LoRa) | 0.018K～37.5Kbps                |
-| Transfer rate(FSK)  | 1.2K～300Kbps                   |
+| Frequency range     | 830-945MHz                      |
+| Transfer rate(LoRa) | 0.018K-37.5Kbps                |
+| Transfer rate(FSK)  | 1.2K-300Kbps                   |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa，OOK |
 
 > [!IMPORTANT]
