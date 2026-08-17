@@ -161,13 +161,13 @@
 
 ### RF parameters
 
-| Features            | Details                        |
-| ------------------- | ------------------------------ |
-| RF  Module          | SX1278/SX1276                  |
-| Frequency range     | 868/915MHz                     |
-| Transfer rate(LoRa) | 0.018 K ～ 62.5 Kbps           |
-| Transfer rate(FSK)  | 0.6 K ～ 300 Kbps              |
-| Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK |
+| Features            | Details                        |                                 |                                |
+| ------------------- | ------------------------------ | ------------------------------- | ------------------------------ |
+| RF  Module          | SX1278                         | SX1276                          | SX1262                         |
+| Frequency range     | 400～510MHz                    | 868~915MHz                      | 400~520MHz /830~945MHz         |
+| Transfer rate(LoRa) | 0.018 K ～ 62.5 Kbps           | 0.018K～37.5Kbps                | 0.018 K ～ 62.5 Kbps           |
+| Transfer rate(FSK)  | 0.6 K ～ 300 Kbps              | 1.2K～300Kbps                   | 0.6 K ～ 300 Kbps              |
+| Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK | FSK, GFSK, MSK, GMSK, LoRa，OOK | FSK, GFSK, MSK, GMSK, LoRa,OOK |
 
 ## WiFi-IPEX
 
