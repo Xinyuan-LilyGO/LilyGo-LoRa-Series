@@ -50,12 +50,9 @@ firmware/
 │   └── t3txco-v3.0-868mhz-sender-20260715_0x0.bin
 │
 ├── T-Beam (ESP32)
-│   ├── tbeam-v1.x-all-band-sx1262-factory-20260105_0x0.bin
-│   ├── tbeam-v1.x-all-band-sx1262-factory-20260715_0x0.bin
-│   ├── tbeam-v1.x-all-band-sx1276-factory-20260105_0x0.bin
-│   ├── tbeam-v1.x-all-band-sx1276-factory-20260715_0x0.bin
-│   ├── tbeam-v1.x-all-band-sx1278-factory-20260105_0x0.bin
-│   └── tbeam-v1.x-all-band-sx1278-factory-20260715_0x0.bin
+│   ├── tbeam-v1.x-all-band-sx1262-factory-20260817_0x0.bin
+│   ├── tbeam-v1.x-all-band-sx1276-factory-20260817_0x0.bin
+│   ├── tbeam-v1.x-all-band-sx1278-factory-20260817_0x0.bin
 │
 ├── T-Beam-1W (ESP32-S3)
 │   ├── tbeam1w-v1.x-all-band-lr1121-factory-20260806_0x0.bin
@@ -75,7 +72,7 @@ firmware/
 
 Firmware filenames follow this naming convention:
 
-```
+```sh
 [Product Model]-[Version]-[Frequency/Band]-[Chip Model]-[Function Type]-[Date]_[Flash Address].bin
 ```
 
