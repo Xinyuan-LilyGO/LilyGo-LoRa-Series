@@ -118,7 +118,7 @@
 | Features                           | Details  |
 | ---------------------------------- | -------- |
 | 🔗USB-C Input Voltage               | 5V       |
-| 🔗Solar Input Voltage(T3 V1.3 Only) | 4.5~5.6V |
+| 🔗Solar Input Voltage(T3 V1.3 Only) | 4.5-5.6V |
 | ⚡Charge Current                    | 500mA    |
 | 🔋Battery Voltage                   | 3.7V     |
 | 🔋Battery Socket Cables             | PH2.0mm  |
@@ -166,7 +166,7 @@
 | Frequency range           | 400-520MHz/830-945MHz/2400-2500MHz |
 | Transfer rate(LoRa Sub1G) | 0.018 K - 62.5 Kbps               |
 | Transfer rate(FSK Sub1G)  | 0.6 K - 300 Kbps                  |
-| Transfer rate(LoRa 2.4G)  | 0.476 K~101.5 Kbps                 |
+| Transfer rate(LoRa 2.4G)  | 0.476 K-101.5 Kbps                 |
 | Modulation                | LoRa,FSK,LR-HFSS                   |
 
 > \[!IMPORTANT]

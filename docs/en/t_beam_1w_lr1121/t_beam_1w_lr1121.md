@@ -152,15 +152,15 @@
 | Features                            | 868MHz                  |
 | ----------------------------------- | ----------------------- |
 | RF  Module                          | LR1121 TCXO (XY16E8P33) |
-| Frequency range                     | 840~930MHz              |
-| Transfer rate(FSK)                  | 0.6 ~ 300 kbps          |
-| Transfer rate(LoRa) Sub1G           | 0.091 ~ 62.5 kbps       |
-| Transfer rate(LoRa) 2.4G            | 0.476 ~ 101.5 kbps      |
+| Frequency range                     | 840-930MHz              |
+| Transfer rate(FSK)                  | 0.6 - 300 kbps          |
+| Transfer rate(LoRa) Sub1G           | 0.091 - 62.5 kbps       |
+| Transfer rate(LoRa) 2.4G            | 0.476 - 101.5 kbps      |
 | Modulation                          | FSK, MSK, GMSK, LoRa    |
-| Sub1G PA Gain [HM06S006P][1]        | ~ +12dBm                |
+| Sub1G PA Gain [HM06S006P][1]        | - +12dBm                |
 | Sub1G LNA Gain                      | N.A                     |
-| 2.4G PA Gain   [CB5337CX][2]        | ~ +34dBm                |
-| 2.4G LNA Gain  [CB5337CX][2]        | ~ +15dBm                |
+| 2.4G PA Gain   [CB5337CX][2]        | - +34dBm                |
+| 2.4G LNA Gain  [CB5337CX][2]        | - +15dBm                |
 | 2.4G LNA allows maximum input power | +5dBm                   |
 
 [1]: ../../datasheet/HM06S006P_V2.0.pdf
@@ -213,11 +213,11 @@ static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
 
 ![RF Block Diagram](./images/XY16EXP33.png)
 
-### VCC=+5V, 840MHz~930MHz module output power dBm and current
+### VCC=+5V, 840MHz-930MHz module output power dBm and current
 
 ![currnetA](./images/currnetA.png)
 
-### VCC=+5V, 2400MHz~2500MHz module output power dBm and current
+### VCC=+5V, 2400MHz-2500MHz module output power dBm and current
 
 ![currnetB](./images/currnetB.png)
 

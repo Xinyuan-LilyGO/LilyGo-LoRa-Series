@@ -179,7 +179,7 @@
 | Features            | Details                        |
 | ------------------- | ------------------------------ |
 | RF  Module          | SX1278 TCXO (XP02P181T)        |
-| Frequency range     | 144~148MHZ                     |
+| Frequency range     | 144-148MHZ                     |
 | Transfer rate(LoRa) | 0.018K-37.5Kbps               |
 | Transfer rate(FSK)  | 1.2K-300Kbps                  |
 | Modulation          | FSK, GFSK, MSK, GMSK, LoRa,OOK |

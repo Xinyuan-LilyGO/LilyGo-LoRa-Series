@@ -231,9 +231,9 @@
 | ------------------- | ----------------------------- |
 | RF  Module          | LR1121                        |
 | Frequency range     | 830-945MHz，2.4-2.5GHz        |
-| Transfer rate(LoRa) | 0.6 K~300 Kbps@FSK@ Sub1G     |
-| Transfer rate(FSK)  | 0.018 K~62.5 Kbps@LoRa@ Sub1G |
-| Transfer rate(FSK)  | 0.476 K~101.5 Kbps@LoRa@ 2.4G |
+| Transfer rate(LoRa) | 0.6 K-300 Kbps@FSK@ Sub1G     |
+| Transfer rate(FSK)  | 0.018 K-62.5 Kbps@LoRa@ Sub1G |
+| Transfer rate(FSK)  | 0.476 K-101.5 Kbps@LoRa@ 2.4G |
 | Modulation          | LoRa,(G)FSK ，LR-FHSS         |
 
 * LR1121 Sub-1G When the power setting is lower than 14, the power is abnormal. Please [see here](https://github.com/Xinyuan-LilyGO/LilyGo-LoRa-Series/issues/254#issuecomment-3219719499)

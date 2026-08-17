@@ -2,7 +2,7 @@
   <img src="../../../.github/LilyGo_logo.png" alt="LilyGo logo" width="100"/>
 </div>
 
-<h1 align = "center">🌟LilyGo T-Beam-Supreme 144~148MHz🌟</h1>
+<h1 align = "center">🌟LilyGo T-Beam-Supreme 144-148MHz🌟</h1>
 
 ## Overview
 
