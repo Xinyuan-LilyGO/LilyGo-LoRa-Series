@@ -34,8 +34,10 @@ SX1276 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO
 SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #elif defined(USING_SX1278)
 SX1278 radio = new Module(RADIO_CS_PIN, RADIO_DIO0_PIN, RADIO_RST_PIN, RADIO_DIO1_PIN);
-#elif   defined(USING_LR1121)
+#elif defined(USING_LR1121)
 LR1121 radio = new Module(RADIO_CS_PIN, RADIO_DIO9_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+#elif defined(USING_LR2021)
+LR2021 radio = new Module(RADIO_CS_PIN, RADIO_IRQ_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
 #endif
 
 // joinEUI - previous versions of LoRaWAN called this AppEUI
@@ -78,7 +80,7 @@ uint8_t nwkKey[] = { RADIOLIB_LORAWAN_NWK_KEY };
 LoRaWANNode node(&radio, &Region, subBand);
 
 RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
-
+static void setupRfSwitch();
 
 
 // result code to text - these are error codes that can be raised when using LoRaWAN
@@ -94,8 +96,8 @@ String stateDecode(const int16_t result)
         return "ERR_PACKET_TOO_LONG";
     case RADIOLIB_ERR_RX_TIMEOUT:
         return "ERR_RX_TIMEOUT";
-    case RADIOLIB_ERR_CRC_MISMATCH:
-        return "ERR_CRC_MISMATCH";
+    case RADIOLIB_ERR_MIC_MISMATCH:
+        return "ERR_MIC_MISMATCH";
     case RADIOLIB_ERR_INVALID_BANDWIDTH:
         return "ERR_INVALID_BANDWIDTH";
     case RADIOLIB_ERR_INVALID_SPREADING_FACTOR:
@@ -126,10 +128,6 @@ String stateDecode(const int16_t result)
         return "RADIOLIB_ERR_COMMAND_QUEUE_ITEM_NOT_FOUND";
     case RADIOLIB_ERR_JOIN_NONCE_INVALID:
         return "RADIOLIB_ERR_JOIN_NONCE_INVALID";
-    case RADIOLIB_ERR_N_FCNT_DOWN_INVALID:
-        return "RADIOLIB_ERR_N_FCNT_DOWN_INVALID";
-    case RADIOLIB_ERR_A_FCNT_DOWN_INVALID:
-        return "RADIOLIB_ERR_A_FCNT_DOWN_INVALID";
     case RADIOLIB_ERR_DWELL_TIME_EXCEEDED:
         return "RADIOLIB_ERR_DWELL_TIME_EXCEEDED";
     case RADIOLIB_ERR_CHECKSUM_MISMATCH:
@@ -199,61 +197,16 @@ void setup()
 
     int16_t state = 0;  // return value for calls to RadioLib
     Serial.println(F("Initialise the radio"));
+
+#if defined(USING_LR2021)
+    radio.irqDioNum = RADIO_DIO_NUM;
+#endif
+
     state = radio.begin();
     debug(state != RADIOLIB_ERR_NONE, F("Initialise radio failed"), state, true);
 
-#ifdef USING_DIO2_AS_RF_SWITCH
-#ifdef USING_SX1262
-    // Some SX126x modules use DIO2 as RF switch. To enable
-    // this feature, the following method can be used.
-    // NOTE: As long as DIO2 is configured to control RF switch,
-    //       it can't be used as interrupt pin!
-    if (radio.setDio2AsRfSwitch() != RADIOLIB_ERR_NONE) {
-        Serial.println(F("Failed to set DIO2 as RF switch!"));
-        while (true);
-    }
-#endif //USING_SX1262
-#endif //USING_DIO2_AS_RF_SWITCH
 
-#ifdef RADIO_SWITCH_PIN
-    // T-MOTION
-    const uint32_t pins[] = {
-        RADIO_SWITCH_PIN, RADIO_SWITCH_PIN, RADIOLIB_NC,
-    };
-    static const Module::RfSwitchMode_t table[] = {
-        {Module::MODE_IDLE,  {0,  0} },
-        {Module::MODE_RX,    {1, 0} },
-        {Module::MODE_TX,    {0, 1} },
-        END_OF_MODE_TABLE,
-    };
-    radio.setRfSwitchTable(pins, table);
-#endif
-
-#if  defined(USING_LR1121)
-    // LR1121
-    // set RF switch configuration for Wio WM1110
-    // Wio WM1110 uses DIO5 and DIO6 for RF switching
-    static const uint32_t rfswitch_dio_pins[] = {
-        RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
-        RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
-    };
-
-    static const Module::RfSwitchMode_t rfswitch_table[] = {
-        // mode                  DIO5  DIO6
-        { LR11x0::MODE_STBY,   { LOW,  LOW  } },
-        { LR11x0::MODE_RX,     { HIGH, LOW  } },
-        { LR11x0::MODE_TX,     { LOW,  HIGH } },
-        { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
-        { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
-        { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
-        { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
-        END_OF_MODE_TABLE,
-    };
-    radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
-
-    // LR1121 TCXO Voltage 2.85~3.15V
-    radio.setTCXO(3.0);
-#endif
+    setupRfSwitch();
 
     // Override the default join rate
     uint8_t joinDR = 4;
@@ -293,7 +246,7 @@ void setup()
 
 
     // if we got here, there was no session to restore, so start trying to join
-    uint32_t sleepForSeconds = 60*1000;
+    uint32_t sleepForSeconds = 60 * 1000;
     state = RADIOLIB_ERR_NETWORK_NOT_JOINED;
 
     while (state != RADIOLIB_LORAWAN_NEW_SESSION) {
@@ -466,13 +419,14 @@ void loop()
             Serial.println(gwCnt);
         }
 
-        uint32_t networkTime = 0;
-        uint8_t fracSecond = 0;
-        if (node.getMacDeviceTimeAns(&networkTime, &fracSecond, true) == RADIOLIB_ERR_NONE) {
+        uint32_t timestamp = 0;
+        uint16_t milliseconds = 0;
+        if (node.getMacDeviceTimeAns(&timestamp, &milliseconds, true) == RADIOLIB_ERR_NONE) {
             Serial.print(F("[LoRaWAN] DeviceTime Unix:\t"));
-            Serial.println(networkTime);
-            Serial.print(F("[LoRaWAN] DeviceTime second:\t1/"));
-            Serial.println(fracSecond);
+            Serial.println(timestamp);
+            Serial.print(F("[LoRaWAN] DeviceTime frac:\t"));
+            Serial.print(milliseconds);
+            Serial.println(F(" ms"));
         }
 
     } else {
@@ -489,4 +443,117 @@ void loop()
     Serial.println(F(" seconds\n"));
 
     delay(delayMs);
+}
+
+#if defined(T_BEAM_1W_LR1121)
+// LR1121 Version PA RF switch table
+static const uint32_t pa_version_rf_switch_dio_pins[] = {
+    RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6, RADIOLIB_LR11X0_DIO7, RADIOLIB_LR11X0_DIO8, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t low_sub1g_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX,     { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_RX,     { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX_HP,  { LOW,  LOW, LOW, HIGH} }, //Sub1G DIO8 SET HIGH
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_GNSS,   { LOW,  LOW, LOW, HIGH} },
+    { LR11x0::MODE_WIFI,   { LOW,  LOW, LOW, HIGH} },
+    END_OF_MODE_TABLE,
+};
+
+static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR11x0::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX,     { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_RX,     { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX_HP,  { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, //2.4G TX DIO7 SET HIGH
+    { LR11x0::MODE_GNSS,   { LOW,  LOW, LOW, LOW} },
+    { LR11x0::MODE_WIFI,   { LOW,  HIGH, LOW, LOW} }, //2.4G RX DIO6 SET HIGH
+    END_OF_MODE_TABLE,
+};
+#elif defined(T_BEAM_1W_LR2021)
+
+// LR2021 Version PA RF switch table
+static const uint32_t pa_version_rf_switch_dio_pins[] = {
+    RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7, RADIOLIB_LR2021_DIO8, RADIOLIB_NC
+};
+
+static const Module::RfSwitchMode_t low_sub1g_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR2021::MODE_TX,     { LOW,  LOW, LOW, HIGH} }, // Sub1G DIO8 SET HIGH
+    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },  // Sub1G ALL DIO SET LOW
+    { LR2021::MODE_RX_HF,  { LOW,  LOW, LOW, LOW} },
+    { LR2021::MODE_TX_HF,  { LOW,  LOW, LOW, LOW} },
+    END_OF_MODE_TABLE,
+};
+
+static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
+    // mode                  DIO5  DIO6 DIO7 DIO8
+    { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
+    { LR2021::MODE_TX,     { LOW,  LOW, LOW, LOW} },
+    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },
+    { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW, LOW} }, // 2.4G RX DIO6 SET HIGH
+    { LR2021::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, // 2.4G TX DIO7 SET HIGH
+    END_OF_MODE_TABLE,
+};
+#endif /*T_BEAM_1W_LR1121 | T_BEAM_1W_LR2021*/
+
+static void setupRfSwitch()
+{
+
+#ifdef RADIO_SWITCH_PIN
+    // T-MOTION
+    const uint32_t pins[] = {
+        RADIO_SWITCH_PIN, RADIO_SWITCH_PIN, RADIOLIB_NC,
+    };
+    static const Module::RfSwitchMode_t table[] = {
+        {Module::MODE_IDLE,  {0,  0} },
+        {Module::MODE_RX,    {1, 0} },
+        {Module::MODE_TX,    {0, 1} },
+        END_OF_MODE_TABLE,
+    };
+    radio.setRfSwitchTable(pins, table);
+    return;
+#endif
+
+#if defined(USING_SX1262)
+    radio.setDio2AsRfSwitch(true);
+#elif defined(USING_LR1121) && !defined(T_BEAM_1W_LR1121)
+    // LR1121
+    static const uint32_t rfswitch_dio_pins[] = {
+        RADIOLIB_LR11X0_DIO5, RADIOLIB_LR11X0_DIO6,
+        RADIOLIB_NC, RADIOLIB_NC, RADIOLIB_NC
+    };
+
+    static const Module::RfSwitchMode_t rfswitch_table[] = {
+        // mode                  DIO5  DIO6
+        { LR11x0::MODE_STBY,   { LOW,  LOW  } },
+        { LR11x0::MODE_RX,     { HIGH, LOW  } },
+        { LR11x0::MODE_TX,     { LOW,  HIGH } },
+        { LR11x0::MODE_TX_HP,  { LOW,  HIGH } },
+        { LR11x0::MODE_TX_HF,  { LOW,  LOW  } },
+        { LR11x0::MODE_GNSS,   { LOW,  LOW  } },
+        { LR11x0::MODE_WIFI,   { LOW,  LOW  } },
+        END_OF_MODE_TABLE,
+    };
+    radio.setRfSwitchTable(rfswitch_dio_pins, rfswitch_table);
+
+    //  TCXO Voltage 2.85~3.15V
+    radio.setTCXO(3.0);
+
+#elif defined(USING_LR1121) || defined(USING_LR2021)
+    // radio.setDioIrqParams(RADIOLIB_LR11X0_DIO10);
+    Serial.printf("[%s] Using high frequency switch table for PA version\n", RADIO_TYPE_STR);
+    radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, low_sub1g_switch_table);
+    // TCXO Voltage 2.85~3.15V
+    radio.setTCXO(3.0);
+#endif
+#if defined(RADIO_RX_PIN) && defined(RADIO_TX_PIN)
+    //The SX1280 version needs to set RX, TX antenna switching pins
+    radio.setRfSwitchPins(RADIO_RX_PIN, RADIO_TX_PIN);
+#endif
 }
