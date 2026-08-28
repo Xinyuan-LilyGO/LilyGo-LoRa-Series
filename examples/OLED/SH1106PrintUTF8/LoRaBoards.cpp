@@ -463,6 +463,7 @@ bool beginDisplay()
     if (Wire.endTransmission() == 0) {
         disp = new DISPLAY_MODEL(U8G2_R0, U8X8_PIN_NONE);
         Serial.printf("Find Display model at 0x%X address\n", display_address);
+        disp->setI2CAddress(display_address << 1);
         disp->begin();
         disp->clearBuffer();
         disp->setFont(u8g2_font_inb19_mr);
