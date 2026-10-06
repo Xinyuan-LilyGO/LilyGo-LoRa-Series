@@ -212,9 +212,9 @@
 ### Resource
 
 * [Schematic](../../../schematic/T-Beam_1W_V1.0.pdf)
+* [Antenna Specification](../../datasheet/T-Beam-1W-Sub1G.pdf)
 
-
- # Max Transmit power  
+### Max Transmit power  
 
 | Freq   | Max Transmit power                  |
 | ------ | ----------------------------------- |

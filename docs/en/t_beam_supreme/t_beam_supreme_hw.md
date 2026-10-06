@@ -242,7 +242,6 @@
 
 ![RF Block Diagram](./images/HPD16E.jpg)
 
-
 ### T-Beam-s3-supreme antenna signal quality
 
 ![t-beams3-supreme-ant-868M](../../../images/t-beams3-supreme-ant-868M.jpg)
@@ -265,6 +264,7 @@
 * [CASIC_ProtocolSpecification](../../../docs/datasheet/CASIC_ProtocolSpecification.pdf)
 * [M.2-B Key Model:APCI0161-P001A](https://www.lcsc.com/product-detail/C841663.html)
 * [T-Beam-S3-Supreme M2 footprint](../../../dimensions/T-Beam-S3-Supreme-M2-footprint.zip)
+* [T-Beam-S3-Supreme Antenna Specification](../../datasheet/T-BEAM-S3-LORA-2DB-ANT.pdf)
 
 ### Application
 

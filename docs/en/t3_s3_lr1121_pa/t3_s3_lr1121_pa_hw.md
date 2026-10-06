@@ -210,3 +210,4 @@
 * [T3_S3_V1.2 schematic](../../../schematic/T3_S3_V1.2.pdf)
 * [T3_S3_V1.3 schematic](../../../schematic/T3_S3_V1.3.pdf)
 * [LR1121 datasheet](https://www.semtech.com/products/wireless-rf/lora-connect/lr1121)
+* [T3 Sub1G Antenna Specification](../../datasheet/T3-ANT.pdf)
