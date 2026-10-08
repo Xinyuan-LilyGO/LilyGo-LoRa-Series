@@ -54,21 +54,11 @@ static const uint32_t pa_version_rf_switch_dio_pins[] = {
     RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7, RADIOLIB_LR2021_DIO8, RADIOLIB_NC
 };
 
-static const Module::RfSwitchMode_t low_sub1g_switch_table[] = {
+static const Module::RfSwitchMode_t rf_switch_table[] = {
     // mode                  DIO5  DIO6 DIO7 DIO8
     { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_TX,     { LOW,  LOW, LOW, HIGH} }, // Sub1G DIO8 SET HIGH
     { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },  // Sub1G ALL DIO SET LOW
-    { LR2021::MODE_RX_HF,  { LOW,  LOW, LOW, LOW} },
-    { LR2021::MODE_TX_HF,  { LOW,  LOW, LOW, LOW} },
-    END_OF_MODE_TABLE,
-};
-
-static const Module::RfSwitchMode_t high_2g4_switch_table[] = {
-    // mode                  DIO5  DIO6 DIO7 DIO8
-    { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
-    { LR2021::MODE_TX,     { LOW,  LOW, LOW, LOW} },
-    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },
     { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW, LOW} }, // 2.4G RX DIO6 SET HIGH
     { LR2021::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, // 2.4G TX DIO7 SET HIGH
     END_OF_MODE_TABLE,
@@ -123,21 +113,21 @@ void setup()
     // when new packet is received
     radio.setPacketReceivedAction(setFlag);
 
+    radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, rf_switch_table);
+
     // Set RF switch table
     if (CONFIG_RADIO_FREQ < 2400) {
 
         // Set output power
         radio.setOutputPower(CONFIG_RADIO_SUB1G_OUTPUT_POWER);
 
-        Serial.printf("[%s] Using low frequency switch table for PA version\n", RADIO_TYPE_STR);
-        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, low_sub1g_switch_table);
+        Serial.println("Set max output power to 22dBm");
     } else {
 
         // Set output power
         radio.setOutputPower(CONFIG_RADIO_2G4_OUTPUT_POWER);
 
-        Serial.printf("[%s] Using high frequency switch table for PA version\n", RADIO_TYPE_STR);
-        radio.setRfSwitchTable(pa_version_rf_switch_dio_pins, high_2g4_switch_table);
+        Serial.println("Set max output power to 8dBm");
     }
 
     // TCXO Voltage 2.85~3.15V
