@@ -1,4 +1,12 @@
 /*
+  RadioLib SX126x Ping-Pong Example
+
+  This example is intended to run on two SX126x radios,
+  and send packets between the two.
+
+  For default module settings, see the wiki page
+  https://github.com/jgromes/RadioLib/wiki/Default-configuration#sx126x---lora-modem
+
   For full API reference, see the GitHub Pages
   https://jgromes.github.io/RadioLib/
 */
@@ -49,9 +57,16 @@ void setFlag(void) {
 void setup() {
   Serial.begin(9600);
 
-  // initialize SX1262 with default settings
+  // before calling begin(), correct crystal has to be selected
+  // most SX126x have a TCXO which needs 1.6V reference
+  // set to 0 if your radio has an XTAL
+  radio.tcxoVoltage = 1.6;
+
+  // initialize SX1262 at 434 MHz
   Serial.print(F("[SX1262] Initializing ... "));
-  int state = radio.begin();
+  ConfigLoRa_t config;
+  config.frequency = 434;
+  int state = radio.begin(config);
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {

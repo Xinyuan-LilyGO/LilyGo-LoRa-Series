@@ -8,16 +8,38 @@ CC1101::CC1101(Module* module) : PhysicalLayer() {
   this->mod = module;
 }
 
-int16_t CC1101::begin(float freq, float br, float freqDev, float rxBw, int8_t pwr, uint8_t preambleLength) {
+int16_t CC1101::begin(const ConfigFSK_t& cfg) {
   // set the modulation and execute the common part
   this->modulation = RADIOLIB_CC1101_MOD_FORMAT_2_FSK;
-  return(this->beginCommon(freq, br, freqDev, rxBw, pwr, preambleLength));
+  return(this->beginCommon(cfg));
+}
+
+int16_t CC1101::begin(float freq, float br, float freqDev, float rxBw, int8_t pwr, uint8_t preambleLength) {
+  ConfigFSK_t cfg;
+  cfg.frequency = freq;
+  cfg.bitRate = br;
+  cfg.frequencyDeviation = freqDev;
+  cfg.receiverBandwidth = rxBw;
+  cfg.power = pwr;
+  cfg.preambleLength = preambleLength;
+  return(this->begin(cfg));
+}
+
+int16_t CC1101::beginFSK4(const ConfigFSK_t& cfg) {
+  // set the modulation and execute the common part
+  this->modulation = RADIOLIB_CC1101_MOD_FORMAT_4_FSK;
+  return(this->beginCommon(cfg));
 }
 
 int16_t CC1101::beginFSK4(float freq, float br, float freqDev, float rxBw, int8_t pwr, uint8_t preambleLength) {
-  // set the modulation and execute the common part
-  this->modulation = RADIOLIB_CC1101_MOD_FORMAT_4_FSK;
-  return(this->beginCommon(freq, br, freqDev, rxBw, pwr, preambleLength));
+  ConfigFSK_t cfg;
+  cfg.frequency = freq;
+  cfg.bitRate = br;
+  cfg.frequencyDeviation = freqDev;
+  cfg.receiverBandwidth = rxBw;
+  cfg.power = pwr;
+  cfg.preambleLength = preambleLength;
+  return(this->beginFSK4(cfg));
 }
 
 void CC1101::reset() {
@@ -332,18 +354,25 @@ int16_t CC1101::startTransmit(const uint8_t* data, size_t len, uint8_t addr) {
 int16_t CC1101::finishTransmit() {
   // set mode to standby to disable transmitter/RF switch
   
-  // Check MARCSTATE for Idle to let anything in the FIFO empty
+  // expected MARCSTATE should be 0x01 (IDLE) except if TXOFF_RX is enabled
+  uint8_t expectedState = (SPIgetRegValue(RADIOLIB_CC1101_REG_MCSM1, 1, 0) == RADIOLIB_CC1101_TXOFF_RX ? 0x0D : 0x01);
+
+  // Check MARCSTATE is in expected state to let anything in the FIFO empty
   // Timeout is 2x FIFO transmit time
   RadioLibTime_t timeout = (1.0f/(this->bitRate))*(RADIOLIB_CC1101_FIFO_SIZE*2.0f);
   RadioLibTime_t start = this->mod->hal->millis();
-  while(SPIgetRegValue(RADIOLIB_CC1101_REG_MARCSTATE, 4, 0) != 0x01) {
+  
+  while(SPIgetRegValue(RADIOLIB_CC1101_REG_MARCSTATE, 4, 0) != expectedState) {
     if(this->mod->hal->millis() - start > timeout) {
       return(RADIOLIB_ERR_TX_TIMEOUT);
     }
   }
   
-  int16_t state = standby();
-  RADIOLIB_ASSERT(state);
+  // set standby mode only if IDLE state is expected
+  if (expectedState == 0x01) {
+    int16_t state = standby();
+    RADIOLIB_ASSERT(state);
+  }
 
   // flush Tx FIFO
   SPIsendCommand(RADIOLIB_CC1101_CMD_FLUSH_TX);
@@ -513,7 +542,7 @@ int16_t CC1101::setRxBandwidth(float rxBw) {
   for(int8_t e = 3; e >= 0; e--) {
     for(int8_t m = 3; m >= 0; m --) {
       float point = (RADIOLIB_CC1101_CRYSTAL_FREQ * 1000000.0f)/(8 * (m + 4) * ((uint32_t)1 << e));
-      if(fabs((rxBw * 1000.0f - point) <= 1000.0f)) {
+      if(fabs(rxBw * 1000.0f - point) <= 1000.0f) {
         // set Rx channel filter bandwidth
         return(SPIsetRegValue(RADIOLIB_CC1101_REG_MDMCFG4, (e << 6) | (m << 4), 7, 4));
       }
@@ -688,10 +717,10 @@ int16_t CC1101::checkOutputPower(int8_t power, int8_t* clipped, uint8_t* raw) {
 }
 
 int16_t CC1101::setSyncWord(uint8_t* sync, size_t len) {
-  return this->setSyncWord(sync, len, 0, false);
+  return this->setSyncWord(sync, len, 0, false, false);
 }
 
-int16_t CC1101::setSyncWord(const uint8_t* syncWord, uint8_t len, uint8_t maxErrBits, bool requireCarrierSense) {
+int16_t CC1101::setSyncWord(const uint8_t* syncWord, uint8_t len, uint8_t maxErrBits, bool requireCarrierSense, bool repeatSync) {
   if((maxErrBits > 1) || (len != 2)) {
     return(RADIOLIB_ERR_INVALID_SYNC_WORD);
   }
@@ -704,7 +733,7 @@ int16_t CC1101::setSyncWord(const uint8_t* syncWord, uint8_t len, uint8_t maxErr
   }
 
   // enable sync word filtering
-  int16_t state = enableSyncWordFiltering(maxErrBits, requireCarrierSense);
+  int16_t state = enableSyncWordFiltering(maxErrBits, requireCarrierSense, repeatSync);
   RADIOLIB_ASSERT(state);
 
   // set sync word register
@@ -714,9 +743,9 @@ int16_t CC1101::setSyncWord(const uint8_t* syncWord, uint8_t len, uint8_t maxErr
   return(state);
 }
 
-int16_t CC1101::setSyncWord(uint8_t syncH, uint8_t syncL, uint8_t maxErrBits, bool requireCarrierSense) {
+int16_t CC1101::setSyncWord(uint8_t syncH, uint8_t syncL, uint8_t maxErrBits, bool requireCarrierSense, bool repeatSync) {
   uint8_t syncWord[] = { syncH, syncL };
-  return(setSyncWord(syncWord, sizeof(syncWord), maxErrBits, requireCarrierSense));
+  return(setSyncWord(syncWord, sizeof(syncWord), maxErrBits, requireCarrierSense, repeatSync));
 }
 
 int16_t CC1101::setPreambleLength(size_t len) {
@@ -762,6 +791,11 @@ int16_t CC1101::setPreambleLength(uint8_t preambleLength, uint8_t qualityThresho
   int16_t state = SPIsetRegValue(RADIOLIB_CC1101_REG_PKTCTRL1, pqt << 5, 7, 5);
   state |= SPIsetRegValue(RADIOLIB_CC1101_REG_MDMCFG1, value, 6, 4);
   return(state);
+}
+
+int16_t CC1101::enableRxAfterTx(bool enable) {
+  // change the MCSM1 TXOFF_MODE to enable/disable auto switch to RX after TX
+  return SPIsetRegValue(RADIOLIB_CC1101_REG_MCSM1, (enable ? RADIOLIB_CC1101_TXOFF_RX : RADIOLIB_CC1101_TXOFF_IDLE), 1, 0);
 }
 
 int16_t CC1101::setNodeAddress(uint8_t nodeAddr, uint8_t numBroadcastAddrs) {
@@ -866,22 +900,28 @@ int16_t CC1101::variablePacketLengthMode(uint8_t maxLen) {
   return(setPacketMode(RADIOLIB_CC1101_LENGTH_CONFIG_VARIABLE, maxLen));
 }
 
-int16_t CC1101::enableSyncWordFiltering(uint8_t maxErrBits, bool requireCarrierSense) {
+int16_t CC1101::enableSyncWordFiltering(uint8_t maxErrBits, bool requireCarrierSense, bool repeatSync) {
   int16_t state = RADIOLIB_ERR_NONE;
 
-  switch(maxErrBits) {
-    case 0:
-      // in 16 bit sync word, expect all 16 bits
-      state |= SPIsetRegValue(RADIOLIB_CC1101_REG_MDMCFG2, (requireCarrierSense ? RADIOLIB_CC1101_SYNC_MODE_16_16_THR : RADIOLIB_CC1101_SYNC_MODE_16_16), 2, 0);
-      break;
-    case 1:
-      // in 16 bit sync word, expect at least 15 bits
-      state |= SPIsetRegValue(RADIOLIB_CC1101_REG_MDMCFG2, (requireCarrierSense ? RADIOLIB_CC1101_SYNC_MODE_15_16_THR : RADIOLIB_CC1101_SYNC_MODE_15_16), 2, 0);
-      break;
-    default:
-      state = RADIOLIB_ERR_INVALID_SYNC_WORD;
-      break;
+  if (repeatSync) {
+    // in repeated sync word mode, use the 30/32 mode which allows for 2 bit errors in the sync word
+    state |= SPIsetRegValue(RADIOLIB_CC1101_REG_MDMCFG2, (requireCarrierSense ? RADIOLIB_CC1101_SYNC_MODE_30_32_THR : RADIOLIB_CC1101_SYNC_MODE_30_32), 2, 0);
+  } else {
+    switch(maxErrBits) {
+      case 0:
+        // in 16 bit sync word, expect all 16 bits
+        state |= SPIsetRegValue(RADIOLIB_CC1101_REG_MDMCFG2, (requireCarrierSense ? RADIOLIB_CC1101_SYNC_MODE_16_16_THR : RADIOLIB_CC1101_SYNC_MODE_16_16), 2, 0);
+        break;
+      case 1:
+        // in 16 bit sync word, expect at least 15 bits
+        state |= SPIsetRegValue(RADIOLIB_CC1101_REG_MDMCFG2, (requireCarrierSense ? RADIOLIB_CC1101_SYNC_MODE_15_16_THR : RADIOLIB_CC1101_SYNC_MODE_15_16), 2, 0);
+        break;
+      default:
+        state = RADIOLIB_ERR_INVALID_SYNC_WORD;
+        break;
+    }
   }
+
   return(state);
 }
 
@@ -1033,7 +1073,7 @@ int16_t CC1101::setDIOMapping(uint32_t pin, uint32_t value) {
   return(SPIsetRegValue(RADIOLIB_CC1101_REG_IOCFG0 - pin, value));
 }
 
-int16_t CC1101::beginCommon(float freq, float br, float freqDev, float rxBw, int8_t pwr, uint8_t preambleLength) {
+int16_t CC1101::beginCommon(const ConfigFSK_t& cfg) {
   // set module properties
   this->mod->spiConfig.cmds[RADIOLIB_MODULE_SPI_COMMAND_READ] = RADIOLIB_CC1101_CMD_READ;
   this->mod->spiConfig.cmds[RADIOLIB_MODULE_SPI_COMMAND_WRITE] = RADIOLIB_CC1101_CMD_WRITE;
@@ -1045,10 +1085,10 @@ int16_t CC1101::beginCommon(float freq, float br, float freqDev, float rxBw, int
   bool flagFound = false;
   while((i < 10) && !flagFound) {
     int16_t version = getChipVersion();
-    if((version == RADIOLIB_CC1101_VERSION_CURRENT) || (version == RADIOLIB_CC1101_VERSION_LEGACY) || (version == RADIOLIB_CC1101_VERSION_CLONE)) {
+    if((version == RADIOLIB_CC1101_VERSION_CURRENT) || (version == RADIOLIB_CC1101_VERSION_LEGACY) || (version == RADIOLIB_CC1101_VERSION_CLONE) || (version == RADIOLIB_CC1101_VERSION_CLONE2)) {
       flagFound = true;
     } else {
-      RADIOLIB_DEBUG_BASIC_PRINTLN("CC1101 not found! (%d of 10 tries) RADIOLIB_CC1101_REG_VERSION == 0x%04X, expected 0x0004/0x0014", i + 1, version);
+      RADIOLIB_DEBUG_BASIC_PRINTLN("CC1101 not found! (%d of 10 tries) RADIOLIB_CC1101_REG_VERSION == 0x%02X, expected 0x04/0x14/0x17/0x03", i + 1, version);
       this->mod->hal->delay(10);
       i++;
     }
@@ -1063,27 +1103,27 @@ int16_t CC1101::beginCommon(float freq, float br, float freqDev, float rxBw, int
   }
 
   // configure settings not accessible by API
-  int16_t state = config();
+  int16_t state = this->config();
   RADIOLIB_ASSERT(state);
 
   // configure publicly accessible settings
-  state = setFrequency(freq);
+  state = setFrequency(cfg.frequency);
   RADIOLIB_ASSERT(state);
 
   // configure bitrate
-  state = setBitRate(br);
+  state = setBitRate(cfg.bitRate);
   RADIOLIB_ASSERT(state);
 
   // configure default RX bandwidth
-  state = setRxBandwidth(rxBw);
+  state = setRxBandwidth(cfg.receiverBandwidth);
   RADIOLIB_ASSERT(state);
 
   // configure default frequency deviation
-  state = setFrequencyDeviation(freqDev);
+  state = setFrequencyDeviation(cfg.frequencyDeviation);
   RADIOLIB_ASSERT(state);
 
   // configure default TX output power
-  state = setOutputPower(pwr);
+  state = setOutputPower(cfg.power);
   RADIOLIB_ASSERT(state);
 
   // set default packet length mode
@@ -1091,7 +1131,7 @@ int16_t CC1101::beginCommon(float freq, float br, float freqDev, float rxBw, int
   RADIOLIB_ASSERT(state);
 
   // configure default preamble length
-  state = setPreambleLength(preambleLength, preambleLength - 4);
+  state = setPreambleLength(cfg.preambleLength, cfg.preambleLength - 4);
   RADIOLIB_ASSERT(state);
 
   // set default data shaping

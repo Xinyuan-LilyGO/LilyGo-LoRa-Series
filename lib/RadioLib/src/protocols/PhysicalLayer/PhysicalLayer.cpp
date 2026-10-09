@@ -303,7 +303,11 @@ int16_t PhysicalLayer::checkDataRate(DataRate_t dr, ModemType_t modem) {
 
 size_t PhysicalLayer::getPacketLength(bool update) {
   (void)update;
-  return(0);
+  // technically this should be returning some unsigned value, not a negative status code
+  // however, 0 could be misinterpreted in this case
+  // the value of RADIOLIB_ERR_UNSUPPORTED (-25) when converted to 32-bit unsigned int is 4294967271
+  // that is conmfortably out of range for any possible packet length
+  return((size_t)RADIOLIB_ERR_UNSUPPORTED);
 }
 
 float PhysicalLayer::getRSSI() {
@@ -522,6 +526,17 @@ void PhysicalLayer::readBit(uint32_t pin) {
 
 #endif
 
+void PhysicalLayer::setIrqAction(void (*func)(void), bool rising) {
+  Module* mod = getMod();
+  mod->hal->attachInterrupt(mod->hal->pinToInterrupt(mod->getIrq()), func, 
+    rising ? mod->hal->GpioInterruptRising : mod->hal->GpioInterruptFalling);
+}
+
+void PhysicalLayer::clearIrqAction() {
+  Module* mod = getMod();
+  mod->hal->detachInterrupt(mod->hal->pinToInterrupt(mod->getIrq()));
+}
+
 void PhysicalLayer::setPacketReceivedAction(void (*func)(void)) {
   (void)func;
 }
@@ -577,3 +592,53 @@ void PhysicalLayer::setTimerFlag() {
   mod->TimerFlag = true;
 }
 #endif
+
+int16_t PhysicalLayer::calculateRxDutyCycle(size_t txPreLen, size_t rxPreLen, uint16_t minSymbols, DataRate_t* dr, uint32_t* wakePeriod, uint32_t* sleepPeriod) {
+  RADIOLIB_ASSERT_PTR(dr);
+  RADIOLIB_ASSERT_PTR(wakePeriod);
+  RADIOLIB_ASSERT_PTR(sleepPeriod);
+  
+  uint16_t senderPreambleLength = txPreLen;
+  if(senderPreambleLength == 0) {
+    senderPreambleLength = rxPreLen;
+  } else if(senderPreambleLength > rxPreLen) {
+    // the unit must be configured to expect a preamble length at least as long as the sender is using
+    return(RADIOLIB_ERR_INVALID_PREAMBLE_LENGTH);
+  }
+  if(minSymbols == 0) {
+    if(dr->lora.spreadingFactor <= 6) {
+      minSymbols = 12;
+    } else {
+      minSymbols = 8;
+    }
+  }
+
+  // if we're not to sleep at all, just use the standard startReceive
+  if(2 * minSymbols > senderPreambleLength) {
+    *sleepPeriod = 0;
+    RADIOLIB_DEBUG_BASIC_PRINTLN("Auto sleep period too short");
+    return(RADIOLIB_ERR_NONE);
+  }
+
+  // worst case is that the sender starts transmitting when we're just less than minSymbols from going back to sleep.
+  // in this case, we don't catch minSymbols before going to sleep,
+  // so we must be awake for at least that long before the sender stops transmitting.
+  uint16_t sleepSymbols = senderPreambleLength - 2 * minSymbols;
+
+  uint32_t symbolLength = ((uint32_t)(10 * 1000) << dr->lora.spreadingFactor) / (10 * dr->lora.bandwidth);
+  *sleepPeriod = symbolLength * sleepSymbols;
+  RADIOLIB_DEBUG_BASIC_PRINTLN("Auto sleep period: %lu", (long unsigned int)*sleepPeriod);
+
+  // when the unit detects a preamble, it starts a timer that will timeout if it doesn't receive a header in time.
+  // the duration is sleepPeriod + 2 * wakePeriod.
+  // The sleepPeriod doesn't take into account shutdown and startup time for the unit (~1ms)
+  // We need to ensure that the timeout is longer than senderPreambleLength.
+  // So we must satisfy: wakePeriod > (preamblePeriod - (sleepPeriod - 1000)) / 2. (A)
+  // we also need to ensure the unit is awake to see at least minSymbols. (B)
+  *wakePeriod = RADIOLIB_MAX(
+    (symbolLength * (senderPreambleLength + 1) - (*sleepPeriod - 1000)) / 2, // (A)
+    symbolLength * (minSymbols + 1)); //(B)
+  RADIOLIB_DEBUG_BASIC_PRINTLN("Auto wake period: %lu", (long unsigned int)*wakePeriod);
+
+  return(RADIOLIB_ERR_NONE);
+}

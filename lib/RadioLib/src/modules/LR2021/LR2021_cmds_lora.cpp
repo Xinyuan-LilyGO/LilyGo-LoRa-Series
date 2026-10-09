@@ -11,7 +11,10 @@ int16_t LR2021::setLoRaModulationParams(uint8_t sf, uint8_t bw, uint8_t cr, uint
   // calculate symbol length and enable low data rate optimization, if auto-configuration is enabled
   if(this->ldroAuto) {
     float symbolLength = (float)(uint32_t(1) << this->spreadingFactor) / (float)this->bandwidthKhz;
-    if(symbolLength >= 16.0f) {
+    // LDRO on SX128x seems to be working differently to sub-GHz LoRa, as it is always needed for SF > 10
+    // if SX128x bandwidth is being used at 2.4 GHz, we use this approach instead of the symbol time to preserve compatibility
+    bool sx128xLdro = this->highFreq && ((bw >= RADIOLIB_LR2021_LORA_BW_203) || (bw <= RADIOLIB_LR2021_LORA_BW_812)) && (sf > 10);
+    if((symbolLength >= 16.0f) || sx128xLdro) {
       this->ldrOptimize = RADIOLIB_LR2021_LORA_LDRO_ENABLED;
     } else {
       this->ldrOptimize = RADIOLIB_LR2021_LORA_LDRO_DISABLED;
@@ -21,7 +24,11 @@ int16_t LR2021::setLoRaModulationParams(uint8_t sf, uint8_t bw, uint8_t cr, uint
   }
 
   uint8_t buff[] = { (uint8_t)(((sf & 0x0F) << 4) | (bw & 0x0F)), (uint8_t)(((cr & 0x0F) << 4) | this->ldrOptimize) };
-  return(this->SPIcommand(RADIOLIB_LR2021_CMD_SET_LORA_MODULATION_PARAMS, true, buff, sizeof(buff)));
+  int16_t state = this->SPIcommand(RADIOLIB_LR2021_CMD_SET_LORA_MODULATION_PARAMS, true, buff, sizeof(buff));
+  if (state == RADIOLIB_ERR_NONE) {
+    state = this->setDCDCworkaround();
+  }
+  return(state);
 }
 
 int16_t LR2021::setLoRaPacketParams(uint16_t preambleLen, uint8_t hdrType, uint8_t payloadLen, uint8_t crcType, uint8_t invertIQ) {
@@ -72,7 +79,7 @@ int16_t LR2021::getLoRaRxStats(uint16_t* pktRxTotal, uint16_t* pktCrcError, uint
   return(state);
 }
 
-int16_t LR2021::getLoRaPacketStatus(uint8_t* cr, bool* crc, uint8_t* packetLen, float* snrPacket, float* rssiPacket, float* rssiSignalPacket) {
+int16_t LR2021::getLoRaPacketStatus(uint8_t* cr, bool* crc, uint8_t* packetLen, float* snrPacket, float* rssiPacket, float* rssiSignalPacket, uint8_t* detector) {
   uint8_t buff[6] = { 0 };
   int16_t state = this->SPIcommand(RADIOLIB_LR2021_CMD_GET_LORA_PACKET_STATUS, false, buff, sizeof(buff));
   uint16_t raw;
@@ -89,6 +96,13 @@ int16_t LR2021::getLoRaPacketStatus(uint8_t* cr, bool* crc, uint8_t* packetLen, 
     raw = (uint16_t)buff[4] << 1;
     raw |= buff[5] & 0x01;
     *rssiSignalPacket = (float)raw / -2.0f;
+  }
+  if(detector) {
+    uint8_t det = (buff[5] >> 2) & 0x0F;
+    if(det == 0x01) { *detector = 0; }
+    else if(det == 0x02) { *detector = 1; }
+    else if(det == 0x04) { *detector = 2; }
+    else if(det == 0x08) { *detector = 3; }
   }
   return(state);
 }
@@ -119,7 +133,7 @@ int16_t LR2021::setLoRaTxSync(uint8_t function, uint8_t dioNum) {
 
 int16_t LR2021::setLoRaSideDetCad(const uint8_t* pnrDelta, const uint8_t* detPeak, size_t numSideDets) {
   uint8_t buff[6] = { 0 };
-  for(uint8_t i = 0; i < numSideDets; i++) {
+  for(size_t i = 0; i < numSideDets; i++) {
     if(i >= 3) { return(RADIOLIB_ERR_UNKNOWN); }
     buff[2*i] = pnrDelta[i] & 0x0F;
     buff[2*i + 1] = detPeak[i] & 0x7F;

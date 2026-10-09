@@ -13,7 +13,11 @@ int16_t LR2021::setRfFrequency(uint32_t rfFreq) {
 
 int16_t LR2021::setRxPath(uint8_t rxPath, uint8_t rxBoost) {
   uint8_t buff[] = { (uint8_t)(rxPath & 0x01), (uint8_t)(rxBoost & 0x07) };
-  return(this->SPIcommand(RADIOLIB_LR2021_CMD_SET_RX_PATH, true, buff, sizeof(buff)));
+  int16_t state = this->SPIcommand(RADIOLIB_LR2021_CMD_SET_RX_PATH, true, buff, sizeof(buff));
+  if (state == RADIOLIB_ERR_NONE) {
+    state = this->setDCDCworkaround();
+  }
+  return(state);
 }
 
 int16_t LR2021::getRssiInst(float* rssi) {
@@ -94,26 +98,25 @@ int16_t LR2021::selPa(uint8_t pa) {
 }
 
 int16_t LR2021::setPaConfig(uint8_t pa, uint8_t paLfMode, uint8_t paLfDutyCycle, uint8_t paLfSlices, uint8_t paHfDutyCycle) {
-  // Matches Semtech lr20xx_radio_common_set_pa_cfg(): 3 payload bytes after opcode.
   uint8_t buff[] = {
-    (uint8_t)(((pa & 0x01) << 7) | (paLfMode & 0x03)),
+    (uint8_t)((pa << 7) | (paLfMode & 0x03)), 
     (uint8_t)(((paLfDutyCycle & 0x0F) << 4) | (paLfSlices & 0x0F)),
-    (uint8_t)(paHfDutyCycle & 0x1F),
+    (uint8_t)((paHfDutyCycle & 0x1F)),
   };
   return(this->SPIcommand(RADIOLIB_LR2021_CMD_SET_PA_CONFIG, true, buff, sizeof(buff)));
 }
 
-int16_t LR2021::setTxParamsHalfDbm(int8_t powerHalfDbm, uint8_t rampTime) {
-  uint8_t buff[] = { (uint8_t)powerHalfDbm, rampTime };
+int16_t LR2021::setTxParams(int8_t txPower, uint8_t rampTime) {
+  uint8_t buff[] = { (uint8_t)txPower, rampTime };
   return(this->SPIcommand(RADIOLIB_LR2021_CMD_SET_TX_PARAMS, true, buff, sizeof(buff)));
 }
 
-int16_t LR2021::setTxParams(int8_t txPower, uint8_t rampTime) {
-  return(this->setTxParamsHalfDbm((int8_t)(txPower * 2), rampTime));
-}
-
 int16_t LR2021::setPacketType(uint8_t packetType) {
-  return(this->SPIcommand(RADIOLIB_LR2021_CMD_SET_PACKET_TYPE, true, &packetType, sizeof(packetType)));
+  int16_t state = this->SPIcommand(RADIOLIB_LR2021_CMD_SET_PACKET_TYPE, true, &packetType, sizeof(packetType));
+  if (state == RADIOLIB_ERR_NONE) {
+    state = this->resetDCDCworkaround();
+  }
+  return(state);
 }
 
 int16_t LR2021::getPacketType(uint8_t* packetType) {

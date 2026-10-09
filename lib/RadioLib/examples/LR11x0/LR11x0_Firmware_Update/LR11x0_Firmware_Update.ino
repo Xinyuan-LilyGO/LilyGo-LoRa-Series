@@ -26,12 +26,15 @@
 //#define RADIOLIB_LR1110_FIRMWARE_0305
 //#define RADIOLIB_LR1110_FIRMWARE_0306
 //#define RADIOLIB_LR1110_FIRMWARE_0307
-#define RADIOLIB_LR1110_FIRMWARE_0401
+//#define RADIOLIB_LR1110_FIRMWARE_0401
+#define RADIOLIB_LR1110_FIRMWARE_0402
 //#define RADIOLIB_LR1120_FIRMWARE_0101
 //#define RADIOLIB_LR1120_FIRMWARE_0102
 //#define RADIOLIB_LR1120_FIRMWARE_0201
+//#define RADIOLIB_LR1120_FIRMWARE_0202
 //#define RADIOLIB_LR1121_FIRMWARE_0102
 //#define RADIOLIB_LR1121_FIRMWARE_0103
+//#define RADIOLIB_LR1121_FIRMWARE_0104
 
 // enable this macro if you want to store the image in host
 // MCU RAM instead of Flash.
@@ -59,9 +62,16 @@ Radio radio = new RadioModule();
 void setup() {
   Serial.begin(9600);
 
-  // initialize LR1110 with default settings
+  // before calling begin(), correct crystal has to be selected
+  // some LR11x0 have a TCXO which needs 1.6V reference
+  // set to 0 if your radio has an XTAL
+  radio.tcxoVoltage = 1.6;
+
+  // initialize LR1110 at 434 MHz
   Serial.print(F("[LR1110] Initializing ... "));
-  int state = radio.begin();
+  ConfigLoRa_t config;
+  config.frequency = 434;
+  int state = radio.begin(config);
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {

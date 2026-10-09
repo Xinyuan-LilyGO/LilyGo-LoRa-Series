@@ -5,11 +5,14 @@ Copyright (c) 2022 STMicroelectronics
 This file is licensed under the MIT License: https://opensource.org/licenses/MIT
 */
 
-#include "STM32WLx_Module.h"
+#include "Stm32wlHal.h"
 
 #if !RADIOLIB_EXCLUDE_STM32WLX
 
-#include "hal/Arduino/ArduinoHal.h"
+#if defined(ARDUINO_ARCH_STM32) && defined(STM32WLxx)
+
+#include "../Arduino/ArduinoHal.h"
+#include <SubGhz.h>
 
 // This defines some dummy pin numbers (starting at NUM_DIGITAL_PINS to
 // guarantee these are not valid regular pin numbers) that can be passed
@@ -44,7 +47,7 @@ class Stm32wlxHal : public ArduinoHal {
           // Nothing to do
           break;
         default:
-          ::pinMode(dwPin, dwMode);
+          ::pinMode(dwPin, RADIOLIB_ARDUINOHAL_PIN_MODE_CAST dwMode);
           break;
       }
     }
@@ -70,7 +73,7 @@ class Stm32wlxHal : public ArduinoHal {
           break;
 
         default:
-          ::digitalWrite(dwPin, dwVal);
+          ::digitalWrite(dwPin, RADIOLIB_ARDUINOHAL_PIN_STATUS_CAST dwVal);
           break;
       }
     }
@@ -121,5 +124,7 @@ STM32WLx_Module::STM32WLx_Module():
     RADIOLIB_STM32WLx_VIRTUAL_PIN_RESET,
     RADIOLIB_STM32WLx_VIRTUAL_PIN_BUSY
   ) {}
+
+#endif  // ARDUINO_ARCH_STM32 && STM32WLxx
 
 #endif

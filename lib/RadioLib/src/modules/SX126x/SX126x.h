@@ -8,7 +8,7 @@
 #include "../../Module.h"
 
 #include "../../protocols/PhysicalLayer/PhysicalLayer.h"
-#include "../../utils/FEC.h"
+#include "../../utils/ConvCode.h"
 #include "../../utils/CRC.h"
 
 #include "SX126x_commands.h"
@@ -42,6 +42,7 @@ class SX126x: public PhysicalLayer {
     using PhysicalLayer::startTransmit;
     using PhysicalLayer::startReceive;
     using PhysicalLayer::readData;
+    using PhysicalLayer::setOutputPower;
 
     /*!
       \struct paTableEntry_t
@@ -61,14 +62,24 @@ class SX126x: public PhysicalLayer {
     explicit SX126x(Module* mod);
 
     /*!
-      \brief Whether the module has an XTAL (true) or TCXO (false). Defaults to false.
+      \brief Whether to use XOSC (true) or RC (false) oscillator in standby mode. Defaults to false.
+      \ingroup module_config_vars
     */
-    bool XTAL;
+    bool standbyXOSC = false;
 
     /*!
-      \brief Whether to use XOSC (true) or RC (false) oscillator in standby mode. Defaults to false.
+      \brief TCXO reference voltage to be set on DIO3. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, either set this value to 0.
+      \ingroup module_config_vars
     */
-    bool standbyXOSC;
+    float tcxoVoltage = 1.6;
+
+    /*! 
+      \brief Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
+      \ingroup module_config_vars
+    */
+    bool useRegulatorLDO = false;
 
     // basic methods
 
@@ -78,11 +89,9 @@ class SX126x: public PhysicalLayer {
       is undocumented and not recommended without your own FEC.
       \param syncWord 1-byte LoRa sync word.
       \param preambleLength LoRa preamble length in symbols. Allowed values range from 1 to 65535.
-      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V, set to 0 to skip.
-      \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
       \returns \ref status_codes
     */
-    int16_t begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength, float tcxoVoltage, bool useRegulatorLDO = false);
+    int16_t begin(uint8_t cr, uint8_t syncWord, uint16_t preambleLength);
 
     /*!
       \brief Initialization method for FSK modem.
@@ -91,31 +100,25 @@ class SX126x: public PhysicalLayer {
       \param rxBw Receiver bandwidth in kHz. Allowed values are 4.8, 5.8, 7.3, 9.7, 11.7, 14.6, 19.5, 23.4, 29.3, 39.0,
       46.9, 58.6, 78.2, 93.8, 117.3, 156.2, 187.2, 234.3, 312.0, 373.6 and 467.0 kHz.
       \param preambleLength FSK preamble length in bits. Allowed values range from 0 to 65535.
-      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V, set to 0 to skip.
-      \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
       \returns \ref status_codes
     */
-    int16_t beginFSK(float br, float freqDev, float rxBw, uint16_t preambleLength, float tcxoVoltage, bool useRegulatorLDO = false);
+    int16_t beginFSK(float br, float freqDev, float rxBw, uint16_t preambleLength);
 
     /*!
       \brief Initialization method for BPSK modem.
       \param br FSK bit rate in kbps. Only 100 and 600 bps is supported.
-      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V, set to 0 to skip.
-      \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
       \returns \ref status_codes
     */
-    int16_t beginBPSK(float br, float tcxoVoltage, bool useRegulatorLDO = false);
+    int16_t beginBPSK(float br);
 
     /*!
       \brief Initialization method for LR-FHSS modem. This modem only supports transmission!
       \param bw LR-FHSS bandwidth, one of RADIOLIB_SX126X_LR_FHSS_BW_* values.
       \param cr LR-FHSS coding rate, one of RADIOLIB_SX126X_LR_FHSS_CR_* values.
       \param narrowGrid Whether to use narrow (3.9 kHz) or wide (25.39 kHz) grid spacing.
-      \param tcxoVoltage TCXO reference voltage to be set on DIO3. Defaults to 1.6 V, set to 0 to skip.
-      \param useRegulatorLDO Whether to use only LDO regulator (true) or DC-DC regulator (false). Defaults to false.
       \returns \ref status_codes
     */
-    int16_t beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid, float tcxoVoltage, bool useRegulatorLDO = false);
+    int16_t beginLRFHSS(uint8_t bw, uint8_t cr, bool narrowGrid);
 
     /*!
       \brief Sets LR-FHSS configuration.
@@ -365,10 +368,10 @@ class SX126x: public PhysicalLayer {
     /*!
       \brief Interrupt-driven channel activity detection method. DIO1 will be activated
       when LoRa preamble is detected, or upon timeout.
-      \param config CAD configuration structure.
+      \param cfg CAD configuration structure.
       \returns \ref status_codes
     */
-    int16_t startChannelScan(const ChannelScanConfig_t &config) override;
+    int16_t startChannelScan(const ChannelScanConfig_t &cfg) override;
 
     /*!
       \brief Read the channel scan result
@@ -574,6 +577,8 @@ class SX126x: public PhysicalLayer {
 
     /*!
       \brief Query modem for the packet length of received payload.
+      In LoRa implicit header mode or FSK fixed length mode,
+      this method always returns the user-configured packet length.
       \param update Not used for SX126x modules.
       \returns Length of last received packet in bytes.
     */
@@ -581,6 +586,8 @@ class SX126x: public PhysicalLayer {
 
     /*!
       \brief Query modem for the packet length of received payload and Rx buffer offset.
+      In LoRa implicit header mode or FSK fixed length mode,
+      this method always returns the user-configured packet length.
       \param update Not used for SX126x modules.
       \param offset Pointer to variable to store the Rx buffer offset.
       \returns Length of last received packet in bytes.
@@ -613,7 +620,7 @@ class SX126x: public PhysicalLayer {
       \brief Calculate the expected time-on-air for a given modem, data rate, packet configuration and payload size.
       \param modem Modem type.
       \param dr Data rate.
-      \param pc Packet config.
+      \param pc Packet cfg.
       \param len Payload length in bytes.
       \returns Expected time-on-air in microseconds.
     */
@@ -839,6 +846,23 @@ class SX126x: public PhysicalLayer {
     */
     int16_t setOutputPower(int8_t power, uint8_t paDutyCycle, uint8_t hpMax, uint8_t deviceSel);
 
+    /*!
+      \brief Sets custom PA configuration table.
+      \param table Pointer to user-provided PA configuration table.
+      The table MUST containt exactly RADIOLIB_LR2021_PA_TABLE_LEN entries,
+      one per each dBm step. The table is not copied, only reference to it is stored.
+      Set to NULL to return back to the default table.
+    */
+    void setPaTable(SX126x::paTableEntry_t* table);
+    
+    /*!
+      \brief Set standby mode to be used. XOSC standby uses more power, but allows faster switching
+      between Rx and Tx modes.
+      \param enable Set to true for XOSC standby, false for RC standby.
+      \returns \ref status_codes
+    */
+    int16_t setStandbyXOSC(bool enable);
+
 #if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
 #endif
@@ -881,6 +905,9 @@ class SX126x: public PhysicalLayer {
     
     // Allow subclasses to define different TX modes
     uint8_t txMode = Module::MODE_TX;
+
+    // pointer to PA lookup table - may be overridden by the user
+    SX126x::paTableEntry_t* paOptTable = nullptr;
 
     int16_t setFrequencyRaw(float freq);
     int16_t fixPaClamping(bool enable = true);
@@ -927,14 +954,14 @@ class SX126x: public PhysicalLayer {
     size_t lrFhssFrameHopsRem = 0;
     size_t lrFhssHopNum = 0;
 
-    int16_t modSetup(float tcxoVoltage, bool useRegulatorLDO, uint8_t modem);
+    int16_t modSetup(uint8_t modem);
     int16_t config(uint8_t modem);
     bool findChip(const char* verStr);
-    int16_t startReceiveCommon(uint32_t timeout = RADIOLIB_SX126X_RX_TIMEOUT_INF, RadioLibIrqFlags_t irqFlags = RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RadioLibIrqFlags_t irqMask = RADIOLIB_IRQ_RX_DEFAULT_MASK);
     int16_t setPacketMode(uint8_t mode, uint8_t len);
     int16_t setHeaderType(uint8_t hdrType, size_t len = 0xFF);
     int16_t directMode();
     int16_t packetMode();
+    int16_t findRxBw(float rxBw, const uint8_t* lut, size_t lutSize, float rxBwMax, uint8_t* val);
 
     // fixes to errata
     int16_t fixSensitivity();
@@ -947,11 +974,6 @@ class SX126x: public PhysicalLayer {
     int16_t resetLRFHSS();
     uint16_t stepLRFHSS();
     int16_t setLRFHSSHop(uint8_t index);
-
-    void regdump();
-    void effectEvalPre(uint8_t* buff, uint32_t start);
-    void effectEvalPost(uint8_t* buff, uint32_t start);
-    void effectEval();
 };
 
 #endif

@@ -59,9 +59,16 @@ void setFlag(void) {
 void setup() {
   Serial.begin(9600);
 
-  // initialize SX1262 with default settings
+  // before calling begin(), correct crystal has to be selected
+  // most SX126x have a TCXO which needs 1.6V reference
+  // set to 0 if your radio has an XTAL
+  radio.tcxoVoltage = 1.6;
+
+  // initialize SX1262 at 434 MHz
   Serial.print(F("[SX1262] Initializing ... "));
-  int state = radio.beginLRFHSS();
+  ConfigLRFHSS_t config;
+  config.frequency = 434;
+  int state = radio.beginLRFHSS(config);
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
   } else {

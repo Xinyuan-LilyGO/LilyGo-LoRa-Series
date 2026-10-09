@@ -279,6 +279,27 @@
 #define RADIOLIB_SX127X_RX_BW_MANT_20                           0b00001000  //  4     3
 #define RADIOLIB_SX127X_RX_BW_MANT_24                           0b00010000  //  4     3   default RxBwMant parameter
 #define RADIOLIB_SX127X_RX_BW_EXP                               0b00000101  //  2     0   default RxBwExp parameter
+#define RADIOLIB_SX127X_RX_BW_2_6                               (RADIOLIB_SX127X_RX_BW_MANT_24 | 0x07)
+#define RADIOLIB_SX127X_RX_BW_3_1                               (RADIOLIB_SX127X_RX_BW_MANT_20 | 0x07)
+#define RADIOLIB_SX127X_RX_BW_3_9                               (RADIOLIB_SX127X_RX_BW_MANT_16 | 0x07)
+#define RADIOLIB_SX127X_RX_BW_5_2                               (RADIOLIB_SX127X_RX_BW_MANT_24 | 0x06)
+#define RADIOLIB_SX127X_RX_BW_6_3                               (RADIOLIB_SX127X_RX_BW_MANT_20 | 0x06)
+#define RADIOLIB_SX127X_RX_BW_7_8                               (RADIOLIB_SX127X_RX_BW_MANT_16 | 0x06)
+#define RADIOLIB_SX127X_RX_BW_10_4                              (RADIOLIB_SX127X_RX_BW_MANT_24 | 0x05)
+#define RADIOLIB_SX127X_RX_BW_12_5                              (RADIOLIB_SX127X_RX_BW_MANT_20 | 0x05)
+#define RADIOLIB_SX127X_RX_BW_15_6                              (RADIOLIB_SX127X_RX_BW_MANT_16 | 0x05)
+#define RADIOLIB_SX127X_RX_BW_20_8                              (RADIOLIB_SX127X_RX_BW_MANT_24 | 0x04)
+#define RADIOLIB_SX127X_RX_BW_25_0                              (RADIOLIB_SX127X_RX_BW_MANT_20 | 0x04)
+#define RADIOLIB_SX127X_RX_BW_31_3                              (RADIOLIB_SX127X_RX_BW_MANT_16 | 0x04)
+#define RADIOLIB_SX127X_RX_BW_41_7                              (RADIOLIB_SX127X_RX_BW_MANT_24 | 0x03)
+#define RADIOLIB_SX127X_RX_BW_50_0                              (RADIOLIB_SX127X_RX_BW_MANT_20 | 0x03)
+#define RADIOLIB_SX127X_RX_BW_62_5                              (RADIOLIB_SX127X_RX_BW_MANT_16 | 0x03)
+#define RADIOLIB_SX127X_RX_BW_83_3                              (RADIOLIB_SX127X_RX_BW_MANT_24 | 0x02)
+#define RADIOLIB_SX127X_RX_BW_100                               (RADIOLIB_SX127X_RX_BW_MANT_20 | 0x02)
+#define RADIOLIB_SX127X_RX_BW_125                               (RADIOLIB_SX127X_RX_BW_MANT_16 | 0x02)
+#define RADIOLIB_SX127X_RX_BW_167                               (RADIOLIB_SX127X_RX_BW_MANT_24 | 0x01)
+#define RADIOLIB_SX127X_RX_BW_200                               (RADIOLIB_SX127X_RX_BW_MANT_20 | 0x01)
+#define RADIOLIB_SX127X_RX_BW_250                               (RADIOLIB_SX127X_RX_BW_MANT_16 | 0x01)
 
 // RADIOLIB_SX127X_REG_AFC_BW
 #define RADIOLIB_SX127X_RX_BW_MANT_AFC                          0b00001000  //  4     3   default RxBwMant parameter used during AFC
@@ -597,6 +618,19 @@ class SX127x: public PhysicalLayer {
     */
     explicit SX127x(Module* mod);
 
+    /*!
+      \brief Gain of receiver LNA (low-noise amplifier). Can be set to any integer in range 1 to 6 where 1 is the highest gain.
+      Set to 0 to enable automatic gain control (recommended).
+      \ingroup module_config_vars
+    */
+    uint8_t gain = 0;
+
+    /*!
+      \brief Use OOK modulation instead of FSK.
+      \ingroup module_config_vars
+    */
+    bool enableOOK = false;
+
     // basic methods
 
     /*!
@@ -621,10 +655,9 @@ class SX127x: public PhysicalLayer {
       \param freqDev Frequency deviation of the FSK transmission in kHz.
       \param rxBw Receiver bandwidth in kHz.
       \param preambleLength Length of FSK preamble in bits.
-      \param enableOOK Flag to specify OOK mode. This modulation is similar to FSK.
       \returns \ref status_codes
     */
-    int16_t beginFSK(const uint8_t* chipVersions, uint8_t numVersions, float freqDev, float rxBw, uint16_t preambleLength, bool enableOOK);
+    int16_t beginFSK(const uint8_t* chipVersions, uint8_t numVersions, float freqDev, float rxBw, uint16_t preambleLength);
 
     /*!
       \brief Binary transmit method. Will transmit arbitrary binary data up to 255 bytes long using %LoRa or up to 63 bytes using FSK modem.
@@ -847,10 +880,10 @@ class SX127x: public PhysicalLayer {
     /*!
       \brief Interrupt-driven channel activity detection method. DIO1 will be activated
       when LoRa preamble is detected, or upon timeout.
-      \param config Ignored. Implemented only for PhysicalLayer compatibility.
+      \param cfg Ignored. Implemented only for PhysicalLayer compatibility.
       \returns \ref status_codes
     */
-    int16_t startChannelScan(const ChannelScanConfig_t &config) override;
+    int16_t startChannelScan(const ChannelScanConfig_t &cfg) override;
 
     /*!
       \brief Read the channel scan result.
@@ -972,10 +1005,10 @@ class SX127x: public PhysicalLayer {
 
     /*!
       \brief Enables/disables OOK modulation instead of FSK.
-      \param enableOOK Enable (true) or disable (false) OOK.
+      \param enable Enable (true) or disable (false) OOK.
       \returns \ref status_codes
     */
-    int16_t setOOK(bool enableOOK);
+    int16_t setOOK(bool enable);
 
     /*!
       \brief Selects the type of threshold in the OOK data slicer.
@@ -1066,7 +1099,7 @@ class SX127x: public PhysicalLayer {
       \brief Calculate the expected time-on-air for a given modem, data rate, packet configuration and payload size.
       \param modem Modem type.
       \param dr Data rate.
-      \param pc Packet config.
+      \param pc Packet cfg.
       \param len Payload length in bytes.
       \returns Expected time-on-air in microseconds.
     */
@@ -1279,7 +1312,7 @@ class SX127x: public PhysicalLayer {
     int16_t getActiveModem();
     int16_t setFrequencyRaw(float newFreq);
     int16_t setBitRateCommon(float br, uint8_t fracRegAddr);
-    float getRSSI(bool packet, bool skipReceive, int16_t offset);
+    float getRSSICommon(bool packet, bool skipReceive, int16_t offset);
     int16_t setHeaderType(uint8_t headerType, uint8_t bitIndex, size_t len = 0xFF);
 
 #if !RADIOLIB_GODMODE
@@ -1300,13 +1333,8 @@ class SX127x: public PhysicalLayer {
     int16_t setMode(uint8_t mode);
     int16_t setActiveModem(uint8_t modem);
     void clearFIFO(size_t count); // used mostly to clear remaining bytes in FIFO after a packet read
-
-    /*!
-      \brief Calculate exponent and mantissa values for receiver bandwidth and AFC
-      \param bandwidth bandwidth to be set (in kHz).
-      \returns bandwidth in mantissa and exponent format
-    */
-    static uint8_t calculateBWManExp(float bandwidth);
+    int16_t findRxBw(float rxBw, const uint8_t* lut, size_t lutSize, float rxBwMax, uint8_t* val);
+    int16_t setRxBw(float rxBw, bool afc);
 
     virtual void errataFix(bool rx); // should be implemented in derived class
 };

@@ -52,6 +52,7 @@
 #define RADIOLIB_LR2021_CMD_CONFIG_LF_CLOCK                     (0x0118)
 #define RADIOLIB_LR2021_CMD_CONFIG_CLK_OUTPUTS                  (0x0119)
 #define RADIOLIB_LR2021_CMD_SET_TCXO_MODE                       (0x0120)
+#define RADIOLIB_LR2021_CMD_ACTIVATE_PRAM                       (0x012D)
 #define RADIOLIB_LR2021_CMD_SET_XOSC_CP_TRIM                    (0x0131)
 #define RADIOLIB_LR2021_CMD_SET_RF_FREQUENCY                    (0x0200)
 #define RADIOLIB_LR2021_CMD_SET_RX_PATH                         (0x0201)
@@ -344,8 +345,9 @@
 #define RADIOLIB_LR2021_PA_HIGH_POWER                           (0x01UL << 0)   //  1     0                high-power
 
 // RADIOLIB_LR2021_CMD_SET_PA_CONFIG
+#define RADIOLIB_LR2021_PA_TABLE_LEN                            (32)
 #define RADIOLIB_LR2021_PA_LF_MODE_FSM                          (0x00UL << 0)   //  1     0     PA LF mode: full single-ended mode
-#define RADIOLIB_LR2021_PA_LF_DUTY_CYCLE_UNUSED                 (0x06UL << 0)   //  7     4     PA LF duty cycle: PA not used (nibble; packed in setPaConfig)
+#define RADIOLIB_LR2021_PA_LF_DUTY_CYCLE_UNUSED                 (0x06UL << 0)   //  7     4     PA LF duty cycle: PA not used
 #define RADIOLIB_LR2021_PA_LF_SLICES_UNUSED                     (0x07UL << 0)   //  3     0     PA LF slices: PA not used
 #define RADIOLIB_LR2021_PA_HF_DUTY_CYCLE_UNUSED                 (0x10UL << 0)   //  4     0     PA HF duty cycle: PA not used
 
@@ -384,15 +386,13 @@
 #define RADIOLIB_LR2021_LORA_CR_4_8                             (0x04UL << 0)   //  3     0                       4/8
 #define RADIOLIB_LR2021_LORA_CR_4_5_LI                          (0x05UL << 0)   //  3     0                       4/5 long interleaver
 #define RADIOLIB_LR2021_LORA_CR_4_6_LI                          (0x06UL << 0)   //  3     0                       4/6 long interleaver
-#define RADIOLIB_LR2021_LORA_CR_4_7_LI                          (0x07UL << 0)   //  3     0                       4/7 long interleaver
+#define RADIOLIB_LR2021_LORA_CR_4_8_LI                          (0x07UL << 0)   //  3     0                       4/8 long interleaver
+#define RADIOLIB_LR2021_LORA_CR_4_6_LI_CONV                     (0x08UL << 0)   //  3     0                       4/6 long interleaver, convolutional
+#define RADIOLIB_LR2021_LORA_CR_4_8_LI_CONV                     (0x09UL << 0)   //  3     0                       4/8 long interleaver, convolutional
 #define RADIOLIB_LR2021_LORA_LDRO_DISABLED                      (0x00UL << 0)   //  1     0     LDRO/PPM configuration: disabled
 #define RADIOLIB_LR2021_LORA_LDRO_ENABLED                       (0x01UL << 0)   //  1     0                             enabled
 
 // RADIOLIB_LR2021_CMD_SET_LORA_PACKET_PARAMS
-#define RADIOLIB_LR2021_LORA_HEADER_EXPLICIT                    (0x00UL << 2)   //  2     2     LoRa header mode: explicit
-#define RADIOLIB_LR2021_LORA_HEADER_IMPLICIT                    (0x01UL << 2)   //  2     2                       implicit
-#define RADIOLIB_LR2021_LORA_CRC_DISABLED                       (0x00UL << 1)   //  1     1     LoRa CRC: disabled
-#define RADIOLIB_LR2021_LORA_CRC_ENABLED                        (0x01UL << 1)   //  1     1               enabled
 #define RADIOLIB_LR2021_LORA_IQ_STANDARD                        (0x00UL << 0)   //  0     0     LoRa IQ: standard
 #define RADIOLIB_LR2021_LORA_IQ_INVERTED                        (0x01UL << 0)   //  0     0              inverted
 

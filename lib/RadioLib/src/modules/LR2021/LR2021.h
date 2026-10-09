@@ -39,13 +39,15 @@ class LR2021: public LRxxxx {
 
     /*!
       \brief Which DIO pin is to be used as the interrupt pin.
+      \ingroup module_config_vars
     */
     uint32_t irqDioNum = 5;
 
     /*! 
       \brief Determines the type of Lora CAD to perform, either "standard" CAD
-      (same as is implem,ented LR11x0, SX126x and others), or a "fast" CAD if set to true.
+      (same as is implemented LR11x0, SX126x and others), or a "fast" CAD if set to true.
       If there is no signal to be detected, fast CAD should return faster than standard CAD.
+      \ingroup module_config_vars
     */
     bool fastCad = false;
 
@@ -68,9 +70,27 @@ class LR2021: public LRxxxx {
         MODE_TX_HF,
     };
 
+    /*!
+      \brief TCXO reference voltage to be set on DIO3. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, set this value to 0.
+      \ingroup module_config_vars
+    */
+    float tcxoVoltage = 1.6;
+
     // basic methods
 
     /*!
+      \brief Initialization method for LoRa modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t begin(const ConfigLoRa_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigLoRa_t& config) instead.
       \brief Initialization method for LoRa modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param bw LoRa bandwidth in kHz. Defaults to 125.0 kHz.
@@ -89,6 +109,16 @@ class LR2021: public LRxxxx {
 
     /*!
       \brief Initialization method for FSK modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginGFSK(const ConfigFSK_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigFSK_t& config) instead.
+      \brief Initialization method for FSK modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param br FSK bit rate in kbps. Defaults to 4.8 kbps.
       \param freqDev Frequency deviation from carrier frequency in kHz. Defaults to 5.0 kHz.
@@ -104,6 +134,16 @@ class LR2021: public LRxxxx {
     
     /*!
       \brief Initialization method for OOK modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginOOK(const ConfigOOK_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigOOK_t& config) instead.
+      \brief Initialization method for OOK modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param br OOK bit rate in kbps. Defaults to 4.8 kbps.
       \param rxBw Receiver bandwidth in kHz. Defaults to 153.8 kHz.
@@ -115,8 +155,18 @@ class LR2021: public LRxxxx {
       \returns \ref status_codes
     */
     int16_t beginOOK(float freq = 434.0, float br = 4.8, float rxBw = 153.8, int8_t power = 10, uint16_t preambleLength = 16, float tcxoVoltage = 1.6);
-    
+ 
     /*!
+      \brief Initialization method for LR-FHSS modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginLRFHSS(const ConfigLRFHSS_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigLRFHSS_t& config) instead.
       \brief Initialization method for LR-FHSS modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param bw LR-FHSS bandwidth, one of RADIOLIB_LRXXXX_LR_FHSS_BW_* values. Defaults to 722.66 kHz.
@@ -129,8 +179,18 @@ class LR2021: public LRxxxx {
       \returns \ref status_codes
     */
     int16_t beginLRFHSS(float freq = 434.0, uint8_t bw = RADIOLIB_LRXXXX_LR_FHSS_BW_722_66, uint8_t cr = RADIOLIB_LRXXXX_LR_FHSS_CR_2_3, bool narrowGrid = true, int8_t power = 10, float tcxoVoltage = 1.6);
+ 
+    /*!
+      \brief Initialization method for FLRC modem.
+      \details This method initializes the LoRa modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \param config Initialization configuration.
+      \returns \ref status_codes
+    */
+    int16_t beginFLRC(const ConfigFLRC_t& config);
 
     /*!
+      \deprecated Use \ref begin(const ConfigFLRC_t& config) instead.
       \brief Initialization method for FLRC modem.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param br FLRC bit rate in kbps. Defaults to 650 kbps.
@@ -138,6 +198,9 @@ class LR2021: public LRxxxx {
       \param pwr Output power in dBm. Defaults to 10 dBm.
       \param preambleLength FLRC preamble length in bits. Defaults to 16 bits.
       \param dataShaping Time-bandwidth product of the Gaussian filter to be used for shaping. Defaults to 0.5.
+      \param tcxoVoltage TCXO reference voltage to be set. Defaults to 1.6 V.
+      If you are seeing -706/-707 error codes, it likely means you are using non-0 value for module with XTAL.
+      To use XTAL, either set this value to 0, or set LR2021::XTAL to true.
       \returns \ref status_codes
     */
     int16_t beginFLRC(float freq = 434.0, uint16_t br = 650, uint8_t cr = RADIOLIB_LR2021_FLRC_CR_2_3, int8_t pwr = 10, uint16_t preambleLength = 16, uint8_t dataShaping = RADIOLIB_SHAPING_0_5, float tcxoVoltage = 1.6);
@@ -253,6 +316,40 @@ class LR2021: public LRxxxx {
     int16_t startReceive() override;
 
     /*!
+      \brief Interrupt-driven receive method where the device mostly sleeps and periodically wakes to listen.
+      Note that this function assumes the unit will take 500us + TCXO_delay to change state.
+      See datasheet section 13.1.7, version 1.2.
+
+      \param rxPeriod The duration the receiver will be in Rx mode, in microseconds.
+      \param sleepPeriod The duration the receiver will not be in Rx mode, in microseconds.
+
+      \param irqFlags Sets the IRQ flags, defaults to RX done, RX timeout, CRC error and header error. 
+      \param irqMask Sets the mask of IRQ flags that will trigger DIO1, defaults to RX done.
+      \returns \ref status_codes
+    */
+    int16_t startReceiveDutyCycle(uint32_t rxPeriod, uint32_t sleepPeriod, RadioLibIrqFlags_t irqFlags = RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RadioLibIrqFlags_t irqMask = RADIOLIB_IRQ_RX_DEFAULT_MASK);
+
+    /*!
+      \brief Calls \ref startReceiveDutyCycle with rxPeriod and sleepPeriod set so the unit shouldn't miss any messages.
+      \param senderPreambleLength Expected preamble length of the messages to receive.
+      If set to zero, the currently configured preamble length will be used. Defaults to zero.
+      This value cannot exceed the configured preamble length. If the sender preamble length is variable, set the
+      maximum expected length by calling setPreambleLength(maximumExpectedLength) prior to this method, and use the
+      minimum expected length here.
+
+      \param minSymbols Ensure that the unit will catch at least this many symbols of any preamble of the specified senderPreambleLength.
+      To reliably latch a preamble, the receiver requires 8 symbols for SF7-12 and 12 symbols for SF5-6 (see datasheet section 6.1.1.1, version 1.2).
+      If set to zero, the minimum required symbols will be used. Defaults to 0.
+
+      If senderPreambleLength is less than 2*minSymbols + 1, this method is equivalent to startReceive().
+
+      \param irqFlags Sets the IRQ flags, defaults to RX done, RX timeout, CRC error and header error.
+      \param irqMask Sets the mask of IRQ flags that will trigger DIO1, defaults to RX done.
+      \returns \ref status_codes
+    */
+    int16_t startReceiveDutyCycleAuto(uint16_t senderPreambleLength = 0, uint16_t minSymbols = 0, RadioLibIrqFlags_t irqFlags = RADIOLIB_IRQ_RX_DEFAULT_FLAGS, RadioLibIrqFlags_t irqMask = RADIOLIB_IRQ_RX_DEFAULT_MASK);
+
+    /*!
       \brief Reads data received after calling startReceive method. When the packet length is not known in advance,
       getPacketLength method must be called BEFORE calling readData!
       \param data Pointer to array to save the received binary data.
@@ -278,10 +375,10 @@ class LR2021: public LRxxxx {
     /*!
       \brief Interrupt-driven channel activity detection method. IRQ pin will be activated
       when LoRa preamble is detected, or upon timeout.
-      \param config CAD configuration structure.
+      \param cfg CAD configuration structure.
       \returns \ref status_codes
     */
-    int16_t startChannelScan(const ChannelScanConfig_t &config) override;
+    int16_t startChannelScan(const ChannelScanConfig_t &cfg) override;
 
     /*!
       \brief Read the channel scan result
@@ -361,6 +458,17 @@ class LR2021: public LRxxxx {
     int16_t setOutputPower(int8_t power, uint32_t rampTimeUs);
 
     /*!
+      \brief Sets custom PA configuration table.
+      \param table Pointer to user-provided PA configuration table.
+      The table MUST containt exactly RADIOLIB_LR2021_PA_TABLE_LEN entries,
+      one per each half-dBm step. The table is not copied, only reference to it is stored.
+      Set to NULL to return back to the default tables.
+      \param highFreq Whether this PA configuration is for the low-frequency sub-GHz PA (false),
+      or the high-frequency 2.4 GHz PA (true).
+    */
+    void setPaTable(LR2021PaTableEntry_t* table, bool highFreq);
+
+    /*!
       \brief Check if output power is configurable.
       This method is needed for compatibility with PhysicalLayer::checkOutputPower.
       \param power Output power in dBm, PA will be determined automatically.
@@ -371,6 +479,21 @@ class LR2021: public LRxxxx {
     
     /*! \copydoc Module::setRfSwitchTable */
     void setRfSwitchTable(const uint32_t (&pins)[Module::RFSWITCH_MAX_PINS], const Module::RfSwitchMode_t table[]);
+
+    /*!
+      \brief Forces LoRa low data rate optimization. Only available in LoRa mode. After calling this method, LDRO will always be set to
+      the provided value, regardless of symbol length. To re-enable automatic LDRO configuration, call LR2021::autoLDRO()
+      \param enable Force LDRO to be always enabled (true) or disabled (false).
+      \returns \ref status_codes
+    */
+    int16_t forceLDRO(bool enable);
+
+    /*!
+      \brief Re-enables automatic LDRO configuration. Only available in LoRa mode. After calling this method, LDRO will be enabled automatically
+      when symbol length exceeds 16 ms, or in cases when SX128x LoRa bandwidths are used with SF > 10.
+      \returns \ref status_codes
+    */
+    int16_t autoLDRO();
 
     /*!
       \brief Sets LoRa bandwidth. Allowed values are 31.25, 41.67, 62.5, 83.34, 125.0, 
@@ -695,9 +818,10 @@ class LR2021: public LRxxxx {
       \param snrPacket SNR of the last received packet in dB
       \param rssiPacket RSSI of the last received packet in dBm
       \param rssiSignalPacket Estimation of the RSSI of LoRa signal after despreading in dBm
+      \param detector Index of the detector that received the packet: 0 = main, 1 = side 1, 2 = side 2, 3 = side 3
       \returns \ref status_codes
     */
-    int16_t getLoRaPacketStatus(uint8_t* cr, bool* crc, uint8_t* packetLen = NULL, float* snrPacket = NULL, float* rssiPacket = NULL, float* rssiSignalPacket = NULL);
+    int16_t getLoRaPacketStatus(uint8_t* cr, bool* crc, uint8_t* packetLen = NULL, float* snrPacket = NULL, float* rssiPacket = NULL, float* rssiSignalPacket = NULL, uint8_t* detector = NULL);
 
     /*!
       \brief Get LoRa header information from last received packet. Implementation based on getLoRaPacketStatus.
@@ -706,7 +830,88 @@ class LR2021: public LRxxxx {
       \returns \ref status_codes
     */
     int16_t getLoRaRxHeaderInfo(uint8_t* cr, bool* hasCRC);
+    
+    /*!
+      \brief Get internal error bits.
+      \param err Pointer to variable to store the error bits.
+      \returns \ref status_codes
+    */
+    int16_t getErrors(uint16_t* err);
+    
+    /*!
+      \brief Get LoRa Rx statistics.
+      \param pktRxTotal Total number of received packets.
+      \param pktCrcError Number of received packets with a CRC error.
+      \param headerCrcError Number of received packets with a header error.
+      \param falseSynch Number of false synchronizations.
+      \returns \ref status_codes
+    */
+    int16_t getLoRaRxStats(uint16_t* pktRxTotal, uint16_t* pktCrcError, uint16_t* headerCrcError, uint16_t* falseSynch);
+    
+    /*!
+      \brief Get ranging Rx statistics.
+      \param exchangeValid Number of valid ranging exchanges.
+      \param requestValid Number of valid ranging requests done.
+      \param responseDone Number of ranging responses done.
+      \param timeout Number of ftimeout events that have occurred.
+      \param requestDiscarded Number of discarded ranging requests.
+      \returns \ref status_codes
+    */
+    int16_t getRangingStats(uint16_t* exchangeValid, uint16_t* requestValid, uint16_t* responseDone, uint16_t* timeout, uint16_t* requestDiscarded);
+    
+    /*!
+      \brief Get GFSK Rx statistics.
+      \param packetRx number of received packets.
+      \param packetCrcError Number of received packets with a CRC error.
+      \param lenError Number of packets with a length error.
+      \param preambleDet Number of detections.
+      \param syncOk Number of correct found Syncwords.
+      \param syncFail Number of failed Syncwords.
+      \param timeout Number of RTC timeouts.
+      \returns \ref status_codes
+    */
+    int16_t getGfskRxStats(uint16_t* packetRx, uint16_t* packetCrcError, uint16_t* lenError, uint16_t* preambleDet, uint16_t* syncOk, uint16_t* syncFail, uint16_t* timeout);
+    
+    /*!
+      \brief Get OQPSK Rx statistics.
+      \param packetRx number of received packets.
+      \param packetCrcError Number of received packets with a CRC error.
+      \param lenError Number of packets with a length error.
+      \returns \ref status_codes
+    */
+    int16_t getOqpskRxStats(uint16_t* packetRx, uint16_t* crcError, uint16_t* lenError);
+    
+    /*!
+      \brief Get FLRC Rx statistics.
+      \param packetRx number of received packets.
+      \param packetCrcError Number of received packets with a CRC error.
+      \param lenError Number of packets with a length error.
+      \returns \ref status_codes
+    */
+    int16_t getFlrcRxStats(uint16_t* packetRx, uint16_t* packetCrcError, uint16_t* lenError);
+    
+    /*!
+      \brief Get OOK Rx statistics.
+      \param packetRx number of received packets.
+      \param packetCrcError Number of received packets with a CRC error.
+      \param lenError Number of packets with a length error.
+      \returns \ref status_codes
+    */
+    int16_t getOokRxStats(uint16_t* packetRx, uint16_t* crcError, uint16_t* lenError);
 
+    /*!
+      \brief Set regulator mode to LDO.
+      \returns \ref status_codes
+    */
+    int16_t setRegulatorLDO();
+
+    /*!
+      \brief Set regulator mode to DC-DC.
+      \returns \ref status_codes
+    */
+    int16_t setRegulatorDCDC();
+   
+    
 #if !RADIOLIB_GODMODE && !RADIOLIB_LOW_LEVEL
   protected:
 #endif
@@ -719,9 +924,6 @@ class LR2021: public LRxxxx {
 #if !RADIOLIB_GODMODE
   private:
 #endif
-    // flag to determine whether we are in the sub-GHz or 2.4 GHz range
-    // this is needed to automatically detect which PA to use
-    bool highFreq = false;
     uint8_t gainModeLf = RADIOLIB_LR2021_RX_BOOST_LF;
     uint8_t gainModeHf = RADIOLIB_LR2021_RX_BOOST_HF;
 
@@ -729,7 +931,10 @@ class LR2021: public LRxxxx {
     uint16_t bitRateFlrc = 0;
     uint8_t codingRateFlrc = 0;
 
-    int16_t modSetup(float freq, float tcxoVoltage, uint8_t modem);
+    // pointers to PA lookup tables - may be overridden by the user
+    LR2021PaTableEntry_t* paOptTable[2] = { nullptr, nullptr };
+
+    int16_t modSetup(float freq, uint8_t modem);
     bool findChip(void);
     int16_t config(uint8_t modem);
     int16_t setPacketMode(uint8_t mode, uint8_t len);
@@ -746,12 +951,12 @@ class LR2021: public LRxxxx {
     int16_t setRx(uint32_t timeout);
     int16_t setTx(uint32_t timeout);
     int16_t setRxTxFallbackMode(uint8_t mode);
-    int16_t setRxDutyCycle(uint32_t rxMaxTime, uint32_t cycleTime, uint8_t cfg);
+    int16_t setRxDutyCycle(uint32_t rxMaxTime, uint32_t cycleTime, uint8_t mode);
     int16_t autoTxRx(uint32_t delay, uint8_t mode, uint32_t timeout);
     int16_t getRxPktLength(uint16_t* len);
     int16_t resetRxStats(void);
     int16_t setDefaultRxTxTimeout(uint32_t rxTimeout, uint32_t txTimeout);
-    int16_t setRegMode(uint8_t simoUsage, const uint8_t rampTimes[4]);
+    int16_t setRegMode(uint8_t mode);
     int16_t calibrate(uint8_t blocks);
     int16_t calibrateFrontEnd(const uint16_t freq[3]);
     int16_t getVbat(uint8_t resolution, uint16_t* vbat);
@@ -760,13 +965,12 @@ class LR2021: public LRxxxx {
     int16_t getRandomNumber(uint32_t* rnd);
     int16_t getVersion(uint8_t* major, uint8_t* minor);
     int16_t clearErrors(void);
-    int16_t getErrors(uint16_t* err);
     int16_t setDioFunction(uint8_t dio, uint8_t func, uint8_t pullDrive);
     int16_t setDioRfSwitchConfig(uint8_t dio, uint8_t func);
     int16_t setDioIrqConfig(uint8_t dio, uint32_t irq);
     int16_t clearIrqState(uint32_t irq);
     int16_t getAndClearIrqStatus(uint32_t* irq);
-    int16_t configFifoIrq(uint8_t rxFifoIrq, uint8_t txFifoIrq, uint8_t rxHighThreshold, uint8_t txHighThreshold);
+    int16_t configFifoIrq(uint8_t rxFifoIrq, uint8_t txFifoIrq, uint16_t rxHighThreshold, uint16_t txLowThreshold, uint16_t rxLowThreshold, uint16_t txHighThreshold);
     int16_t getFifoIrqFlags(uint8_t* rxFifoFlags, uint8_t* txFifoFlags);
     int16_t clearFifoIrqFlags(uint8_t rxFifoFlags, uint8_t txFifoFlags);
     int16_t getAndClearFifoIrqFlags(uint8_t* rxFifoFlags, uint8_t* txFifoFlags);
@@ -778,6 +982,9 @@ class LR2021: public LRxxxx {
     int16_t configClkOutputs(uint8_t scaling);
     int16_t setTcxoMode(uint8_t tune, uint32_t startTime);
     int16_t setXoscCpTrim(uint8_t xta, uint8_t xtb, uint8_t startTime);
+    int16_t activatePram(void);
+    int16_t checkPramLoaded(bool* loaded);
+    int16_t getPramVersion(uint16_t* version);
 
     // radio frequency front end commands
     int16_t setRfFrequency(uint32_t rfFreq);
@@ -793,8 +1000,6 @@ class LR2021: public LRxxxx {
     int16_t selPa(uint8_t pa);
     int16_t setPaConfig(uint8_t pa, uint8_t paLfMode, uint8_t paLfDutyCycle, uint8_t paLfSlices, uint8_t paHfDutyCycle);
     int16_t setTxParams(int8_t txPower, uint8_t rampTime);
-    /*! \brief SetTxParams first byte as signed half-dBm steps (datasheet / lr20xx `power_half_dbm`). */
-    int16_t setTxParamsHalfDbm(int8_t powerHalfDbm, uint8_t rampTime);
 
     // modem configuration commands
     int16_t setPacketType(uint8_t packetType);
@@ -809,7 +1014,6 @@ class LR2021: public LRxxxx {
     int16_t setLoRaSideDetSyncword(uint8_t* syncwords, size_t numSideDets);
     int16_t setLoRaCadParams(uint8_t numSymbols, bool preambleOnly, uint8_t pnrDelta, uint8_t cadExitMode, uint32_t timeout, uint8_t detPeak);
     int16_t setLoRaCad(void);
-    int16_t getLoRaRxStats(uint16_t* pktRxTotal, uint16_t* pktCrcError, uint16_t* headerCrcError, uint16_t* falseSynch);
     int16_t setLoRaAddress(uint8_t addrLen, uint8_t addrPos, const uint8_t* addr);
     int16_t setLoRaHopping(uint8_t hopCtrl, uint16_t hopPeriod, const uint32_t* freqHops, size_t numFreqHops);
     int16_t setLoRaTxSync(uint8_t function, uint8_t dioNum);
@@ -820,7 +1024,6 @@ class LR2021: public LRxxxx {
     int16_t setRangingAddr(uint32_t addr, uint8_t checkLen);
     int16_t setRangingReqAddr(uint32_t addr);
     int16_t getRangingResult(uint8_t type, uint32_t* rng1, uint8_t* rssi1, uint32_t* rng2);
-    int16_t getRangingStats(uint16_t* exchangeValid, uint16_t* requestValid, uint16_t* responseDone, uint16_t* timeout, uint16_t* requestDiscarded);
     int16_t setRangingTxRxDelay(uint32_t delay);
     int16_t setRangingParams(bool spyMode, uint8_t nbSymbols);
 
@@ -831,12 +1034,10 @@ class LR2021: public LRxxxx {
     int16_t setGfskCrcParams(uint32_t poly, uint32_t init);
     int16_t setGfskSyncword(const uint8_t* syncWord, size_t syncWordLen, bool msbFirst);
     int16_t setGfskAddress(uint8_t addrNode, uint8_t addrBroadcast);
-    int16_t getGfskRxStats(uint16_t* packetRx, uint16_t* packetCrcError, uint16_t* lenError, uint16_t* preambleDet, uint16_t* syncOk, uint16_t* syncFail, uint16_t* timeout);
     int16_t getGfskPacketStatus(uint16_t* packetLen, float* rssiAvg, float* rssiSync, bool* addrMatchNode, bool* addrMatchBroadcast, float* lqi);
 
     // OQPSK commands
     int16_t setOqpskParams(uint8_t mode, uint8_t rxBw, uint8_t payloadLen, uint16_t preambleLen, bool addrFilt, bool fcsManual);
-    int16_t getOqpskRxStats(uint16_t* packetRx, uint16_t* crcError, uint16_t* lenError);
     int16_t getOqpskPacketStatus(uint8_t* rxHeader, uint16_t* payloadLen, float* rssiAvg, float* rssiSync, float* lqi);
     int16_t setOqpskPacketLen(uint8_t len);
     int16_t setOqpskAddress(const uint8_t longDestAddr[8], uint16_t shortDestAddr, uint16_t panId, uint8_t transId);
@@ -848,7 +1049,6 @@ class LR2021: public LRxxxx {
     // FLRC commands
     int16_t setFlrcModulationParams(uint8_t brBw, uint8_t cr, uint8_t pulseShape);
     int16_t setFlrcPacketParams(uint8_t agcPreambleLen, uint8_t syncWordLen, uint8_t syncWordTx, uint8_t syncMatch, bool fixedLength, uint8_t crc, uint16_t payloadLen);
-    int16_t getFlrcRxStats(uint16_t* packetRx, uint16_t* packetCrcError, uint16_t* lenError);
     int16_t getFlrcPacketStatus(uint16_t* packetLen, float* rssiAvg, float* rssiSync, uint8_t* syncWordNum);
     int16_t setFlrcSyncWord(uint8_t syncWordNum, uint32_t syncWord);
 
@@ -864,15 +1064,17 @@ class LR2021: public LRxxxx {
     int16_t setOokCrcParams(uint32_t poly, uint32_t init);
     int16_t setOokSyncword(const uint8_t* syncWord, size_t syncWordLen, bool msbFirst);
     int16_t setOokAddress(uint8_t addrNode, uint8_t addrBroadcast);
-    int16_t getOokRxStats(uint16_t* packetRx, uint16_t* crcError, uint16_t* lenError);
     int16_t getOokPacketStatus(uint16_t* packetLen, float* rssiAvg, float* rssiHigh, bool* addrMatchNode, bool* addrMatchBroadcast, float* lqi);
     int16_t setOokDetector(uint16_t preamblePattern, uint8_t patternLen, uint8_t patternNumRepeaters, bool syncWordRaw, bool sofDelimiterRising, uint8_t sofDelimiterLen);
     int16_t setOokWhiteningParams(uint8_t bitIdx, uint16_t poly, uint16_t init);
 
     // test commands
     int16_t setTxTestMode(uint8_t mode);
-};
 
+    // port of semtech's workaround
+    int16_t setDCDCworkaround();
+    int16_t resetDCDCworkaround();
+};
 #endif
 
 #endif

@@ -4,20 +4,11 @@
 
 LRxxxx::LRxxxx(Module* mod) : PhysicalLayer() {
   this->mod = mod;
-  this->XTAL = false;
   this->mod->spiConfig.stream = true;
   this->mod->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_CMD] = Module::BITS_16;
   this->mod->spiConfig.statusPos = 0;
   this->mod->spiConfig.parseStatusCb = SPIparseStatus;
   this->mod->spiConfig.checkStatusCb = SPIcheckStatus;
-}
-
-void LRxxxx::setIrqAction(void (*func)(void)) {
-  this->mod->hal->attachInterrupt(this->mod->hal->pinToInterrupt(this->mod->getIrq()), func, this->mod->hal->GpioInterruptRising);
-}
-
-void LRxxxx::clearIrqAction() {
-  this->mod->hal->detachInterrupt(this->mod->hal->pinToInterrupt(this->mod->getIrq()));
 }
 
 void LRxxxx::setPacketReceivedAction(void (*func)(void)) {
@@ -47,7 +38,7 @@ uint32_t LRxxxx::getIrqStatus() {
   return(irq);
 }
 
-RadioLibTime_t LRxxxx::getTimeOnAir(size_t len, ModemType_t modem) {
+RadioLibTime_t LRxxxx::getToA(size_t len, ModemType_t modem) {
   DataRate_t dr = {};
   PacketConfig_t pc = {};
   switch(modem) {
@@ -313,7 +304,7 @@ int16_t LRxxxx::findRxBw(float rxBw, const uint8_t* lut, size_t lutSize, float r
   // is lower than the pre-computed average of the adjacent bandwidth values
   // if it is, we consider that to be a match even though the actual value is not precise
   uint16_t rxBwInt = rxBw*10.0f;
-  for(size_t i = 0; i < lutSize; i++) {
+  for(size_t i = 0; i < (lutSize - 1); i++) {
     if(rxBwInt < rxBwAvg[i]) {
       *val = lut[i];
       return(RADIOLIB_ERR_NONE);
@@ -364,7 +355,9 @@ int16_t LRxxxx::SPIcheckStatus(Module* mod) {
 int16_t LRxxxx::writeCommon(uint16_t cmd, uint32_t addrOffset, const uint32_t* data, size_t len, bool nonvolatile) {
   // build buffers - later we need to ensure endians are correct, 
   // so there is probably no way to do this without copying buffers and iterating
-  size_t buffLen = sizeof(uint32_t) + len*sizeof(uint32_t);
+  // LR2021 has 24-bit address, whereas LR11x0 has 32-bit
+  const size_t addrLen = (this->mod->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_ADDR] >= Module::BITS_32) ? 4 : 3;
+  size_t buffLen = addrLen + len*sizeof(uint32_t);
   #if RADIOLIB_STATIC_ONLY
     uint8_t dataBuff[sizeof(uint32_t) + RADIOLIB_LRXXXX_SPI_MAX_READ_WRITE_LEN];
   #else
@@ -373,8 +366,7 @@ int16_t LRxxxx::writeCommon(uint16_t cmd, uint32_t addrOffset, const uint32_t* d
 
   // set the address or offset
   uint8_t* dataBuffPtr = reinterpret_cast<uint8_t*>(dataBuff);
-  if(this->mod->spiConfig.widths[RADIOLIB_MODULE_SPI_WIDTH_ADDR] >= Module::BITS_32) {
-    // LR2021 has 24-bit address, whereas LR11x0 has 32-bit
+  if(addrLen == 4) {
     *(dataBuffPtr++) = (uint8_t)((addrOffset >> 24) & 0xFF);
   }
   

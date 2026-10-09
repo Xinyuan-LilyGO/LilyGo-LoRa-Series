@@ -8,11 +8,47 @@ This file is licensed under the MIT License: https://opensource.org/licenses/MIT
 #include "STM32WLx.h"
 #if !RADIOLIB_EXCLUDE_STM32WLX
 
-STM32WLx::STM32WLx(STM32WLx_Module* mod) : SX1262(mod) { }
+#if defined(ARDUINO_ARCH_STM32) && defined(STM32WLxx)
+  #include <SubGhz.h>
+#endif
+
+#if defined(STM32CubeWL)
+  #include "stm32wlxx_hal.h"
+#endif
+
+STM32WLx::STM32WLx(Module* mod) : SX1262(mod) { }
+
+int16_t STM32WLx::begin(const ConfigLoRa_t& cfg) {
+  // Execute common part
+  int16_t state = SX1262::begin(cfg);
+  RADIOLIB_ASSERT(state);
+
+  // This overrides the value in SX126x::begin()
+  // On STM32WL, DIO2 is hardwired to the radio IRQ on the MCU, so it
+  // should really not be used as RfSwitch control output.
+  state = setDio2AsRfSwitch(false);
+  RADIOLIB_ASSERT(state);
+
+  return(state);
+}
 
 int16_t STM32WLx::begin(float freq, float bw, uint8_t sf, uint8_t cr, uint8_t syncWord, int8_t power, uint16_t preambleLength, float tcxoVoltage, bool useRegulatorLDO) {
   // Execute common part
   int16_t state = SX1262::begin(freq, bw, sf, cr, syncWord, power, preambleLength, tcxoVoltage, useRegulatorLDO);
+  RADIOLIB_ASSERT(state);
+
+  // This overrides the value in SX126x::begin()
+  // On STM32WL, DIO2 is hardwired to the radio IRQ on the MCU, so it
+  // should really not be used as RfSwitch control output.
+  state = setDio2AsRfSwitch(false);
+  RADIOLIB_ASSERT(state);
+
+  return(state);
+}
+
+int16_t STM32WLx::beginFSK(const ConfigFSK_t& cfg) {
+  // Execute common part
+  int16_t state = SX1262::beginFSK(cfg);
   RADIOLIB_ASSERT(state);
 
   // This overrides the value in SX126x::begin()
@@ -101,18 +137,56 @@ int16_t STM32WLx::setOutputPower(int8_t power) {
   return(writeRegister(RADIOLIB_SX126X_REG_OCP_CONFIGURATION, &ocp, 1));
 }
 
+int16_t STM32WLx::checkOutputPower(int8_t power, int8_t* clipped) {
+  // check the user did not request power output that is not possible
+  const Module* mod = this->getMod();
+  bool hp_supported = mod->findRfSwitchMode(MODE_TX_HP);
+  bool lp_supported = mod->findRfSwitchMode(MODE_TX_LP);
+
+  // set PA config based on which PAs are supported
+  if(hp_supported && lp_supported) {
+    if(clipped) {
+      *clipped = RADIOLIB_MAX(-17, RADIOLIB_MIN(22, power));
+    }
+    RADIOLIB_CHECK_RANGE(power, -17, 22, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+  } else if(!hp_supported && lp_supported) {
+    // only LP supported
+    if(clipped) {
+      *clipped = RADIOLIB_MAX(-17, RADIOLIB_MIN(14, power));
+    }
+    RADIOLIB_CHECK_RANGE(power, -17, 14, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+  } else if(hp_supported && !lp_supported) {
+    // only HP supported
+    if(clipped) {
+      *clipped = RADIOLIB_MAX(-9, RADIOLIB_MIN(22, power));
+    }
+    RADIOLIB_CHECK_RANGE(power, -9, 22, RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+  } else {
+    // neither PA is supported
+    return(RADIOLIB_ERR_INVALID_OUTPUT_POWER);
+  }
+
+  return(RADIOLIB_ERR_NONE);
+}
+
 int16_t STM32WLx::clearIrqStatus(uint16_t clearIrqParams) {
   int16_t res = SX126x::clearIrqStatus(clearIrqParams);
   // The NVIC interrupt is level-sensitive, so clear away any pending
   // flag that is only set because the radio IRQ status was not cleared
   // in the interrupt (to prevent each IRQ triggering twice and allow
   // reading the irq status through the pending flag).
+#if defined(ARDUINO_ARCH_STM32)
   SubGhz.clearPendingInterrupt();
   if(SubGhz.hasInterrupt())
     SubGhz.enableInterrupt();
+#elif defined(STM32CubeWL)
+  HAL_NVIC_ClearPendingIRQ(SUBGHZ_Radio_IRQn);
+  HAL_NVIC_EnableIRQ(SUBGHZ_Radio_IRQn);
+#endif
   return(res);
 }
 
+#if defined(ARDUINO_ARCH_STM32)
 void STM32WLx::setDio1Action(void (*func)(void)) {
   SubGhz.attachInterrupt([func]() {
     // Because the interrupt is level-triggered, we disable it in the
@@ -126,6 +200,7 @@ void STM32WLx::setDio1Action(void (*func)(void)) {
 void STM32WLx::clearDio1Action() {
   SubGhz.detachInterrupt();
 }
+#endif  // ARDUINO_ARCH_STM32
 
 void STM32WLx::setPacketReceivedAction(void (*func)(void)) {
   this->setDio1Action(func);

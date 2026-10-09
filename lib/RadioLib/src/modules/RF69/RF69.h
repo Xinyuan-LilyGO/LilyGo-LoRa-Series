@@ -483,6 +483,7 @@ class RF69: public PhysicalLayer {
     using PhysicalLayer::receive;
     using PhysicalLayer::startTransmit;
     using PhysicalLayer::readData;
+    using PhysicalLayer::setSyncWord;
 
     /*!
       \brief Default constructor.
@@ -493,6 +494,16 @@ class RF69: public PhysicalLayer {
     // basic methods
 
     /*!
+      \brief Initialization method for FSK modem.
+      \param config Initialization configuration.
+      \details This method initializes the FSK modem with the specified configuration.
+      Supports designated initializers when using C++14 or above.
+      \returns \ref status_codes
+    */
+    int16_t begin(const ConfigFSK_t& config);
+
+    /*!
+      \deprecated Use \ref begin(const ConfigFSK_t& config) instead.
       \brief Initialization method.
       \param freq Carrier frequency in MHz. Defaults to 434.0 MHz.
       \param br Bit rate to be used in kbps. Defaults to 4.8 kbps.
@@ -784,20 +795,38 @@ class RF69: public PhysicalLayer {
     /*!
       \brief Sets output power. Allowed values range from -18 to 13 dBm for
       low power modules (RF69C/CW) or -2 to 20 dBm (RF69H/HC/HCW).
+      Doest not force high power mode; for modules using high power port,
+      use RF69::setOutputPower(pwr, true)
       \param pwr Output power to be set in dBm.
-      \param highPower Set to true when using modules high power port (RF69H/HC/HCW).
-      Defaults to false (models without high power port - RF69C/CW).
       \returns \ref status_codes
     */
-    int16_t setOutputPower(int8_t pwr, bool highPower = false);
+    int16_t setOutputPower(int8_t pwr) override;
+
+    /*!
+      \brief Sets output power. Allowed values range from -18 to 13 dBm for
+      low power modules (RF69C/CW) or -2 to 20 dBm (RF69H/HC/HCW).
+      \param pwr Output power to be set in dBm.
+      \param highPower Set to true when using modules high power port (RF69H/HC/HCW),
+      or to false for models without high power port - RF69C/CW.
+      \returns \ref status_codes
+    */
+    int16_t setOutputPower(int8_t pwr, bool highPower);
+
+    /*!
+      \brief Sets sync word. Up to 8 bytes can be set as sync word.
+      Override for PhysicalLayer compatibility, with maximum error bits set to 0.
+      \param syncWord Pointer to the array of sync word bytes.
+      \param len Sync word length in bytes.
+    */
+    int16_t setSyncWord(uint8_t* syncWord, size_t len) override;
 
     /*!
       \brief Sets sync word. Up to 8 bytes can be set as sync word.
       \param syncWord Pointer to the array of sync word bytes.
       \param len Sync word length in bytes.
-      \param maxErrBits Maximum allowed number of bit errors in received sync word. Defaults to 0.
+      \param maxErrBits Maximum allowed number of bit errors in received sync word.
     */
-    int16_t setSyncWord(const uint8_t* syncWord, size_t len, uint8_t maxErrBits = 0);
+    int16_t setSyncWord(uint8_t* syncWord, size_t len, uint8_t maxErrBits);
 
     /*!
       \brief Sets preamble length.

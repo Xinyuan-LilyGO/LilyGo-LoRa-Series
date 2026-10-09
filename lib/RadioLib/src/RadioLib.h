@@ -48,6 +48,8 @@
 #include "Hal.h"
 #if defined(RADIOLIB_BUILD_ARDUINO)
 #include "hal/Arduino/ArduinoHal.h"
+#elif defined(RADIOLIB_BUILD_GENERIC) && defined(ESP_PLATFORM)
+#include "hal/ESP-IDF/EspHal.h"
 #endif
 
 
@@ -61,6 +63,10 @@
 // print debug info
 #if RADIOLIB_DEBUG
   #pragma message(RADIOLIB_INFO)
+#endif
+
+#if CFG_TUD_CDC == 1 || ARDUINO_USB_CDC_ON_BOOT == 1 || defined(USBD_USE_CDC)
+  #warning "Use of USB CDC for debug output is not recommended (might stop on first sleep). Use hardware UART instead."
 #endif
 
 // check unknown/unsupported platform
@@ -117,6 +123,7 @@
 #include "protocols/Print/Print.h"
 #include "protocols/BellModem/BellModem.h"
 #include "protocols/LoRaWAN/LoRaWAN.h"
+#include "protocols/LoRaWAN/LoRaWANPacMan.h"
 #include "protocols/ADSB/ADSB.h"
 
 // utilities

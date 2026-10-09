@@ -25,20 +25,32 @@ Module::Module(const Module& mod) {
 }
 
 Module& Module::operator=(const Module& mod) {
-  memcpy(reinterpret_cast<void*>(&(const_cast<Module&>(mod)).spiConfig), &this->spiConfig, sizeof(SPIConfig_t));
+  this->hal = mod.hal;
+  memcpy(&this->spiConfig, reinterpret_cast<void*>(&(const_cast<Module&>(mod)).spiConfig), sizeof(SPIConfig_t));
   this->csPin = mod.csPin;
   this->irqPin = mod.irqPin;
   this->rstPin = mod.rstPin;
   this->gpioPin = mod.gpioPin;
+
+  memcpy(this->rfSwitchPins, mod.rfSwitchPins, Module::RFSWITCH_MAX_PINS*sizeof(this->rfSwitchPins[0]));
+  this->rfSwitchTable = mod.rfSwitchTable;
+
+  #if RADIOLIB_INTERRUPT_TIMING
+    this->TimerSetupCb = mod.TimerSetupCb;
+    this->TimerFlag = mod.TimerFlag;
+    this->prevTimingLen = mod.prevTimingLen;
+  #endif
+  
   return(*this);
 }
 
-static volatile const char info[] = RADIOLIB_INFO;
+static volatile const char rlb_info[] = RADIOLIB_INFO;
 void Module::init() {
   this->hal->init();
   this->hal->pinMode(csPin, this->hal->GpioModeOutput);
   this->hal->digitalWrite(csPin, this->hal->GpioLevelHigh);
   RADIOLIB_DEBUG_BASIC_PRINTLN(RADIOLIB_INFO);
+  RADIOLIB_VALUE_USED(rlb_info);
 }
 
 void Module::term() {
@@ -403,7 +415,7 @@ int16_t Module::SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write
   }
 
   // parse status (only if GPIO did not timeout)
-  if((state == RADIOLIB_ERR_NONE) && (this->spiConfig.parseStatusCb != nullptr) && (numBytes > 0)) {
+  if((state == RADIOLIB_ERR_NONE) && (this->spiConfig.parseStatusCb != nullptr) && (buffLen > this->spiConfig.statusPos)) {
     state = this->spiConfig.parseStatusCb(buffIn[this->spiConfig.statusPos]);
   }
   
@@ -415,6 +427,7 @@ int16_t Module::SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write
 
   // print debug information
   #if RADIOLIB_DEBUG_SPI
+    RADIOLIB_DEBUG_SPI_PRINTLN("LEN\t%d", buffLen);
     // print command byte(s)
     RADIOLIB_DEBUG_SPI_PRINT("CMD");
     if(write) {
@@ -445,6 +458,10 @@ int16_t Module::SPItransferStream(const uint8_t* cmd, uint8_t cmdLen, bool write
       RADIOLIB_DEBUG_SPI_PRINT_NOTAG("%02X\t", buffIn[n]);
     }
     RADIOLIB_DEBUG_SPI_PRINTLN_NOTAG("");
+    // if there is enough data to evaluate the status byte, print it as well
+    if(buffLen > this->spiConfig.statusPos) {
+      RADIOLIB_DEBUG_SPI_PRINTLN("STAT\t%02X", buffIn[this->spiConfig.statusPos]);
+    }
   #endif
 
   #if !RADIOLIB_STATIC_ONLY

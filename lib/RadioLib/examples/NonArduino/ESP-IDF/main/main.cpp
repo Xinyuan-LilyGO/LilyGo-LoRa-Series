@@ -16,8 +16,7 @@
 // include the library
 #include <RadioLib.h>
 
-// include the hardware abstraction layer
-#include "EspHal.h"
+#include "esp_log.h"
 
 // create a new instance of the HAL class
 EspHal* hal = new EspHal(5, 19, 27);
@@ -36,7 +35,7 @@ static const char *TAG = "main";
 extern "C" void app_main(void) {
   // initialize just like with Arduino
   ESP_LOGI(TAG, "[SX1276] Initializing ... ");
-  int state = radio.begin();
+  int state = radio.begin({});
   if (state != RADIOLIB_ERR_NONE) {
     ESP_LOGI(TAG, "failed, code %d\n", state);
     while(true) {

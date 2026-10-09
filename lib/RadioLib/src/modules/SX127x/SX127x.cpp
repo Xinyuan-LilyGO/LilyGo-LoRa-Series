@@ -68,7 +68,7 @@ int16_t SX127x::begin(const uint8_t* chipVersions, uint8_t numVersions, uint8_t 
   return(state);
 }
 
-int16_t SX127x::beginFSK(const uint8_t* chipVersions, uint8_t numVersions, float freqDev, float rxBw, uint16_t preambleLength, bool enableOOK) {
+int16_t SX127x::beginFSK(const uint8_t* chipVersions, uint8_t numVersions, float freqDev, float rxBw, uint16_t preambleLength) {
   // set module properties
   this->mod->init();
   this->mod->hal->pinMode(this->mod->getIrq(), this->mod->hal->GpioModeInput);
@@ -106,7 +106,7 @@ int16_t SX127x::beginFSK(const uint8_t* chipVersions, uint8_t numVersions, float
   }
 
   // enable/disable OOK
-  state = setOOK(enableOOK);
+  state = setOOK(this->enableOOK);
   RADIOLIB_ASSERT(state);
 
   // set frequency deviation
@@ -261,8 +261,8 @@ int16_t SX127x::scanChannel() {
   return(scanChannel(cfg));
 }
 
-int16_t SX127x::scanChannel(const ChannelScanConfig_t &config) {
-  (void)config;
+int16_t SX127x::scanChannel(const ChannelScanConfig_t &cfg) {
+  (void)cfg;
 
   // start CAD
   int16_t state = startChannelScan();
@@ -591,8 +591,8 @@ int16_t SX127x::startChannelScan() {
   return(startChannelScan(cfg));
 }
 
-int16_t SX127x::startChannelScan(const ChannelScanConfig_t &config) {
-  (void)config;
+int16_t SX127x::startChannelScan(const ChannelScanConfig_t &cfg) {
+  (void)cfg;
 
   // check active modem
   if(getActiveModem() != RADIOLIB_SX127X_LORA) {
@@ -857,49 +857,83 @@ int16_t SX127x::setFrequencyDeviation(float freqDev) {
   return(state);
 }
 
-uint8_t SX127x::calculateBWManExp(float bandwidth)
-{
-  for(uint8_t e = 7; e >= 1; e--) {
-    for(int8_t m = 2; m >= 0; m--) {
-      float point = (RADIOLIB_SX127X_CRYSTAL_FREQ * 1000000.0f)/(((4 * m) + 16) * ((uint32_t)1 << (e + 2)));
-      if(fabsf(bandwidth - ((point / 1000.0f) + 0.05f)) <= 0.5f) {
-        return((m << 3) | e);
-      }
-    }
-  }
-  return 0;
-}
-
 int16_t SX127x::setRxBandwidth(float rxBw) {
-  // check active modem
-  if(getActiveModem() != RADIOLIB_SX127X_FSK_OOK) {
-    return(RADIOLIB_ERR_WRONG_MODEM);
-  }
-
-  RADIOLIB_CHECK_RANGE(rxBw, 2.6f, 250.0f, RADIOLIB_ERR_INVALID_RX_BANDWIDTH);
-
-  // set mode to STANDBY
-  int16_t state = setMode(RADIOLIB_SX127X_STANDBY);
-  RADIOLIB_ASSERT(state);
-
-  // set Rx bandwidth
-  return(this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_RX_BW, calculateBWManExp(rxBw), 4, 0));
+  return(this->setRxBw(rxBw, false));
 }
 
 int16_t SX127x::setAFCBandwidth(float rxBw) {
+  return(this->setRxBw(rxBw, true));
+}
+
+int16_t SX127x::findRxBw(float rxBw, const uint8_t* lut, size_t lutSize, float rxBwMax, uint8_t* val) {
+  // lookup tables to avoid comparing a whole bunch of floats
+  const uint16_t rxBwAvg[] = {
+    29, 35, 46, 58, 71, 91, 115, 141,
+    182, 229, 282, 365, 459, 563, 729,
+    917, 1125, 1459, 1834, 2250,
+  };
+
+  // iterate through the table and find whether the user-provided value
+  // is lower than the pre-computed average of the adjacent bandwidth values
+  // if it is, we consider that to be a match even though the actual value is not precise
+  uint16_t rxBwInt = rxBw*10.0f;
+  for(size_t i = 0; i < (lutSize - 1); i++) {
+    if(rxBwInt < rxBwAvg[i]) {
+      *val = lut[i];
+      return(RADIOLIB_ERR_NONE);
+    }
+  }
+
+  // if nothing matched up to here, match with the last value
+  if(rxBwInt <= rxBwMax*10) {
+    *val = lut[lutSize - 1];
+    return(RADIOLIB_ERR_NONE);
+  }
+
+  return(RADIOLIB_ERR_INVALID_RX_BANDWIDTH);
+}
+
+int16_t SX127x::setRxBw(float rxBw, bool afc) {
   // check active modem
   if(getActiveModem() != RADIOLIB_SX127X_FSK_OOK){
       return(RADIOLIB_ERR_WRONG_MODEM);
   }
 
-  RADIOLIB_CHECK_RANGE(rxBw, 2.6f, 250.0f, RADIOLIB_ERR_INVALID_RX_BANDWIDTH);
+  const uint8_t rxBwLut[] = {
+    RADIOLIB_SX127X_RX_BW_2_6,
+    RADIOLIB_SX127X_RX_BW_3_1,
+    RADIOLIB_SX127X_RX_BW_3_9,
+    RADIOLIB_SX127X_RX_BW_5_2,
+    RADIOLIB_SX127X_RX_BW_6_3,
+    RADIOLIB_SX127X_RX_BW_7_8,
+    RADIOLIB_SX127X_RX_BW_10_4,
+    RADIOLIB_SX127X_RX_BW_12_5,
+    RADIOLIB_SX127X_RX_BW_15_6,
+    RADIOLIB_SX127X_RX_BW_20_8,
+    RADIOLIB_SX127X_RX_BW_25_0,
+    RADIOLIB_SX127X_RX_BW_31_3,
+    RADIOLIB_SX127X_RX_BW_41_7,
+    RADIOLIB_SX127X_RX_BW_50_0,
+    RADIOLIB_SX127X_RX_BW_62_5,
+    RADIOLIB_SX127X_RX_BW_83_3,
+    RADIOLIB_SX127X_RX_BW_100,
+    RADIOLIB_SX127X_RX_BW_125,
+    RADIOLIB_SX127X_RX_BW_167,
+    RADIOLIB_SX127X_RX_BW_200,
+    RADIOLIB_SX127X_RX_BW_250,
+  };
+
+  uint8_t rxBwRaw = 0;
+  int16_t state = findRxBw(rxBw, rxBwLut, sizeof(rxBwLut)/sizeof(rxBwLut[0]), 250.0f, &rxBwRaw);
+  RADIOLIB_ASSERT(state);
 
   // set mode to STANDBY
-  int16_t state = setMode(RADIOLIB_SX127X_STANDBY);
+  state = setMode(RADIOLIB_SX127X_STANDBY);
   RADIOLIB_ASSERT(state);
 
   // set AFC bandwidth
-  return(this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_AFC_BW, calculateBWManExp(rxBw), 4, 0));
+  uint8_t reg = afc ? RADIOLIB_SX127X_REG_AFC_BW : RADIOLIB_SX127X_REG_RX_BW;
+  return(this->mod->SPIsetRegValue(reg, rxBwRaw, 4, 0));
 }
 
 int16_t SX127x::setAFC(bool isEnabled) {
@@ -1048,7 +1082,7 @@ int16_t SX127x::disableBitSync() {
   return(this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_OOK_PEAK, RADIOLIB_SX127X_BIT_SYNC_OFF, 5, 5, 5));
 }
 
-int16_t SX127x::setOOK(bool enableOOK) {
+int16_t SX127x::setOOK(bool enable) {
   // check active modem
   if(getActiveModem() != RADIOLIB_SX127X_FSK_OOK) {
     return(RADIOLIB_ERR_WRONG_MODEM);
@@ -1056,7 +1090,7 @@ int16_t SX127x::setOOK(bool enableOOK) {
 
   // set OOK and if successful, save the new setting
   int16_t state = RADIOLIB_ERR_NONE;
-  if(enableOOK) {
+  if(enable) {
     state = this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_OP_MODE, RADIOLIB_SX127X_MODULATION_OOK, 6, 5, 5);
     state |= SX127x::setAFCAGCTrigger(RADIOLIB_SX127X_RX_TRIGGER_RSSI_INTERRUPT);
   } else {
@@ -1064,7 +1098,7 @@ int16_t SX127x::setOOK(bool enableOOK) {
     state |= SX127x::setAFCAGCTrigger(RADIOLIB_SX127X_RX_TRIGGER_BOTH);
   }
   if(state == RADIOLIB_ERR_NONE) {
-    ookEnabled = enableOOK;
+    this->ookEnabled = enable;
   }
 
   return(state);
@@ -1921,7 +1955,7 @@ int16_t SX127x::setDIOPreambleDetect(bool usePreambleDetect) {
   return this->mod->SPIsetRegValue(RADIOLIB_SX127X_REG_DIO_MAPPING_2, (usePreambleDetect) ? RADIOLIB_SX127X_DIO_MAP_PREAMBLE_DETECT : RADIOLIB_SX127X_DIO_MAP_RSSI, 0, 0);
 }
 
-float SX127x::getRSSI(bool packet, bool skipReceive, int16_t offset) {
+float SX127x::getRSSICommon(bool packet, bool skipReceive, int16_t offset) {
   if(getActiveModem() == RADIOLIB_SX127X_LORA) {
     if(packet) {
       // LoRa packet mode, get RSSI of the last packet
