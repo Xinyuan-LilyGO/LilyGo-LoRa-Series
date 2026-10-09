@@ -51,16 +51,16 @@ LR2021 radio = new Module(RADIO_CS_PIN, RADIO_IRQ_PIN, RADIO_RST_PIN, RADIO_BUSY
 
 // LR2021 Version PA RF switch table
 static const uint32_t pa_version_rf_switch_dio_pins[] = {
-    RADIOLIB_LR2021_DIO5, RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7, RADIOLIB_LR2021_DIO8, RADIOLIB_NC
+    RADIOLIB_LR2021_DIO6, RADIOLIB_LR2021_DIO7, RADIOLIB_LR2021_DIO8, RADIOLIB_NC, RADIOLIB_NC
 };
 
 static const Module::RfSwitchMode_t rf_switch_table[] = {
-    // mode                  DIO5  DIO6 DIO7 DIO8
-    { LR2021::MODE_STBY,   { LOW,  LOW, LOW, LOW} },
-    { LR2021::MODE_TX,     { LOW,  LOW, LOW, HIGH} }, // Sub1G DIO8 SET HIGH
-    { LR2021::MODE_RX,     { LOW,  LOW, LOW, LOW} },  // Sub1G ALL DIO SET LOW
-    { LR2021::MODE_RX_HF,  { LOW,  HIGH, LOW, LOW} }, // 2.4G RX DIO6 SET HIGH
-    { LR2021::MODE_TX_HF,  { LOW,  LOW, HIGH, LOW} }, // 2.4G TX DIO7 SET HIGH
+    // mode                  DIO6 DIO7 DIO8
+    { LR2021::MODE_STBY,   { LOW, LOW, LOW} },
+    { LR2021::MODE_TX,     { LOW, LOW, HIGH} }, // Sub1G DIO8 SET HIGH
+    { LR2021::MODE_RX,     { LOW, LOW, LOW} },  // Sub1G ALL DIO SET LOW
+    { LR2021::MODE_RX_HF,  { HIGH, LOW, LOW} }, // 2.4G RX DIO6 SET HIGH
+    { LR2021::MODE_TX_HF,  { LOW, HIGH, LOW} }, // 2.4G TX DIO7 SET HIGH
     END_OF_MODE_TABLE,
 };
 
