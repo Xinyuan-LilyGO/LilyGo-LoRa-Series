@@ -127,6 +127,7 @@
 | 🔗USB-C Input Voltage | 3.9V-6V |
 | ⚡Charge Function     | ❌       |
 | 🔋Battery Voltage     | 7.4V    |
+| Battery Interface    | NP-F970/NP-F550 |
 
 > \[!IMPORTANT]
 >
