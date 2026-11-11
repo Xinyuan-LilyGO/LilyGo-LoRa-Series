@@ -53,6 +53,7 @@ firmware/
 │   ├── tbeam-v1.x-all-band-sx1262-factory-20260817_0x0.bin
 │   ├── tbeam-v1.x-all-band-sx1276-factory-20260817_0x0.bin
 │   ├── tbeam-v1.x-all-band-sx1278-factory-20260817_0x0.bin
+│   ├── tbeam-v1.x-tft-shield-20230714_0x0.bin (H655)
 │
 ├── T-Beam-1W (ESP32-S3)
 │   ├── tbeam1w-v1.x-all-band-lr1121-factory-20260806_0x0.bin
