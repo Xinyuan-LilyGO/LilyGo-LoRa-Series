@@ -65,6 +65,7 @@ firmware/
 │
 └── T-Beam-S3-Supreme (ESP32-S3)
     ├── tbeam-s3-supreme-v2.7.23-meshtastic-b246bcd-factory-20260506_0x0.bin
+    ├── tbeam-s3-supreme-v3.x-144mhz-sx1278-factory-20261116_0x0.bin
     ├── tbeam-s3-supreme-v3.x-all-band-lr1121-factory-20260715_0x0.bin
     └── tbeam-s3-supreme-v3.x-all-band-sx1262-factory-20260715_0x0.bin
 ```
